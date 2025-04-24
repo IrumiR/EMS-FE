@@ -22,7 +22,7 @@ type SidebarProps = {
 
 const Sidebar = ({ role }: SidebarProps) => {
   const location = useLocation();
-  const userRole = (localStorage.getItem("role") as UserRole) || "member";
+  const userRole = (localStorage.getItem("role") as UserRole) || "team-member";
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
@@ -50,9 +50,12 @@ const Sidebar = ({ role }: SidebarProps) => {
     manager: [
       { to: "/events", label: "EVENTS", icon: <HiOutlineCalendar size={20} /> },
       { to: "/profile", label: "PROFILE", icon: <FiUser size={20} /> },
+      { to: "/tasks", label: "TASKS", icon: <HiOutlineClipboardList size={20} /> },
     ],
     client: [{ to: "/events", label: "MY EVENTS", icon: <HiOutlineCalendar size={20} /> }],
-    member: [{ to: "/profile", label: "PROFILE", icon: <FiUser size={20} /> }],
+    "team-member": [
+      { to: "/profile", label: "PROFILE", icon: <FiUser size={20} /> },
+      { to: "/tasks", label: "TASKS", icon: <HiOutlineClipboardList size={20} /> },],
   };
 
   const linksToRender = [...commonLinks, ...(roleLinks[userRole] || [])];
