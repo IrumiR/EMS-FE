@@ -1,11 +1,19 @@
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { FaRegBell } from "react-icons/fa";
 import UserLogo from "../../assets/svg/user-icon.svg";
+import { HiLogout } from "react-icons/hi";
 
 const Topbar = () => {
   const location = useLocation();
   const pathSegments = location.pathname.split("/").filter(Boolean);
+
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login");
+  }
 
   return (
     <header className="h-20 bg-white shadow-xs px-6 flex items-center justify-between z-50">
@@ -41,7 +49,14 @@ const Topbar = () => {
               className="w-full h-full rounded-full"
             />
           </PopoverTrigger>
-          <PopoverContent>Place content for the popover here.</PopoverContent>
+          <PopoverContent className="w-48">
+            <button 
+             onClick={handleLogout}
+            className="flex items-center gap-6">
+              <HiLogout className="w-5 h-5" /> 
+              <span>Logout</span>
+            </button>
+          </PopoverContent>
         </Popover>
       </div>
     </header>
