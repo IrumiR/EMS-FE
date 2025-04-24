@@ -22,6 +22,7 @@ type SidebarProps = {
 
 const Sidebar = ({ role }: SidebarProps) => {
   const location = useLocation();
+  const userRole = (localStorage.getItem("role") as UserRole) || "member";
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
@@ -54,7 +55,7 @@ const Sidebar = ({ role }: SidebarProps) => {
     member: [{ to: "/profile", label: "PROFILE", icon: <FiUser size={20} /> }],
   };
 
-  const linksToRender = [...commonLinks, ...(roleLinks[role] || [])];
+  const linksToRender = [...commonLinks, ...(roleLinks[userRole] || [])];
 
   return (
     <div
