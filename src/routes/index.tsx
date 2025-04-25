@@ -4,8 +4,9 @@ import MainLayout from "../layout/main-layout";
 import EventsScreen from "@/pages/events";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
+import TasksScreen from "@/pages/tasks";
 
-const role: "admin" | "client" | "manager" | "member" = "admin";
+const role: "admin" | "client" | "manager" | "team-member" = "admin";
 
 const AppRoutes = () => (
   <Router>
@@ -28,6 +29,15 @@ const AppRoutes = () => (
         element={
           <MainLayout role={role}>
             <EventsScreen />
+          </MainLayout>
+        }
+      />
+
+      <Route
+        path="/tasks"
+        element={
+          <MainLayout role={role}>
+            <TasksScreen />
           </MainLayout>
         }
       />
