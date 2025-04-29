@@ -5,6 +5,7 @@ import EventsScreen from "@/pages/events";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import TasksScreen from "@/pages/tasks";
+import InventoryScreen from "@/pages/inventory";
 
 const role: "admin" | "client" | "manager" | "team-member" = "admin";
 
@@ -38,6 +39,14 @@ const AppRoutes = () => (
         element={
           <MainLayout role={role}>
             <TasksScreen />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="/inventory"
+        element={
+          <MainLayout role={role}>
+            <InventoryScreen />
           </MainLayout>
         }
       />
