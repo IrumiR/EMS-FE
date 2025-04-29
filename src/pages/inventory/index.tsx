@@ -12,6 +12,7 @@ import { ChevronDown,  Eye, FilePenLine, CalendarCheck } from "lucide-react";
 import { HiPlus, HiSearch } from "react-icons/hi";
 import TableComponent from "@/components/molecules/table";
 import AddItemDialog from "@/components/atoms/addItemDialog";
+import { useInventoryItems } from "@/api/inventoryApi";
 
 function InventoryScreen() {
   const columns = [
@@ -21,6 +22,7 @@ function InventoryScreen() {
     { key: "totalQuantity", label: "Total Quantity" },
     { key: "remainingQuantity", label: "Remaining Quantity" },
   ];
+
 
   return (
     <div>
@@ -34,12 +36,6 @@ function InventoryScreen() {
 
         <div>
         <AddItemDialog
-          triggerButton={
-            <Button className="bg-green-600 text-white">
-              <HiPlus />
-              Add Item
-            </Button>
-          }
         />
         </div>
       </div>

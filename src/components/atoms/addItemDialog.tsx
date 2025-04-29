@@ -1,176 +1,340 @@
-import React, { useState, useRef } from "react";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { X } from "lucide-react";
-import { Toast } from 'primereact/toast';
+import React, { useRef, useState } from "react";
+import { Plus } from "lucide-react";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import toast from "react-hot-toast";
 import { FileUpload } from 'primereact/fileupload';
+import { useCreateInventoryMutation } from "@/api/inventoryApi";
+import { Dialog ,DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogClose } from "../ui/dialog";
+import { Separator, Label } from "@radix-ui/react-dropdown-menu";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../ui/select";
+import { Switch } from "@radix-ui/react-switch";
+import { Button } from "primereact/button";
+import { DialogHeader, DialogFooter } from "../ui/dialog";
+import { Textarea } from "../ui/textarea";
+import InputField from "./inputField";
+
 
 interface AddItemDialogProps {
-  triggerButton?: React.ReactNode;
+  dialogTitle?: string;
 }
 
-const AddItemDialog: React.FC<AddItemDialogProps> = ({ triggerButton }) => {
-  const [variationInput, setVariationInput] = useState("");
-  const [variations, setVariations] = useState<string[]>([]);
-  const toast = useRef(null);
+const AddItemDialog: React.FC<AddItemDialogProps> = ({ 
+  dialogTitle = "Add New Inventory Item" 
+}) => {
+  // Removed toast ref as it is not needed
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleAddVariation = () => {
-    if (variationInput.trim()) {
-      setVariations([...variations, variationInput.trim()]);
-      setVariationInput("");
-    }
+  const onSuccess = () => {
+    formik.resetForm();
+    toast.success("Item added successfully!", {
+      id: "success-toast",
+      position: "top-center",
+      duration: 3000,
+    });
+    closeRef.current?.click();
   };
 
-  const handleRemoveVariation = (index: number) => {
-    const newVariations = [...variations];
-    newVariations.splice(index, 1);
-    setVariations(newVariations);
+  const onError = (errorMessage: string) => {
+    formik.setSubmitting(false);
+    toast.error(errorMessage, {
+      id: "error-toast",
+      position: "top-center",
+      duration: 4000,
+    });
+    setErrorMessage(errorMessage);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleAddVariation();
-    }
+  const handleCancel = () => {
+    formik.resetForm();
   };
+
+  const { mutate: createInventoryItem, isLoading } = useCreateInventoryMutation(
+    onSuccess,
+    onError
+  );
+
+  const validationSchema = Yup.object({
+    itemName: Yup.string().required("Item name is required"),
+    category: Yup.string().required("Category is required"),
+    condition: Yup.string().required("Condition is required"),
+    totalQuantity: Yup.number()
+      .required("Total quantity is required")
+      .positive("Must be positive")
+      .integer("Must be an integer"),
+    price: Yup.number()
+      .required("Price is required")
+      .positive("Must be positive"),
+  });
+
+  const formik = useFormik({
+    initialValues: {
+      itemName: "",
+      itemDescription: "",
+      category: "",
+      condition: "",
+      totalQuantity: "",
+      price: "",
+      isExternal: false,
+    },
+    validationSchema,
+    onSubmit: (values) => {
+      const itemData = {
+        itemName: values.itemName,
+        itemDescription: values.itemDescription,
+        category: [values.category],
+        condition: [values.condition],
+        totalQuantity: Number(values.totalQuantity),
+        price: Number(values.price),
+        isExternal: values.isExternal,
+        createDate: new Date().toISOString(),
+      };
+      
+      createInventoryItem(itemData);
+    },
+  });
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>{triggerButton}</DialogTrigger>
-      <DialogContent className="w-full max-w-[100vw] sm:max-w-[425px] max-h-[100vh]">
-        <DialogHeader>
-          <DialogTitle>Add New Inventory Item</DialogTitle>
-          <DialogDescription>
-            Fill out the item details below. Click save when you're done.
-          </DialogDescription>
-        </DialogHeader>
-        <ScrollArea className="max-h-[60vh] pr-4">
-          <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-1 gap-4">
-              <div>
-                <Label htmlFor="name" className="mb-3">
-                  Item Name
-                </Label>
-                <Input
-                  id="name"
-                  placeholder="Enter item name"
-                  className="w-full"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="category" className="block mb-3">
-                  Category
-                </Label>
-                <Select>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="light">Light</SelectItem>
-                    <SelectItem value="dark">Dark</SelectItem>
-                    <SelectItem value="system">System</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="condition" className="block mb-3">
-                  Condition
-                </Label>
-                <Select>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select condition" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="light">Light</SelectItem>
-                    <SelectItem value="dark">Dark</SelectItem>
-                    <SelectItem value="system">System</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4">
-              <div>
-                <Label htmlFor="totalQuantity" className="mb-3">
-                  Total Quantity
-                </Label>
-                <Input
-                  id="totalQuantity"
-                  placeholder="Enter total quantity"
-                  className="w-full"
-                />
-              </div>
-            </div>
-
-            <div className="grid w-full gap-1.5">
-              <Label htmlFor="description" className="mb-2">Description</Label>
-          
-              <Textarea placeholder="Type your message here." id="description" />
-            </div>
-
-            <div className="grid w-full gap-1.5">
-              <Label htmlFor="images" className="mb-2">Images</Label>
-              <div className="mt-1">
-                <Toast ref={toast} />
-                <div className="border rounded-md p-2">
-                  <FileUpload
-                    name="demo[]"
-                    url={'/api/upload'}
-                    multiple
-                    accept="image/*"
-                    maxFileSize={1000000}
-                    className="w-full custom-file-upload"
-                    emptyTemplate={
-                      <p className="text-sm text-gray-500 text-center py-4">
-                        Drag and drop files here to upload.
-                      </p>
-                    }
-                  />
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Max file size: 1MB. Accepted formats: JPG, PNG, GIF.
-              </p>
-            </div>
-
-            <div className="flex items-center space-x-2 py-2">
-              <Switch id="isExternal" />
-              <Label htmlFor="isExternal">Is External</Label>
-            </div>
+    <div>
+      <Dialog>
+        <DialogTrigger className="flex gap-1 bg-[#28446B] py-2 pl-2 sm:pr-2 pr-2 items-center rounded-md text-white max-h-[38px] text-xsxl">
+          <div className="flex items-center gap-1">
+            <Plus strokeWidth={1.4} />
+            <span className="hidden xl:inline">Add Item</span>
           </div>
-        </ScrollArea>
-        <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-4 sm:justify-end pb-3 sm:pb-0">
-          <Button variant="outline" type="button" className="sm:w-auto">
-            Cancel
-          </Button>
-          <Button type="submit" className="bg-green-600 text-white sm:w-auto">Save changes</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </DialogTrigger>
+        <DialogContent className="p-0 max-w-[620px] sm:min-w-[620px]">
+          <form onSubmit={formik.handleSubmit}>
+            <DialogHeader>
+              <DialogTitle className="py-5 px-7 -mb-2">
+                {dialogTitle}
+              </DialogTitle>
+              <Separator />
+              <DialogDescription className="py-4 px-7">
+                <div className="flex flex-cols gap-14">
+                  <div className="w-full">
+                    <label
+                      htmlFor="itemName"
+                      className="mb-2 text-sm font-medium text-gray-700 text-left"
+                    >
+                      Item Name
+                    </label>
+                    <InputField
+                      id="itemName"
+                      name="itemName"
+                      type="text"
+                      placeholder="Enter item name"
+                      className="h-9"
+                      value={formik.values.itemName}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                    />
+                    {formik.touched.itemName && formik.errors.itemName && (
+                      <div className="text-red-500 text-sm self-start">
+                        {formik.errors.itemName}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex flex-cols gap-14 mt-4">
+                  <div className="w-full">
+                    <label
+                      htmlFor="category"
+                      className="mb-2 text-sm font-medium text-gray-700 text-left"
+                    >
+                      Category
+                    </label>
+                    <Select
+                      onValueChange={(val) => formik.setFieldValue("category", val)}
+                    >
+                      <SelectTrigger className="w-full h-9">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Audio">Audio</SelectItem>
+                        <SelectItem value="Lighting">Lighting</SelectItem>
+                        <SelectItem value="Staging">Staging</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {formik.touched.category && formik.errors.category && (
+                      <div className="text-red-500 text-sm self-start">
+                        {formik.errors.category}
+                      </div>
+                    )}
+                  </div>
+                  <div className="w-full">
+                    <label
+                      htmlFor="condition"
+                      className="mb-2 text-sm font-medium text-gray-700 text-left"
+                    >
+                      Condition
+                    </label>
+                    <Select
+                      onValueChange={(val) => formik.setFieldValue("condition", val)}
+                    >
+                      <SelectTrigger className="w-full h-9">
+                        <SelectValue placeholder="Select condition" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="New">New</SelectItem>
+                        <SelectItem value="Used">Used</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {formik.touched.condition && formik.errors.condition && (
+                      <div className="text-red-500 text-sm self-start">
+                        {formik.errors.condition}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex flex-cols gap-14 mt-4">
+                  <div className="w-full">
+                    <label
+                      htmlFor="totalQuantity"
+                      className="mb-2 text-sm font-medium text-gray-700 text-left"
+                    >
+                      Total Quantity
+                    </label>
+                    <InputField
+                      id="totalQuantity"
+                      name="totalQuantity"
+                      type="text"
+                      placeholder="Enter total quantity"
+                      className="h-9"
+                      value={formik.values.totalQuantity}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      onKeyPress={(e) => {
+                        if (!/^\d$/.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                    />
+                    {formik.touched.totalQuantity && formik.errors.totalQuantity && (
+                      <div className="text-red-500 text-sm self-start">
+                        {formik.errors.totalQuantity}
+                      </div>
+                    )}
+                  </div>
+                  <div className="w-full">
+                    <label
+                      htmlFor="price"
+                      className="mb-2 text-sm font-medium text-gray-700 text-left"
+                    >
+                      Price
+                    </label>
+                    <InputField
+                      id="price"
+                      name="price"
+                      type="text"
+                      placeholder="Enter price"
+                      className="h-9"
+                      value={formik.values.price}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      onKeyPress={(e) => {
+                        if (!/^\d$/.test(e.key) && e.key !== '.') {
+                          e.preventDefault();
+                        }
+                      }}
+                    />
+                    {formik.touched.price && formik.errors.price && (
+                      <div className="text-red-500 text-sm self-start">
+                        {formik.errors.price}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex flex-cols gap-14 mt-4">
+                  <div className="w-full">
+                    <label
+                      htmlFor="itemDescription"
+                      className="mb-2 text-sm font-medium text-gray-700 text-left"
+                    >
+                      Description
+                    </label>
+                    <Textarea
+                      id="itemDescription"
+                      name="itemDescription"
+                      placeholder="Enter item description"
+                      className="h-24"
+                      value={formik.values.itemDescription}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex flex-cols gap-14 mt-4">
+                  <div className="w-full">
+                    <label
+                      htmlFor="images"
+                      className="mb-2 text-sm font-medium text-gray-700 text-left"
+                    >
+                      Images
+                    </label>
+                    <div className="mt-1">
+                      <div className="border rounded-md p-2">
+                        <FileUpload
+                          name="demo[]"
+                          url={'/api/upload'}
+                          multiple
+                          accept="image/*"
+                          maxFileSize={1000000}
+                          className="w-full custom-file-upload"
+                          emptyTemplate={
+                            <p className="text-sm text-gray-500 text-center py-4">
+                              Drag and drop files here to upload.
+                            </p>
+                          }
+                        />
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Max file size: 1MB. Accepted formats: JPG, PNG, GIF.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-2 mt-4">
+                  <Switch 
+                    id="isExternal"
+                    checked={formik.values.isExternal}
+                    onCheckedChange={(checked) => formik.setFieldValue("isExternal", checked)}
+                  />
+                  <Label className="text-sm font-medium text-gray-700">
+                    Is External
+                  </Label>
+                </div>
+              </DialogDescription>
+            </DialogHeader>
+            <Separator />
+            <DialogFooter className="p-3">
+              <DialogClose
+                ref={closeRef}
+                className="bg-[#EDF2F6] text-[#475569] hover:bg-slate-200 text-sm font-medium py-2 px-4 rounded-lg sm:mt-0 mt-2"
+                onClick={handleCancel}
+              >
+                Cancel
+              </DialogClose>
+              <Button
+                type="submit"
+                disabled={formik.isSubmitting}
+                className="bg-[#28446B] hover:bg-[#1c2f49] text-sm font-medium sm:mt-0 mt-2"
+              >
+                {formik.isSubmitting ? "Submitting..." : "Create Item"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };
+
 
 export default AddItemDialog;
