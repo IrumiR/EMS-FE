@@ -15,18 +15,18 @@ authFetch.interceptors.request.use(
     if (token) {
       const decodedToken: any = jwtDecode(token);
       const currentTime = Date.now() / 1000;
-      if (decodedToken.exp < currentTime) {
-        // Clear expired token and related data
-        localStorage.removeItem("token");
-        localStorage.removeItem("type");
-        localStorage.removeItem("user");
-        localStorage.removeItem("userType");
-        localStorage.removeItem("userId");
-        localStorage.removeItem("email");
-        localStorage.removeItem("clientID");
-        window.location.reload();
-        throw new axios.Cancel("Token expired");
-      }
+      // if (decodedToken.exp < currentTime) {
+      //   // Clear expired token and related data
+      //   localStorage.removeItem("token");
+      //   localStorage.removeItem("type");
+      //   localStorage.removeItem("user");
+      //   localStorage.removeItem("userType");
+      //   localStorage.removeItem("userId");
+      //   localStorage.removeItem("email");
+      //   localStorage.removeItem("clientID");
+      //   window.location.reload();
+      //   throw new axios.Cancel("Token expired");
+      // }
       config.headers.Authorization = `Bearer ${token}`;
     }
 

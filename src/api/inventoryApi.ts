@@ -1,5 +1,5 @@
 import authFetch from "./authInterceptor";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient, UseQueryResult } from "react-query";
 
 export interface InventoryItemData {
   itemName: string;
@@ -27,7 +27,7 @@ export const useCreateInventoryMutation = (
         itemData.remainingQuantity = itemData.totalQuantity;
       }
       
-      const response = await authFetch.post("/api/inventory/create", itemData);
+      const response = await authFetch.post("/inventory/create", itemData);
       return response.data;
     },
     onSuccess: (data) => {
@@ -106,3 +106,67 @@ export const useDeleteInventoryMutation = (
     },
   });
 };
+
+// InventoryItem interface
+export interface InventoryItem {
+    _id: string;
+    itemName: string;
+    itemDescription?: string;
+    category: string[];
+    totalQuantity: number;
+    remainingQuantity: number;
+    price: number;
+    condition: string[];
+    variations: string[];
+    images: string[];
+    isExternal: boolean;
+    assignedEvent: string[];
+    createdBy: string;
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+  }
+  
+  // Pagination metadata
+  export interface InventoryPagination {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }
+  
+  // API response type
+  export interface InventoryResponse {
+    message: string;
+    inventoryItems: InventoryItem[];
+    pagination: InventoryPagination;
+  }
+
+
+  export const useGetAllInventory = (
+    page?: number,
+    pageSize?: number,
+    search?: string
+  ): UseQueryResult<InventoryResponse> => {
+    return useQuery({
+      queryKey: ["get_all_inventory", page, pageSize, search],
+      queryFn: async () => {
+        try {
+          const response = await authFetch.get<InventoryResponse>(
+            `/inventory/all?limit=${pageSize ?? 10}&page=${page ?? 1}${search ? `&search=${encodeURIComponent(search)}` : ""}`
+          );
+          return response.data;
+        } catch (error) {
+          throw error;
+        }
+      },
+      onSuccess: () => {
+        console.log("Inventory items retrieved successfully");
+      },
+      onError: (error) => {
+        console.error("Fetch error:", error);
+      },
+    });
+  };
+  
+  

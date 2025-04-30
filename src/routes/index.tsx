@@ -6,11 +6,13 @@ import Login from "@/pages/login";
 import Register from "@/pages/register";
 import TasksScreen from "@/pages/tasks";
 import InventoryScreen from "@/pages/inventory";
+import { Toaster } from "react-hot-toast";
 
 const role: "admin" | "client" | "manager" | "team-member" = "admin";
 
 const AppRoutes = () => (
   <Router>
+    <Toaster position="top-center" />
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
 

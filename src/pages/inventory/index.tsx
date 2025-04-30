@@ -12,17 +12,29 @@ import { ChevronDown,  Eye, FilePenLine, CalendarCheck } from "lucide-react";
 import { HiPlus, HiSearch } from "react-icons/hi";
 import TableComponent from "@/components/molecules/table";
 import AddItemDialog from "@/components/atoms/addItemDialog";
-import { useInventoryItems } from "@/api/inventoryApi";
+import { useGetAllInventory } from "@/api/inventoryApi";
 
 function InventoryScreen() {
   const columns = [
-    { key: "name", label: "Item Name" },
+    { key: "itemName", label: "Item Name" },
     { key: "category", label: "Category" },
     { key: "condition", label: "Condition" },
     { key: "totalQuantity", label: "Total Quantity" },
     { key: "remainingQuantity", label: "Remaining Quantity" },
   ];
 
+  const data = useGetAllInventory(
+    
+  );
+  const inventoryItems = data?.data?.inventoryItems || [];
+console.log("Inventory data", data.data?.inventoryItems);
+
+const formattedItems = inventoryItems.map(item => ({
+  ...item,
+  // Format arrays to display as comma-separated strings
+  category: Array.isArray(item.category) ? item.category.join(", ") : item.category,
+  condition: Array.isArray(item.condition) ? item.condition.join(", ") : item.condition
+}));
 
   return (
     <div>
@@ -85,7 +97,7 @@ function InventoryScreen() {
       <div className="overflow-x-auto mt-6">
         <TableComponent
           columns={columns}
-          // data={data}
+          data={data?.data?.inventoryItems || []}
           actions={(row) => (
             <div className="flex items-center space-x-2">
               <Button variant="ghost" size="sm" className="p-1 hover:bg-gray-100">

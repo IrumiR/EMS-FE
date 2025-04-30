@@ -64,9 +64,9 @@ const Sidebar = ({ role }: SidebarProps) => {
     <div
       className={`
         ${isCollapsed ? "w-16" : "w-64"}
-        h-screen bg-white px-2 pt-6 shadow-md z-50
+        h-full bg-white px-2 pt-6 shadow-md z-50
         transition-all duration-300 ease-in-out
-        fixed md:relative
+        sm:relative
       `}
     >
       <div className="flex items-center justify-between mb-10 px-2">
