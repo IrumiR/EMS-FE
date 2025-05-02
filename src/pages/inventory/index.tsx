@@ -9,9 +9,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { ChevronDown,  Eye, FilePenLine, CalendarCheck } from "lucide-react";
-import { HiPlus, HiSearch } from "react-icons/hi";
+import {  HiSearch } from "react-icons/hi";
 import TableComponent from "@/components/molecules/table";
-import AddItemDialog from "@/components/atoms/addItemDialog";
+import AddItemDialog from "@/components/organisms/addItemDialog";
 import { useGetAllInventory } from "@/api/inventoryApi";
 
 function InventoryScreen() {

@@ -11,7 +11,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from ".
 import { Button } from "primereact/button";
 import { DialogHeader, DialogFooter } from "../ui/dialog";
 import { Textarea } from "../ui/textarea";
-import InputField from "./inputField";
+import InputField from "../atoms/inputField";
 import { Switch } from "../ui/switch";
 import { ScrollArea } from "../ui/scroll-area";
 
