@@ -10,8 +10,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Funnel, ChevronDown } from "lucide-react";
+import { AddEventDialog } from "@/components/organisms/addEventDialog";
 
 function EventsScreen() {
+
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -23,10 +25,7 @@ function EventsScreen() {
         </div>
 
         <div>
-          <Button className="bg-green-600 text-white">
-            <HiPlus />
-            New Event
-          </Button>
+         <AddEventDialog />
         </div>
       </div>
 
