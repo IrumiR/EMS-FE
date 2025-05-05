@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { HiPlus, HiSearch } from "react-icons/hi";
+import { HiSearch } from "react-icons/hi";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,8 +11,55 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Funnel, ChevronDown } from "lucide-react";
 import { AddEventDialog } from "@/components/organisms/addEventDialog";
+import EventCardGrid from "@/components/molecules/eventCard";
+import dj from "../../assets/images/dj.png";
+import fashion from "../../assets/images/fashion-week.png";
+
+import { useState, useEffect } from "react";
 
 function EventsScreen() {
+  interface Event {
+    image: string;
+    category: string;
+    status: string;
+    date: string;
+    time: string;
+    title: string;
+    location: string;
+    progress: number;
+  }
+
+  const [events, setEvents] = useState<Event[]>([]);
+  
+  useEffect(() => {
+    const dummyEvents = [
+      {
+        image: dj,
+        category: "Music",
+        status: "Active",
+        date: "Apr 20, 2023",
+        time: "7:00 PM",
+        title: "Symphony Under the Stars",
+        location: "Sunset Park, Los Angeles, CA",
+        progress: 75
+      },
+      {
+        image: fashion,
+        category: "Fashion",
+        status: "Active",
+        date: "May 1, 2023",
+        time: "6:00 PM",
+        title: "Runway Revolution 2023",
+        location: "Vogue Hall, New York, NY",
+        progress: 50
+      },
+    ];
+    
+    setEvents(dummyEvents);
+    
+    // To test the "No events found" message, uncomment this line:
+    // setEvents([]);
+  }, []);
 
   return (
     <div>
@@ -25,7 +72,7 @@ function EventsScreen() {
         </div>
 
         <div>
-         <AddEventDialog />
+          <AddEventDialog />
         </div>
       </div>
 
@@ -73,9 +120,15 @@ function EventsScreen() {
       </div>
 
       <div className="mt-4 bg-white rounded-lg border border-gray-200 p-8">
-        <div className="flex flex-col items-center justify-center py-16">
-          <p className="text-gray-500 text-lg">No events found.</p>
-        </div>
+        {events && events.length > 0 ? (
+          <div className="flex flex-wrap items-start justify-start">
+            <EventCardGrid events={events} />
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-16">
+            <p className="text-gray-500 text-lg">No events found.</p>
+          </div>
+        )}
       </div>
     </div>
   );
