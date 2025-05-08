@@ -26,9 +26,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { ScrollArea } from "../ui/scroll-area";
 import { Calendar as PrimeCalendar } from "primereact/calendar";
 import { MultiSelect, MultiSelectChangeEvent } from "primereact/multiselect";
 import { Nullable } from "primereact/ts-helpers";
+import wedding from "../../assets/images/wedding.png";
+import birthday from "../../assets/images/birthday.png";  
+import sports from "../../assets/images/sports.png";
+import conference from "../../assets/images/conference.png";  
+import concert from "../../assets/images/concert.png";
+import charity from "../../assets/images/charity.png";  
+import corporate from "../../assets/images/corporate.png";
+import others from "../../assets/images/others.png";  
 
 interface Assignee {
   name: string;
@@ -55,6 +64,20 @@ export function AddEventDialog() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedAssignees, setSelectedAssignees] = useState<Assignee[]>([]);
   const [selectedItems, setSelectedItems] = useState<InventoryItem[]>([]);
+
+  const [selectedEventType, setSelectedEventType] = useState<keyof typeof eventTypeImages | "">("");
+  const [customEventType, setCustomEventType] = useState("");
+
+  const eventTypeImages = {
+    wedding: wedding,
+    birthday: birthday,
+    concert: concert,
+    conference: conference,
+    sports: sports,
+    corporate: corporate,
+    charity: charity,
+    others: others,
+  };
 
   const assignees: Assignee[] = [
     { name: "John Doe", id: "jdoe" },
@@ -123,7 +146,6 @@ export function AddEventDialog() {
     }
   };
 
-  // Custom item template for MultiSelect
   const assigneeItemTemplate = (option: Assignee) => {
     return (
       <div className="flex items-center py-1 px-2">
@@ -148,7 +170,7 @@ export function AddEventDialog() {
           <span className="hidden xl:inline">Add Event</span>
         </div>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-h-[100vh]">
         <div className="mb-6">
           <div className="flex items-center">
             <div className="text-sm font-medium">
@@ -208,6 +230,8 @@ export function AddEventDialog() {
             </div>
           </div>
 
+          <ScrollArea className="h-[50vh] pr-4">
+            <div className="space-y-4 pb-6">
           {/* Form Fields - Details Step */}
           {activeStep === "details" && (
             <div className="space-y-4">
@@ -232,18 +256,54 @@ export function AddEventDialog() {
                 >
                   Event Type
                 </Label>
-                <Select>
+                <Select
+                  value={selectedEventType}
+                  onValueChange={(value) => setSelectedEventType(value as keyof typeof eventTypeImages | "")}
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select an event type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="meeting">Meeting</SelectItem>
-                    <SelectItem value="workshop">Workshop</SelectItem>
+                  <SelectItem value="wedding">Wedding</SelectItem>
+                    <SelectItem value="birthday">Birthday Party</SelectItem>
+                    <SelectItem value="concert">Concert</SelectItem>
                     <SelectItem value="conference">Conference</SelectItem>
-                    <SelectItem value="social">Social Event</SelectItem>
+                    <SelectItem value="sports">Sporting Event</SelectItem>
+                    <SelectItem value="corporate">Corporate Event</SelectItem>
+                    <SelectItem value="charity">Charity Event</SelectItem>
+                    <SelectItem value="others">Other Events</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
+              {selectedEventType === "others" && (
+                <div>
+                  <Label
+                    htmlFor="customEventType"
+                    className="text-sm font-medium block mb-1"
+                  >
+                    Specify Event Type
+                  </Label>
+                  <Input
+                    id="customEventType"
+                    value={customEventType}
+                    onChange={(e) => setCustomEventType(e.target.value)}
+                    placeholder="Enter your event type"
+                    className="w-full"
+                  />
+                </div>
+              )}
+
+              {/* Display the image for the selected event type */}
+              {selectedEventType && (
+                <div className="flex justify-center mt-2">
+                  <img 
+                    src={eventTypeImages[selectedEventType]} 
+                    alt={selectedEventType}
+                    className="h-24 w-auto object-contain" 
+                  />
+                </div>
+              )}
 
               <div>
                 <Label
@@ -556,8 +616,10 @@ export function AddEventDialog() {
               </div>
             </div>
           )}
+          </div>
+             </ScrollArea>
         </div>
-
+     
         <DialogFooter className="flex justify-between">
           <Button
             variant="outline"

@@ -42,3 +42,32 @@ export const useLoginMutation = (
     },
   });
 };
+
+interface CreateClientData {
+  userName: string;
+  email: string;
+  password: string;
+  role: string;
+  address: string;
+  contactNumber: string;
+  isActive: boolean;
+}
+
+export const useCreateClient = (
+  onSuccess: (message: string) => void,
+  onError: (message: string) => void
+) => {
+  return useMutation({
+    mutationFn: async (clientData: CreateClientData) => {
+      const response = await authFetch.post("/auth/register", clientData); // Adjust endpoint if needed
+      return response.data;
+    },
+    onSuccess(data) {
+      onSuccess("Client created successfully");
+    },
+    onError(error) {
+      const message = (error as any)?.response?.data?.message || "Client creation failed";
+      onError(message);
+    },
+  });
+};

@@ -7,6 +7,7 @@ import Register from "@/pages/register";
 import TasksScreen from "@/pages/tasks";
 import InventoryScreen from "@/pages/inventory";
 import { Toaster } from "react-hot-toast";
+import TeamScreen from "@/pages/team";
 
 const role: "admin" | "client" | "manager" | "team-member" = "admin";
 
@@ -49,6 +50,14 @@ const AppRoutes = () => (
         element={
           <MainLayout role={role}>
             <InventoryScreen />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="/team"
+        element={
+          <MainLayout role={role}>
+            <TeamScreen />
           </MainLayout>
         }
       />
