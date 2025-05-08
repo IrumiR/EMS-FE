@@ -12,6 +12,7 @@ import { ChevronDown,  Eye, FilePenLine } from "lucide-react";
 import {  HiSearch } from "react-icons/hi";
 import TableComponent from "@/components/molecules/table";
 import { AddUserDialog } from "@/components/organisms/addUserDialog";
+import { EditUserDialog } from "@/components/organisms/editUserDialog";
 import { useGetAllUsers } from "@/api/authApi";
 
 function TeamScreen() {
@@ -84,9 +85,14 @@ function TeamScreen() {
               <Button variant="ghost" size="sm" className="p-1 hover:bg-gray-100">
                 <Eye className="h-4 w-4 text-blue-600" />
               </Button>
-              <Button variant="ghost" size="sm" className="p-1 hover:bg-gray-100">
-                <FilePenLine className="h-4 w-4 text-green-600" />
-              </Button>
+              <EditUserDialog 
+                userId={row._id} 
+                trigger={
+                  <Button variant="ghost" size="sm" className="p-1 hover:bg-gray-100">
+                    <FilePenLine className="h-4 w-4 text-green-600" />
+                  </Button>
+                }
+              />
             </div>
           )}
         />

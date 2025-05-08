@@ -3,6 +3,7 @@ import authFetch from "./authInterceptor";
 import {
     useMutation,
     useQuery,
+    useQueryClient,
     UseQueryResult,
   } from "react-query";
 
@@ -127,5 +128,51 @@ export const useGetAllUsers = (
     onError: (error) => {
       console.error("Fetch error:", error);
     },
+  });
+};
+
+
+export interface UserUpdateData {
+  userName?: string;
+  email?: string;
+  contactNumber?: string;
+  address?: string;
+  role?: "admin" | "manager" | "team-member" | "client";
+  profileImage?: string;
+  isActive?: boolean;
+  password?: string; // Optional for updates
+}
+
+export const useUpdateUserMutation = (
+  onSuccess?: (data: any) => void,
+  onError?: (message: string) => void
+) => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ userId, userData }: { userId: string, userData: UserUpdateData }) => {
+      const response = await authFetch.put(`/users/${userId}`, userData);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      // Invalidate and refetch user list and the specific user
+      queryClient.invalidateQueries(["get_all_users"]);
+      queryClient.invalidateQueries(["user", data.user._id]);
+      if (onSuccess) onSuccess(data);
+    },
+    onError: (error) => {
+      const message = (error as any)?.response?.data?.message || "Failed to update user";
+      if (onError) onError(message);
+    },
+  });
+};
+
+export const useGetUserById = (userId: string | null) => {
+  return useQuery(["user", userId], async () => {
+    if (!userId) return null;
+    const response = await authFetch.get(`/users/${userId}`);
+    return response.data;
+  }, {
+    enabled: !!userId, 
   });
 };
