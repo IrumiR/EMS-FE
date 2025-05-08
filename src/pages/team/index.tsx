@@ -8,33 +8,30 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { ChevronDown,  Eye, FilePenLine, CalendarCheck } from "lucide-react";
+import { ChevronDown,  Eye, FilePenLine } from "lucide-react";
 import {  HiSearch } from "react-icons/hi";
 import TableComponent from "@/components/molecules/table";
-import { useGetAllInventory } from "@/api/inventoryApi";
 import { AddUserDialog } from "@/components/organisms/addUserDialog";
+import { useGetAllUsers } from "@/api/authApi";
 
 function TeamScreen() {
   const columns = [
-    { key: "itemName", label: "Item Name" },
-    { key: "category", label: "Category" },
-    { key: "condition", label: "Condition" },
-    { key: "totalQuantity", label: "Total Quantity" },
-    { key: "remainingQuantity", label: "Remaining Quantity" },
+    { key: "userName", label: "User Name" },
+    { key: "email", label: "Email" },
+    { key: "address", label: "Address" },
+    { key: "role", label: "Role" },
   ];
 
-  const data = useGetAllInventory(
-    
-  );
-  const inventoryItems = data?.data?.inventoryItems || [];
-console.log("Inventory data", data.data?.inventoryItems);
+  const data = useGetAllUsers();
 
-const formattedItems = inventoryItems.map(item => ({
-  ...item,
-  // Format arrays to display as comma-separated strings
-  category: Array.isArray(item.category) ? item.category.join(", ") : item.category,
-  condition: Array.isArray(item.condition) ? item.condition.join(", ") : item.condition
-}));
+  const users = data?.data?.users || [];
+  console.log("Users data", data.data?.users);
+  const formattedUsers = users.map(user => ({
+    ...user,
+    // Format arrays to display as comma-separated strings
+    role: Array.isArray(user.role) ? user.role.join(", ") : user.role,
+  }));
+  
 
   return (
     <div>
@@ -81,7 +78,7 @@ const formattedItems = inventoryItems.map(item => ({
       <div className="overflow-x-auto mt-6">
         <TableComponent
           columns={columns}
-          data={data?.data?.inventoryItems || []}
+          data={data?.data?.users || []}
           actions={(row) => (
             <div className="flex items-center space-x-2">
               <Button variant="ghost" size="sm" className="p-1 hover:bg-gray-100">
@@ -89,9 +86,6 @@ const formattedItems = inventoryItems.map(item => ({
               </Button>
               <Button variant="ghost" size="sm" className="p-1 hover:bg-gray-100">
                 <FilePenLine className="h-4 w-4 text-green-600" />
-              </Button>
-              <Button variant="ghost" size="sm" className="p-1 hover:bg-gray-100">
-                <CalendarCheck className="h-4 w-4 text-purple-600" />
               </Button>
             </div>
           )}

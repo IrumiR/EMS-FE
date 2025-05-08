@@ -2,6 +2,8 @@ import { jwtDecode } from "jwt-decode";
 import authFetch from "./authInterceptor";
 import {
     useMutation,
+    useQuery,
+    UseQueryResult,
   } from "react-query";
 
 export interface LoginData {
@@ -68,6 +70,62 @@ export const useCreateClient = (
     onError(error) {
       const message = (error as any)?.response?.data?.message || "Client creation failed";
       onError(message);
+    },
+  });
+};
+
+
+
+export interface User {
+  _id: string;
+  userName: string;
+  email: string;
+  contactNumber: string;
+  address: string;
+  role: "admin" | "manager" | "team-member" | "client";
+  profileImage?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+export interface UserPagination {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+// API response type
+export interface UserResponse {
+  message: string;
+  users: User[];
+  pagination: UserPagination;
+}
+
+export const useGetAllUsers = (
+  page?: number,
+  pageSize?: number,
+  search?: string
+): UseQueryResult<UserResponse> => {
+  return useQuery({
+    queryKey: ["get_all_users", page, pageSize, search],
+    queryFn: async () => {
+      try {
+        const response = await authFetch.get<UserResponse>(
+          `/users/all?limit=${pageSize ?? 10}&page=${page ?? 1}${search ? `&search=${encodeURIComponent(search)}` : ""}`
+        );
+        return response.data;
+      } catch (error) {
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      console.log("Users retrieved successfully");
+    },
+    onError: (error) => {
+      console.error("Fetch error:", error);
     },
   });
 };
