@@ -15,6 +15,7 @@ import { AddUserDialog } from "@/components/organisms/addUserDialog";
 import { EditUserDialog } from "@/components/organisms/editUserDialog";
 import { ViewUserDialog } from "@/components/organisms/viewUserDialog";
 import { useGetAllUsers } from "@/api/authApi";
+import { useMemo, useState } from "react";
 
 function TeamScreen() {
   const columns = [
@@ -24,15 +25,36 @@ function TeamScreen() {
     { key: "role", label: "Role" },
   ];
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedRole, setSelectedRole] = useState("All Roles");
+
   const data = useGetAllUsers();
 
   const users = data?.data?.users || [];
   console.log("Users data", data.data?.users);
   const formattedUsers = users.map(user => ({
     ...user,
-    // Format arrays to display as comma-separated strings
     role: Array.isArray(user.role) ? user.role.join(", ") : user.role,
   }));
+
+  const filteredUsers = useMemo(() => {
+    return formattedUsers.filter(user => {
+      // Search filter (case insensitive)
+      const matchesSearch = searchQuery === "" || 
+        Object.values(user).some(value => 
+          value && value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      
+      // Role filter
+      const matchesRole = selectedRole === "All Roles" || 
+        (user.role && user.role.toLowerCase().includes(selectedRole.toLowerCase()));
+      
+      return matchesSearch && matchesRole;
+    });
+  }, [formattedUsers, searchQuery, selectedRole]);
+
+  const roles = ["All Roles", "Admin", "Manager", "Team Member", "Client"];
+
   
 
   return (
@@ -54,24 +76,28 @@ function TeamScreen() {
       <div className="mt-4 flex items-center justify-between">
         <div className="relative w-2/3 flex justify-start">
           <HiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
-          <Input placeholder="Search users..." className="pl-10 w-full" />
+          <Input placeholder="Search users..." className="pl-10 w-full" 
+           value={searchQuery}
+           onChange={(e) => setSearchQuery(e.target.value)}/>
         </div>
         <div className="flex items-center">
 
           <DropdownMenu>
             <DropdownMenuTrigger>
               <Button variant="outline" className="bg-transparent">
-                All Categories
+              {selectedRole}
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Billing</DropdownMenuItem>
-              <DropdownMenuItem>Team</DropdownMenuItem>
-              <DropdownMenuItem>Subscription</DropdownMenuItem>
+              {roles.map(role => (
+                <DropdownMenuItem 
+                  key={role} 
+                  onClick={() => setSelectedRole(role)}
+                >
+                  {role}
+                </DropdownMenuItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -80,7 +106,7 @@ function TeamScreen() {
       <div className="overflow-x-auto mt-6">
         <TableComponent
           columns={columns}
-          data={data?.data?.users || []}
+          data={filteredUsers}
           actions={(row) => (
             <div className="flex items-center space-x-2">
              <ViewUserDialog 
