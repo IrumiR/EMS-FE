@@ -13,6 +13,7 @@ import {  HiSearch } from "react-icons/hi";
 import TableComponent from "@/components/molecules/table";
 import { AddUserDialog } from "@/components/organisms/addUserDialog";
 import { EditUserDialog } from "@/components/organisms/editUserDialog";
+import { ViewUserDialog } from "@/components/organisms/viewUserDialog";
 import { useGetAllUsers } from "@/api/authApi";
 
 function TeamScreen() {
@@ -53,7 +54,7 @@ function TeamScreen() {
       <div className="mt-4 flex items-center justify-between">
         <div className="relative w-2/3 flex justify-start">
           <HiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
-          <Input placeholder="Search inventory..." className="pl-10 w-full" />
+          <Input placeholder="Search users..." className="pl-10 w-full" />
         </div>
         <div className="flex items-center">
 
@@ -82,9 +83,14 @@ function TeamScreen() {
           data={data?.data?.users || []}
           actions={(row) => (
             <div className="flex items-center space-x-2">
-              <Button variant="ghost" size="sm" className="p-1 hover:bg-gray-100">
-                <Eye className="h-4 w-4 text-blue-600" />
-              </Button>
+             <ViewUserDialog 
+                userId={row._id} 
+                trigger={
+                  <Button variant="ghost" size="sm" className="p-1 hover:bg-gray-100">
+                    <Eye className="h-4 w-4 text-blue-600" />
+                  </Button>
+                }
+              />
               <EditUserDialog 
                 userId={row._id} 
                 trigger={

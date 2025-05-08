@@ -162,7 +162,7 @@ const [selectedRoleType, setSelectedRoleType] = useState<string>("");
               }}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select an event type" />
+                <SelectValue placeholder="Select a role" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="manager">Manager</SelectItem>
