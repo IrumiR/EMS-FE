@@ -169,4 +169,37 @@ export interface InventoryItem {
     });
   };
   
+
+  export interface InventoryOption{
+    itemId: string;
+    itemName: string;
+    remainingQuantity: number;
+  }
+
+  export interface InventoryOptionResponse {
+    message: string;
+    items: InventoryOption[];
+  }
   
+  export const useGetInventoryOptions = (): UseQueryResult<InventoryOptionResponse> => {
+    return useQuery({
+      queryKey: ["inventory_options"],
+      queryFn: async () => {
+        try {
+          const response = await authFetch.get<InventoryOptionResponse>("/inventory/all-dropdown");
+          return {
+            message: response.data.message,
+            items: response.data.items,
+          };
+        } catch (error) {
+          throw error;
+        }
+      },
+      onSuccess: () => {
+        console.log("Inventory items retrieved successfully");
+      },
+      onError: (error) => {
+        console.error("Fetch error:", error);
+      },
+    });
+  };

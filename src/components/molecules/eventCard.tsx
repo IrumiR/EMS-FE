@@ -79,33 +79,10 @@ interface Event {
   progress: number;
 }
 
-export default function EventCardGrid({ events }: { events?: Event[] }) {
-  const displayEvents = events || [
-    {
-      image: "",
-      category: "Music",
-      status: "Active",
-      date: "Apr 20, 2023",
-      time: "7:00 PM",
-      title: "Symphony Under the Stars",
-      location: "Sunset Park, Los Angeles, CA",
-      progress: 75
-    },
-    {
-      image: "",
-      category: "Fashion",
-      status: "Active",
-      date: "May 1, 2023",
-      time: "6:00 PM",
-      title: "Runway Revolution 2023",
-      location: "Vogue Hall, New York, NY",
-      progress: 50
-    },
-  ];
-
+export default function EventCardGrid({ events = [] }: { events: Event[] }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full">
-      {displayEvents.map((event, index) => (
+      {events.map((event, index) => (
         <EventCard key={index} {...event} />
       ))}
     </div>

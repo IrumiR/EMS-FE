@@ -62,7 +62,7 @@ export const useCreateClient = (
 ) => {
   return useMutation({
     mutationFn: async (clientData: CreateClientData) => {
-      const response = await authFetch.post("/auth/register", clientData); // Adjust endpoint if needed
+      const response = await authFetch.post("/auth/register", clientData); 
       return response.data;
     },
     onSuccess(data) {
@@ -74,7 +74,6 @@ export const useCreateClient = (
     },
   });
 };
-
 
 
 export interface User {
@@ -174,5 +173,81 @@ export const useGetUserById = (userId: string | null) => {
     return response.data;
   }, {
     enabled: !!userId, 
+  });
+};
+
+
+// Types for Client dropdown
+export interface ClientOption {
+  userId: string;
+  userName: string;
+}
+
+export interface ClientsResponse {
+  message: string;
+  clients: ClientOption[];
+}
+
+export const useGetClientOptions = (): UseQueryResult<ClientsResponse> => {
+  return useQuery({
+    queryKey: ["client_options"],
+    queryFn: async () => {
+      try {
+        // Fetching clients for dropdown
+        const response = await authFetch.get<ClientsResponse>(
+          "/users/dropdown/clients"
+        );
+        return {
+          message: response.data.message,
+          clients: response.data.clients,
+        };
+      } catch (error) {
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      console.log("Client options retrieved successfully");
+    },
+    onError: (error) => {
+      console.error("Client options fetch error:", error);
+    },
+  });
+};
+
+
+// Types for Assignee dropdown
+export interface AssigneeOption {
+  userId: string;
+  userName: string;
+}
+
+export interface AssigneesResponse {
+  message: string;
+  assignees: AssigneeOption[];
+}
+
+export const useGetAssigneeOptions = (): UseQueryResult<AssigneesResponse> => {
+  return useQuery({
+    queryKey: ["assignee_options"],
+    queryFn: async () => {
+      try {
+        // Fetching assignees for dropdown
+        const response = await authFetch.get<AssigneesResponse>(
+          "/users/dropdown/assignees"
+        );
+        return {
+          message: response.data.message,
+          assignees: response.data.assignees,
+        };
+      } catch (error) {
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      console.log("Assignee options retrieved successfully");
+    },
+    onError: (error) => {
+      console.error("Assignee options fetch error:", error);
+    },
   });
 };

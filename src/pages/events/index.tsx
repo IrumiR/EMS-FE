@@ -31,35 +31,6 @@ function EventsScreen() {
 
   const [events, setEvents] = useState<Event[]>([]);
   
-  useEffect(() => {
-    const dummyEvents = [
-      {
-        image: dj,
-        category: "Music",
-        status: "Active",
-        date: "Apr 20, 2023",
-        time: "7:00 PM",
-        title: "Symphony Under the Stars",
-        location: "Sunset Park, Los Angeles, CA",
-        progress: 75
-      },
-      {
-        image: fashion,
-        category: "Fashion",
-        status: "Active",
-        date: "May 1, 2023",
-        time: "6:00 PM",
-        title: "Runway Revolution 2023",
-        location: "Vogue Hall, New York, NY",
-        progress: 50
-      },
-    ];
-    
-    setEvents(dummyEvents);
-    
-    // To test the "No events found" message, uncomment this line:
-    // setEvents([]);
-  }, []);
 
   return (
     <div>
