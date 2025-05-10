@@ -12,8 +12,6 @@ import {
 import { Funnel, ChevronDown } from "lucide-react";
 import { AddEventDialog } from "@/components/organisms/addEventDialog";
 import EventCardGrid from "@/components/molecules/eventCard";
-import dj from "../../assets/images/dj.png";
-import fashion from "../../assets/images/fashion-week.png";
 
 import { useState, useEffect } from "react";
 
