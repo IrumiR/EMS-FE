@@ -12,8 +12,9 @@ import {
 import { Funnel, ChevronDown } from "lucide-react";
 import { AddEventDialog } from "@/components/organisms/addEventDialog";
 import EventCardGrid from "@/components/molecules/eventCard";
-
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useGetAllEvents } from "@/api/eventApi";
+import { eventTypeImages } from "@/components/molecules/eventDetailsStep";
 
 function EventsScreen() {
   interface Event {
@@ -21,14 +22,47 @@ function EventsScreen() {
     category: string;
     status: string;
     date: string;
-    time: string;
+    startTime: string;
     title: string;
-    location: string;
+    proposedLocation: string;
     progress: number;
   }
 
   const [events, setEvents] = useState<Event[]>([]);
+
+  const data = useGetAllEvents();
+  const eventsData = data?.data?.events || [];
+  console.log("Events data", data.data?.events);
+
+   const getEventImage = (eventType: any) => {
+    let eventTypeKey: keyof typeof eventTypeImages = "others"; 
+    
+    if (Array.isArray(eventType) && eventType.length > 0) {
+      const type = eventType[0].toLowerCase();
+      if (Object.keys(eventTypeImages).includes(type)) {
+        eventTypeKey = type as keyof typeof eventTypeImages;
+      }
+    }
+    
+    return eventTypeImages[eventTypeKey];
+  };
   
+  useEffect(() => {
+  if (eventsData.length > 0) {
+    const formattedEvents = eventsData.map(event => ({
+      image: getEventImage(event.eventType),
+      category: event.eventType.join(", "),
+      status: Array.isArray(event.status) ? event.status.join(", ") : event.status || "",
+      date: event.startDate ? new Date(event.startDate).toLocaleDateString() : "",
+      startTime: event.startTime ? new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "",
+      title: event.eventName || "",
+      proposedLocation: event.proposedLocation || "",
+      progress: event.progress || 0,
+    }));
+    setEvents(formattedEvents);
+  }
+}, [eventsData]);
+
 
   return (
     <div>

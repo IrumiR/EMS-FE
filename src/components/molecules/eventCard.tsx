@@ -6,26 +6,41 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import dj from "../../assets/images/dj.png";
+import { eventTypeImages } from "./eventDetailsStep";
 
 function EventCard({ 
-  image = dj,
-  category = "Music",
-  status = "Active",
-  date = "Apr 20, 2023",
-  time = "7:00 PM",
-  title = "Symphony Under the Stars",
-  location = "Sunset Park, Los Angeles, CA",
-  progress = 75
+  image,
+  category,
+  status,
+  date,
+  startTime,
+  title,
+  proposedLocation,
+  progress
+}: {
+  image: string;
+  category: string;
+  status: string;
+  date: string;
+  startTime: string;
+  title: string;
+  proposedLocation: string;
+  progress: number;
 }) {
+
+  const defaultImage = eventTypeImages.others;
+
   return (
     <Card className="overflow-hidden h-full">
       {/* Card Image with Category Badge and Status */}
       <div className="relative">
         <img 
-          src={image} 
+          src={image || defaultImage} 
           alt={title}
-          className="w-full h-36 object-contain"
+          className="w-full h-36 object-contain object-center"
+           onError={(e) => {
+            e.currentTarget.src = defaultImage;
+          }}
         />
         <div className="absolute top-2 left-2">
           <Badge variant="outline" className="bg-white/90 text-xs font-medium">
@@ -38,23 +53,24 @@ function EventCard({
           </Badge>
         </div>
       </div>
-      
+
       {/* Event Date and Time */}
       <CardContent className="p-3 space-y-2">
         <div className="flex items-center text-xs text-gray-500">
           <Calendar className="h-3 w-3 mr-1" />
-          <span>{date} — {time}</span>
+          <span>{date}
+           {startTime && ` — ${startTime}`}</span>
         </div>
-        
+
         <h3 className="font-medium text-base line-clamp-2">{title}</h3>
-        
+
         {/* Location */}
         <div className="flex items-center text-xs text-gray-500">
           <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
-          <span className="truncate">{location}</span>
+          <span className="truncate">{proposedLocation}</span>
         </div>
       </CardContent>
-      
+
       {/* Progress Bar */}
       <CardFooter className="p-3 pt-0">
         <div className="w-full">
@@ -73,9 +89,9 @@ interface Event {
   category: string;
   status: string;
   date: string;
-  time: string;
+  startTime: string;
   title: string;
-  location: string;
+  proposedLocation: string;
   progress: number;
 }
 
