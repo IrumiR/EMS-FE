@@ -15,7 +15,7 @@ export interface LoginData {
 export interface DecodedToken {
     role: string;
     exp: number;
-    sub:string
+    id:string;
     userName: string;
   }
 
@@ -37,6 +37,7 @@ export const useLoginMutation = (
       localStorage.setItem("role", decoded.role);
       localStorage.setItem("token", token);
       localStorage.setItem("userName", decoded.userName);
+      localStorage.setItem("userId", decoded.id);
       onSuccess(decoded.role);
     },
     onError(error) {

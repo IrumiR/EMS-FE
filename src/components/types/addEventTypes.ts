@@ -8,9 +8,15 @@ export interface InventoryItem {
   id: string;
 }
 
+// export interface Task {
+//   id: string;
+//   name: string;
+// }
+
 export interface Task {
-  id: string;
-  name: string;
+  taskName: string;
+  assigneeId?: string;
+  commentId?: string;
 }
 
 export type StepType = "details" | "date" | "guests";

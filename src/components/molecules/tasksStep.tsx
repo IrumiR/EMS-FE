@@ -5,8 +5,13 @@ import InputField from "../atoms/inputField";
 import { Plus, Trash2} from "lucide-react";
 import { MultiSelect, MultiSelectChangeEvent } from "primereact/multiselect";
 import { useGetAssigneeOptions,  } from "@/api/authApi";
-import { Assignee, InventoryItem, Task, StepProps } from "../types/addEventTypes";
+import { Assignee, InventoryItem, StepProps } from "../types/addEventTypes";
 import { useGetInventoryOptions } from "@/api/inventoryApi";
+
+export interface Task {
+  id: string;
+  name: string;
+}
 
 interface TasksAssigneesStepProps extends StepProps {
   taskInput: string;
@@ -37,14 +42,17 @@ export function TasksAssigneesStep({
     id: a.userId,
   })) || [];
   
-  const inventoryItems = inventoryData?.items?.map(item => ({
-    name: item.itemName,
-    id: item.itemId,
-  })) || [];
+  const inventoryItems = Array.isArray(inventoryData?.items)
+  ? inventoryData.items.map(item => ({
+      name: item.itemName,
+      id: item.itemId,
+    }))
+  : [];
+console.log("Mapped Inventory Items for MultiSelect:", inventoryItems);
 
   const addTask = () => {
     if (taskInput.trim()) {
-      const newTask = {
+      const newTask: Task = {
         id: Date.now().toString(),
         name: taskInput.trim(),
       };
@@ -52,6 +60,7 @@ export function TasksAssigneesStep({
       setTaskInput("");
     }
   };
+  
 
   const removeTask = (taskId: string) => {
     setTasks(tasks.filter((task) => task.id !== taskId));
@@ -189,7 +198,12 @@ export function TasksAssigneesStep({
             }
             options={inventoryItems}
             optionLabel="name"
-            placeholder="Select inventory items"
+            dataKey="id"
+            placeholder={
+              inventoryLoading
+                ? "Loading inventory items..."
+                : "Select inventory items"
+            }
             maxSelectedLabels={3}
             className="prime-multiselect w-full h-11"
             itemTemplate={inventoryItemTemplate}

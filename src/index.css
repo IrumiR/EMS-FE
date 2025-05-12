@@ -125,3 +125,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+.custom-date-input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.custom-calendar {
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  padding: 10px;
+  font-family: 'Arial', sans-serif;
+}

@@ -9,14 +9,24 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { ScrollArea } from "../ui/scroll-area";
 import { Nullable } from "primereact/ts-helpers";
-import { Assignee, EventType, InventoryItem, StepType, Task } from "../types/addEventTypes";
+import {
+  Assignee,
+  EventType,
+  InventoryItem,
+  StepType,
+  Task,
+} from "../types/addEventTypes";
 import { ProgressSteps } from "../molecules/progressSteps";
 import { EventDetailsStep } from "../molecules/eventDetailsStep";
 import { DateLocationStep } from "../molecules/dateLocationStep";
 import { TasksAssigneesStep } from "../molecules/tasksStep";
-
+import { CreateEventData, useCreateEvent } from "@/api/eventApi";
+import toast from "react-hot-toast";
 
 export function AddEventDialog() {
+
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+
   // Step navigation state
   const [activeStep, setActiveStep] = useState<StepType>("details");
 
@@ -39,7 +49,77 @@ export function AddEventDialog() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedAssignees, setSelectedAssignees] = useState<Assignee[]>([]);
   const [selectedItems, setSelectedItems] = useState<InventoryItem[]>([]);
+  const userId = localStorage.getItem("userId");
 
+  const resetForm = () => {
+    // Reset step
+    setActiveStep("details");
+    
+    // Reset event details
+    setEventName("");
+    setSelectedEventType("");
+    setCustomEventType("");
+    setDescription("");
+    
+    // Reset date and location
+    setStartDate(undefined);
+    setEndDate(undefined);
+    setStartTime(null);
+    setEndTime(null);
+    setLocation("");
+    setSelectedClientId("");
+    
+    // Reset tasks and assignees
+    setTaskInput("");
+    setTasks([]);
+    setSelectedAssignees([]);
+    setSelectedItems([]);
+  };
+
+
+
+  const createEvent = useCreateEvent(
+    (message) => {
+      console.log(message);
+       toast.success("Event created successfully");
+      resetForm();
+      setIsDialogOpen(false);
+    },
+    (message) => {
+      console.error(message);
+       toast.error("Failed to create event");
+    }
+  );
+
+  const handleSubmit = () => {
+      console.log("Selected Inventory Items Before Submit:", selectedItems);
+    const payload: CreateEventData = {
+      eventName,
+      eventType: [
+        (selectedEventType as string) === "Other"
+          ? customEventType
+          : selectedEventType,
+      ],
+      eventDescription: description,
+      startDate: startDate ? startDate.toISOString() : "",
+      endDate: endDate ? endDate.toISOString() : "",
+      proposedLocation: location,
+      status: "Pending Approval",
+      clientId: selectedClientId,
+      assignees: selectedAssignees.map((assignee) => assignee.id),
+      tasks: [],
+      // tasks: tasks.map((task) => ({
+      //   taskName: task.taskName,
+      //   assigneeId: task.assigneeId,
+      //   commentId: task.commentId,
+      // })),
+      inventoryItems: selectedItems.map((item) => item.id),
+      createdBy: userId || "",
+    };
+     console.log("Payload being sent:", payload);
+
+    createEvent.mutate(payload);
+  };
 
   const handleNextStep = () => {
     if (activeStep === "details") {
@@ -57,7 +137,10 @@ export function AddEventDialog() {
     }
   };
 
-  const handleSubmit = () => {};
+   const handleCancel = () => {
+    resetForm();
+    setIsDialogOpen(false);
+  };
 
   const getStepTitle = () => {
     switch (activeStep) {
@@ -73,7 +156,7 @@ export function AddEventDialog() {
   };
 
   return (
-    <Dialog>
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger className="flex gap-1 bg-green-600 py-2 pl-2 sm:pr-2 pr-2 items-center rounded-md text-white max-h-[38px] text-xsxl">
         <div className="flex items-center gap-1">
           <Plus strokeWidth={1.4} />
@@ -134,8 +217,19 @@ export function AddEventDialog() {
                 <TasksAssigneesStep
                   taskInput={taskInput}
                   setTaskInput={setTaskInput}
-                  tasks={tasks}
-                  setTasks={setTasks}
+                  tasks={tasks.map((t) => ({
+                    id: t.taskName,
+                    name: t.taskName,
+                  }))} // mapping to expected format
+                  setTasks={(newTasks) => {
+                    setTasks(
+                      newTasks.map((t) => ({
+                        taskName: t.name, // map back to original format
+                        assigneeId: "defaultId",
+                        commentId: "defaultComment",
+                      }))
+                    );
+                  }}
                   selectedAssignees={selectedAssignees}
                   setSelectedAssignees={setSelectedAssignees}
                   selectedItems={selectedItems}
@@ -152,7 +246,7 @@ export function AddEventDialog() {
           <Button
             variant="outline"
             className="text-gray-600"
-            onClick={activeStep !== "details" ? handlePreviousStep : undefined}
+            onClick={activeStep !== "details" ? handlePreviousStep : handleCancel}
           >
             {activeStep !== "details" ? "Back" : "Cancel"}
           </Button>

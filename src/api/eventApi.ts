@@ -1,13 +1,13 @@
 import { useMutation } from "react-query";
 import authFetch from "./authInterceptor";
 
-interface CreateEventData {
+export interface CreateEventData {
   eventName: string;
   eventType: string[];
   eventDescription?: string;
   eventImage?: string;
-  startDate: Date;
-  endDate: Date;
+  startDate: string;
+  endDate: string;
   proposedLocation?: string;
   status?: "Pending Approval" | "Approved" | "InProgress" | "Hold" | "Completed" | "Cancelled";
   clientId: string;

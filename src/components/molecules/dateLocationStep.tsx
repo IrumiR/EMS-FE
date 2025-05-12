@@ -1,17 +1,8 @@
-// DateLocationStep.tsx
-import { format } from "date-fns";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import InputField from "../atoms/inputField";
-import { Calendar } from "@/components/ui/calendar";
 import { Calendar as PrimeCalendar } from "primereact/calendar";
 import { Nullable } from "primereact/ts-helpers";
-import { CalendarIcon, Clock, Loader2 } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Clock, Loader2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -19,9 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
 import { StepProps } from "../types/addEventTypes";
 import { useGetClientOptions } from "@/api/authApi";
+import DatePickerComponent from "../atoms/datePicker";
 
 interface DateLocationStepProps extends StepProps {
   startDate: Date | undefined;
@@ -64,68 +55,25 @@ export function DateLocationStep({
           >
             Start Date
           </Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                id="start-date"
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !startDate && "text-gray-400"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {startDate ? (
-                  format(startDate, "PPP")
-                ) : (
-                  <span>Pick a date</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={startDate}
-                onSelect={setStartDate}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
+          <DatePickerComponent
+            selected={startDate}
+            onChange={(date: Date | null) => setStartDate(date ?? undefined)}
+            dateFormat="MMMM d, yyyy"
+            className="w-full border rounded-md px-3 py-2 text-sm"
+            placeholderText="Pick a date"
+          />
         </div>
         <div>
-          <Label
-            htmlFor="end-date"
-            className="text-sm font-medium block mb-1"
-          >
+          <Label htmlFor="end-date" className="text-sm font-medium block mb-1">
             End Date
           </Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                id="end-date"
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !endDate && "text-gray-400"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {endDate ? (
-                  format(endDate, "PPP")
-                ) : (
-                  <span>Pick a date</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={endDate}
-                onSelect={setEndDate}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
+          <DatePickerComponent
+            selected={endDate}
+            onChange={(date: Date | null) => setEndDate(date ?? undefined)}
+            dateFormat="MMMM d, yyyy"
+            className="w-full border rounded-md px-3 py-2 text-sm"
+            placeholderText="Pick a date"
+          />
         </div>
       </div>
 
@@ -153,10 +101,7 @@ export function DateLocationStep({
           </div>
         </div>
         <div>
-          <Label
-            htmlFor="end-time"
-            className="text-sm font-medium block mb-1"
-          >
+          <Label htmlFor="end-time" className="text-sm font-medium block mb-1">
             End Time
           </Label>
           <div className="flex items-center border rounded-md px-3 py-2">
@@ -177,10 +122,7 @@ export function DateLocationStep({
       </div>
 
       <div>
-        <Label
-          htmlFor="location"
-          className="text-sm font-medium block mb-1"
-        >
+        <Label htmlFor="location" className="text-sm font-medium block mb-1">
           Location
         </Label>
         <InputField
@@ -193,16 +135,10 @@ export function DateLocationStep({
       </div>
 
       <div>
-        <Label
-          htmlFor="client"
-          className="text-sm font-medium block mb-1"
-        >
+        <Label htmlFor="client" className="text-sm font-medium block mb-1">
           Client
         </Label>
-        <Select
-          value={selectedClientId}
-          onValueChange={setSelectedClientId}
-        >
+        <Select value={selectedClientId} onValueChange={setSelectedClientId}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select client" />
           </SelectTrigger>
