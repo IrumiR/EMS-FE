@@ -16,6 +16,7 @@ import { eventTypeImages } from "@/components/molecules/eventDetailsStep";
 
 function EventsScreen() {
   interface Event {
+    id: string;
     image: string;
     category: string;
     status: string;
@@ -56,6 +57,7 @@ function EventsScreen() {
   useEffect(() => {
     if (eventsData.length > 0) {
       const formattedEvents = eventsData.map(event => ({
+        id: event._id || String(Math.random()),
         image: getEventImage(event.eventType),
         category: event.eventType.join(", "),
         status: Array.isArray(event.status) ? event.status.join(", ") : event.status || "",

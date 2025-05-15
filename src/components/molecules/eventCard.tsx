@@ -1,4 +1,4 @@
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar, MapPin, Eye, Pencil, CheckCircle } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -7,8 +7,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { eventTypeImages } from "./eventDetailsStep";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 function EventCard({ 
+  id,
   image,
   category,
   status,
@@ -16,8 +19,11 @@ function EventCard({
   startTime,
   title,
   proposedLocation,
-  progress
+  progress,
+  onApprove,
+  isAdmin = false, // New prop to determine if admin features should be shown
 }: {
+  id: string;
   image: string;
   category: string;
   status: string;
@@ -26,9 +32,26 @@ function EventCard({
   title: string;
   proposedLocation: string;
   progress: number;
+  onApprove?: (id: string) => void;
+  isAdmin?: boolean;
 }) {
-
+  const navigate = useNavigate();
   const defaultImage = eventTypeImages.others;
+  
+  const handleView = () => {
+    navigate(`/events/${id}`);
+  };
+  
+  const handleEdit = () => {
+    navigate(`/events/${id}/edit`);
+  };
+  
+  const handleApprove = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onApprove) {
+      onApprove(id);
+    }
+  };
 
   return (
     <Card className="overflow-hidden h-full">
@@ -38,7 +61,7 @@ function EventCard({
           src={image || defaultImage} 
           alt={title}
           className="w-full h-36 object-contain object-center"
-           onError={(e) => {
+          onError={(e) => {
             e.currentTarget.src = defaultImage;
           }}
         />
@@ -48,7 +71,13 @@ function EventCard({
           </Badge>
         </div>
         <div className="absolute top-2 right-2">
-          <Badge className="bg-pink-500 hover:bg-pink-600 text-xs">
+          <Badge 
+            className={`text-xs ${
+              status === "Approved" 
+                ? "bg-green-500 hover:bg-green-600" 
+                : "bg-pink-500 hover:bg-pink-600"
+            }`}
+          >
             {status}
           </Badge>
         </div>
@@ -74,9 +103,41 @@ function EventCard({
       {/* Progress Bar */}
       <CardFooter className="p-3 pt-0">
         <div className="w-full">
-        <Progress value={progress} className="h-1 mb-1 [&>div]:bg-emerald-500" />
-          <div className="flex justify-start items-center text-xs">
+          <Progress value={progress} className="h-1 mb-1 [&>div]:bg-emerald-500" />
+          <div className="flex justify-between items-center text-xs">
             <span className="text-gray-500">{progress}%</span>
+            <div className="flex space-x-2">
+              <Button 
+                onClick={handleView} 
+                variant="ghost" 
+                size="sm" 
+                className="p-1 h-8 w-8"
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+              
+              <Button 
+                onClick={handleEdit} 
+                variant="ghost" 
+                size="sm" 
+                className="p-1 h-8 w-8"
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+              
+              {/* Approve Button - Only show for Admin and if status is "pending approval" */}
+              {isAdmin && status === "pending approval" && (
+                <Button 
+                  onClick={handleApprove} 
+                  variant="ghost" 
+                  size="sm" 
+                  className="p-1 h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50" 
+                  title="Approve Event"
+                >
+                  <CheckCircle className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </CardFooter>
@@ -85,6 +146,7 @@ function EventCard({
 }
 
 interface Event {
+  id: string;
   image: string;
   category: string;
   status: string;
@@ -95,11 +157,24 @@ interface Event {
   progress: number;
 }
 
-export default function EventCardGrid({ events = [] }: { events: Event[] }) {
+export default function EventCardGrid({ 
+  events = [], 
+  onApproveEvent,
+  isAdmin = false,
+}: { 
+  events: Event[]; 
+  onApproveEvent?: (id: string) => void;
+  isAdmin?: boolean;
+}) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full">
-      {events.map((event, index) => (
-        <EventCard key={index} {...event} />
+      {events.map((event) => (
+        <EventCard 
+          key={event.id} 
+          {...event} 
+          onApprove={onApproveEvent} 
+          isAdmin={isAdmin}
+        />
       ))}
     </div>
   );

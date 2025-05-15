@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import DashboardScreen from "../pages/dashboard";
 import MainLayout from "../layout/main-layout";
 import EventsScreen from "@/pages/events";
+import EventDetailedScreen from "@/pages/events/eventDetailedScreen";
+import EventEditScreen from "@/pages/events/eventEditScreen";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import TasksScreen from "@/pages/tasks";
@@ -33,6 +35,22 @@ const AppRoutes = () => (
         element={
           <MainLayout role={role}>
             <EventsScreen />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="/events/:eventId"
+        element={
+          <MainLayout role={role}>
+            <EventDetailedScreen />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="/events/:eventId/edit"
+        element={
+          <MainLayout role={role}>
+            <EventEditScreen />
           </MainLayout>
         }
       />
