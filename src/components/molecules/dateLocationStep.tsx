@@ -19,10 +19,10 @@ interface DateLocationStepProps extends StepProps {
   setStartDate: (date: Date | undefined) => void;
   endDate: Date | undefined;
   setEndDate: (date: Date | undefined) => void;
-  startTime: Nullable<Date>;
-  setStartTime: (time: Nullable<Date>) => void;
-  endTime: Nullable<Date>;
-  setEndTime: (time: Nullable<Date>) => void;
+ startTime: Date | undefined;
+  setStartTime: (time: Date | undefined) => void;
+  endTime: Date | undefined;
+  setEndTime: (time: Date | undefined) => void;
   location: string;
   setLocation: (location: string) => void;
   selectedClientId: string;
@@ -89,8 +89,8 @@ export function DateLocationStep({
             <Clock className="h-4 w-4 mr-2 text-gray-500" />
             <PrimeCalendar
               id="start-time"
-              value={startTime}
-              onChange={(e) => setStartTime(e.value)}
+              value={startTime ?? null}
+              onChange={(e) => setStartTime(e.value ?? undefined)}
               timeOnly
               hourFormat="12"
               className="w-full border-none p-0"
@@ -108,8 +108,8 @@ export function DateLocationStep({
             <Clock className="h-4 w-4 mr-2 text-gray-500" />
             <PrimeCalendar
               id="end-time"
-              value={endTime}
-              onChange={(e) => setEndTime(e.value)}
+              value={endTime ?? null}
+              onChange={(e) => setEndTime(e.value ?? undefined)}
               timeOnly
               hourFormat="12"
               className="w-full border-none p-0"

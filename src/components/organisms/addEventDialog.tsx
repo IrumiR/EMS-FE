@@ -39,8 +39,8 @@ export function AddEventDialog() {
   // Date and location step state
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const [startTime, setStartTime] = useState<Nullable<Date>>(null);
-  const [endTime, setEndTime] = useState<Nullable<Date>>(null);
+ const [startTime, setStartTime] = useState<Date | undefined>(undefined);
+  const [endTime, setEndTime] = useState<Date | undefined>(undefined);
   const [location, setLocation] = useState("");
   const [selectedClientId, setSelectedClientId] = useState("");
 
@@ -64,8 +64,8 @@ export function AddEventDialog() {
     // Reset date and location
     setStartDate(undefined);
     setEndDate(undefined);
-    setStartTime(null);
-    setEndTime(null);
+    setStartTime(undefined);
+    setEndTime(undefined);
     setLocation("");
     setSelectedClientId("");
     
@@ -103,6 +103,8 @@ export function AddEventDialog() {
       eventDescription: description,
       startDate: startDate ? startDate.toISOString() : "",
       endDate: endDate ? endDate.toISOString() : "",
+      startTime: startTime ? startTime.toISOString() : "",
+      endTime: endTime ? endTime.toISOString() : "",
       proposedLocation: location,
       status: "Pending Approval",
       clientId: selectedClientId,

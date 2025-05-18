@@ -168,3 +168,36 @@ export const useUpdateEvent = (
     },
   });
 }
+
+export interface EventApprove {
+  status: string;
+}
+
+export const useApproveEvent = (
+  onSuccess: (data: any) => void,
+  onError: (message: string) => void
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      eventId,
+      status,
+    }: {
+      eventId: string;
+      status: Partial<EventApprove>;
+    }) => {
+      const response = await authFetch.put(`/events/status/${eventId}`, status);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries("get_all_events");
+      if (onSuccess) onSuccess(data);
+    },
+    onError(error) {
+      const message =
+        (error as any)?.response?.data?.message || "Failed to update event";
+      if (onError) onError(message);
+    },
+  });
+};
