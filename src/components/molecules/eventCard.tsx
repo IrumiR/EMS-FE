@@ -1,4 +1,4 @@
-import { Calendar, MapPin, Eye, Pencil, CheckCircle } from "lucide-react";
+import { Calendar, MapPin, Eye, Pencil } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
