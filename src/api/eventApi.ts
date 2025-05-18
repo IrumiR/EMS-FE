@@ -1,4 +1,4 @@
-import { useMutation, useQuery, UseQueryResult } from "react-query";
+import { useMutation, useQuery, useQueryClient, UseQueryResult } from "react-query";
 import authFetch from "./authInterceptor";
 
 export interface CreateEventData {
@@ -111,3 +111,60 @@ export const useGetAllEvents = (
     },
   });
 };
+
+export const useGetEventById = (eventId: string | null) => {
+  return useQuery(["get_event_by_id", eventId], async () => {
+    if (!eventId) return null;
+    const response = await authFetch.get(`/events/${eventId}`);
+    return response.data;
+  }, {
+    enabled: !!eventId, 
+  });
+};
+
+export interface EventData {
+  eventName: string;
+  eventType: string[];
+  eventDescription?: string;
+  eventImage?: string;
+  startDate: string;
+  endDate: string;
+  proposedLocation?: string;
+  status?: "Pending Approval" | "Approved" | "InProgress" | "Hold" | "Completed" | "Cancelled";
+  clientId: string;
+  quotationId?: string;
+  feedbackId?: string;
+  assignees?: string[];
+  tasks?: {
+    taskName: string;
+    assigneeId?: string;
+    commentId?: string;
+  }[];
+  inventoryItems?: string[];
+  startTime?: string;
+  endTime?: string;
+  progress?: number;
+}
+
+export const useUpdateEvent = (
+  onSuccess: (data: any) => void,
+  onError: (message: string) => void
+) => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ eventId, eventData }: { eventId: string, eventData: Partial<EventData> }) => {
+      const response = await authFetch.put(`/events/${eventId}`, eventData);
+      return response.data;
+    },
+    onSuccess: (data) => {
+       queryClient.invalidateQueries("events");
+      queryClient.invalidateQueries(["event", data.event._id]);
+      if (onSuccess) onSuccess(data);
+    },
+    onError(error) {
+      const message = (error as any)?.response?.data?.message || "Failed to update event";
+      if (onError) onError(message);
+    },
+  });
+}
