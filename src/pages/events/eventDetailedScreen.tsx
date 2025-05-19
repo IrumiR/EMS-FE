@@ -160,7 +160,7 @@ function EventDetailedScreen() {
               <div className="flex items-center text-gray-600 mb-1">
                 <User size={14} className="mr-1" /> Client
               </div>
-              <p className="text-gray-800 text-sm truncate">{event?.clientId || "None"}</p>
+              <p className="text-gray-800 text-sm truncate">{event?.clientId?.userName || "None"}</p>
             </div>
 
             <div>
@@ -184,7 +184,7 @@ function EventDetailedScreen() {
               <div className="flex items-center text-gray-600 mb-1">
                 <User size={14} className="mr-1" /> Created By
               </div>
-              <p className="text-gray-800 text-sm truncate">{event?.createdBy || "Unknown"}</p>
+              <p className="text-gray-800 text-sm truncate">{event?.createdBy?.userName || "Unknown"}</p>
             </div>
           </CardContent>
         </Card>
@@ -202,9 +202,9 @@ function EventDetailedScreen() {
               </div>
               <div className="flex flex-wrap gap-1">
                 {event?.inventoryItems?.length > 0 ? (
-                  event.inventoryItems.map((item: string, index: number) => (
+                  event.inventoryItems.map((item: { itemName: string }, index: number) => (
                     <Badge key={index} variant="outline" className="text-xs">
-                      {item}
+                      {item.itemName}
                     </Badge>
                   ))
                 ) : (
