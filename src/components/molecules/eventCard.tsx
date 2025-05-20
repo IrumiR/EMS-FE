@@ -1,4 +1,4 @@
-import { Calendar, MapPin, Eye, Pencil } from "lucide-react";
+import { Calendar, MapPin, Eye, Pencil, ListTodo } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -6,6 +6,8 @@ import { eventTypeImages } from "./eventDetailsStep";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import ApproveEventDialog from "./approveEvent";
+import ViewEventDialog from "./viewEvent";
+import { useState } from "react";
 
 function EventCard({
   id,
@@ -18,7 +20,7 @@ function EventCard({
   proposedLocation,
   progress,
   onApprove,
-  isAdmin = false, 
+  isAdmin = false,
 }: {
   id: string;
   image: string;
@@ -39,6 +41,9 @@ function EventCard({
   const handleView = () => {
     navigate(`/events/${id}`);
   };
+
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const handleEdit = () => {
     navigate(`/events/${id}/edit`);
@@ -110,21 +115,30 @@ function EventCard({
             <span className="text-gray-500">{progress}%</span>
             <div className="flex space-x-2">
               <Button
-                onClick={handleView}
-                variant="ghost"
-                size="sm"
-                className="p-1 h-8 w-8"
-              >
-                <Eye className="h-4 w-4" />
-              </Button>
-
-              <Button
                 onClick={handleEdit}
                 variant="ghost"
                 size="sm"
                 className="p-1 h-8 w-8"
               >
-                <Pencil className="h-4 w-4" />
+                <ListTodo className="h-4 w-4 text-green-600 hover:text-green-700 hover:bg-green-50" />
+              </Button>
+
+              <Button
+                onClick={() => setIsViewDialogOpen(true)}
+                variant="ghost"
+                size="sm"
+                className="p-1 h-8 w-8"
+              >
+                <Eye className="h-4 w-4 text-green-600 hover:text-green-700 hover:bg-green-50" />
+              </Button>
+
+              <Button
+                onClick={() => setIsEditDialogOpen(true)}
+                variant="ghost"
+                size="sm"
+                className="p-1 h-8 w-8"
+              >
+                <Pencil className="h-4 w-4 text-green-600 hover:text-green-700 hover:bg-green-50" />
               </Button>
             </div>
           </div>
@@ -136,6 +150,13 @@ function EventCard({
                 onApprove={() => onApprove?.(id)}
               />
             )}
+
+          <ViewEventDialog
+            open={isViewDialogOpen}
+            onOpenChange={setIsViewDialogOpen}
+            eventId={id}
+            title={title}
+          />
         </div>
       </CardFooter>
     </Card>
