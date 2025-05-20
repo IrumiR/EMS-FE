@@ -7,7 +7,9 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import ApproveEventDialog from "./approveEvent";
 import ViewEventDialog from "./viewEvent";
+import UpdateEventDialog from "./updateEvent";
 import { useState } from "react";
+import StatusSelect from "./updateEventStatus";
 
 function EventCard({
   id,
@@ -44,6 +46,10 @@ function EventCard({
 
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [startTimeState, setStartTime] = useState<Date | undefined>(undefined);
+  const [endTime, setEndTime] = useState<Date | undefined>(undefined);
 
   const handleEdit = () => {
     navigate(`/events/${id}/edit`);
@@ -151,11 +157,32 @@ function EventCard({
               />
             )}
 
+             {status !== "Pending Approval" && (
+            <div className="mt-4">
+              <StatusSelect eventId={id} status={status} />
+            </div>
+          )}
+
           <ViewEventDialog
             open={isViewDialogOpen}
             onOpenChange={setIsViewDialogOpen}
             eventId={id}
             title={title}
+          />
+
+          <UpdateEventDialog
+            open={isEditDialogOpen}
+            onOpenChange={setIsEditDialogOpen}
+            eventId={id}
+            title={title}
+            startDate={startDate}
+            setStartDate={setStartDate}
+            endDate={endDate}
+            setEndDate={setEndDate}
+            startTime={startTimeState}
+            setStartTime={setStartTime}
+            endTime={endTime}
+            setEndTime={setEndTime}
           />
         </div>
       </CardFooter>
