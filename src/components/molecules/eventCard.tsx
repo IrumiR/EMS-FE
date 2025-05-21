@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import ApproveEventDialog from "./approveEvent";
 import ViewEventDialog from "./viewEvent";
-import UpdateEventDialog from "./updateEvent";
+import UpdateEventDialog from "../organisms/updateEventDialog";
 import { useState } from "react";
 import StatusSelect from "./updateEventStatus";
 
