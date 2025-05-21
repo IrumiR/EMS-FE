@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-
+import { AddTaskDialog } from "@/components/organisms/addTaskDialog";
 
 function TasksScreen() {
   return (
@@ -25,10 +25,7 @@ function TasksScreen() {
         </div>
 
         <div>
-          <Button className="bg-green-600 text-white">
-            <HiPlus />
-            Create Task
-          </Button>
+          <AddTaskDialog/>
         </div>
       </div>
 
