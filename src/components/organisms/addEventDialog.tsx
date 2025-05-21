@@ -8,7 +8,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { ScrollArea } from "../ui/scroll-area";
-import { Nullable } from "primereact/ts-helpers";
 import {
   Assignee,
   EventType,

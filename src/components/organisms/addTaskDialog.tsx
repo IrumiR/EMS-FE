@@ -4,7 +4,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
@@ -18,208 +17,391 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2 } from "lucide-react"; // Added Trash2 icon import
+import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import DatePickerComponent from "../atoms/datePicker";
 import { MultiSelect } from "primereact/multiselect";
 import { ScrollArea } from "../ui/scroll-area";
+import { CreateTaskData, useCreateTask } from "@/api/taskApi";
+import toast from "react-hot-toast";
+import * as Yup from "yup";
+import { useFormik } from "formik";
+import { useGetAssigneeOptions } from "@/api/authApi";
+import { useGetInventoryOptions } from "@/api/inventoryApi";
+import { Assignee } from "../types/addEventTypes";
 
 export function AddTaskDialog() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [taskName, setTaskName] = useState("");
-  const [description, setDescription] = useState("");
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const [assignees, setAssignees] = useState(null);
-  const [inventoryItems, setInventoryItems] = useState(null);
-  const [priority, setPriority] = useState("");
-  const [subTasks, setSubTasks] = useState([{ name: "" }]);
+  const [selectedAssignees, setSelectedAssignees] = useState<any[]>([]);
+  const { mutateAsync: createTask, isLoading } = useCreateTask(
+    (message: string) => {
+      toast.success(message);
+    },
+    (message: string) => {
+      toast.error(message);
+    }
+  );
 
-  const priorityOptions = [
-    { label: "High", value: "high" },
-    { label: "Medium", value: "medium" },
-    { label: "Low", value: "low" },
-  ];
+  const initialValues = {
+    taskName: "",
+    description: "",
+    startDate: undefined,
+    endDate: undefined,
+    assignees: [],
+    inventoryItems: [],
+    priority: "",
+    subTasks: [{ name: "" }],
+  };
+
+  const validationSchema = Yup.object({
+    taskName: Yup.string().required("Task name is required"),
+    startDate: Yup.date().required("Start date is required"),
+    endDate: Yup.date().required("End date is required"),
+    assignees: Yup.array().min(1, "At least one assignee is required"),
+    priority: Yup.string().required("Priority is required"),
+  });
+
+  const formik = useFormik({
+    initialValues,
+    validationSchema,
+    onSubmit: async (values) => {
+      try {
+        const taskData: CreateTaskData = {
+          taskName: values.taskName,
+          taskDescription: values.description || "",
+          startDate: values.startDate
+            ? new Date(values.startDate).toISOString()
+            : "",
+          endDate: values.endDate ? new Date(values.endDate).toISOString() : "",
+          assignees: selectedAssignees,
+          inventoryItems: values.inventoryItems || [],
+          priority: values.priority
+            ? ((values.priority.charAt(0).toUpperCase() +
+                values.priority.slice(1).toLowerCase()) as
+                | "Low"
+                | "Medium"
+                | "High")
+            : undefined,
+          subTasks: values.subTasks
+            .filter((task) => task.name.trim() !== "")
+            .map((task) => task.name),
+          eventId: "6829a601723b243a7eef5ccd",
+          createdBy: "6819f775ef59b8af2dc50ecf",
+        };
+
+        await createTask(taskData);
+        toast.success("Task created successfully!");
+        formik.resetForm();
+        setSelectedAssignees([]);
+        setIsDialogOpen(false);
+      } catch (error) {
+        toast.error("Failed to create task. Please try again.");
+        console.error("Error creating task:", error);
+      }
+    },
+  });
 
   const handleAddSubTask = () => {
-    setSubTasks([...subTasks, { name: "" }]);
+    formik.setFieldValue("subTasks", [...formik.values.subTasks, { name: "" }]);
   };
 
   const handleSubTaskChange = (index: number, value: string) => {
-    const updatedSubTasks = [...subTasks];
+    const updatedSubTasks = [...formik.values.subTasks];
     updatedSubTasks[index] = { name: value };
-    setSubTasks(updatedSubTasks);
+    formik.setFieldValue("subTasks", updatedSubTasks);
   };
 
-  // Added function to delete subtask
   const handleDeleteSubTask = (index: number) => {
-    const updatedSubTasks = [...subTasks];
+    const updatedSubTasks = [...formik.values.subTasks];
     updatedSubTasks.splice(index, 1);
-    setSubTasks(updatedSubTasks.length ? updatedSubTasks : [{ name: "" }]);
+    formik.setFieldValue(
+      "subTasks",
+      updatedSubTasks.length ? updatedSubTasks : [{ name: "" }]
+    );
   };
 
-  const handleCreateTask = () => {
-    // Handle task creation logic here
-    setIsDialogOpen(false);
+  const { data: assigneesData, isLoading: assigneesLoading } =
+    useGetAssigneeOptions();
+  const { data: inventoryData, isLoading: inventoryLoading } =
+    useGetInventoryOptions();
+
+  const assignees =
+    assigneesData?.assignees?.map((a) => ({
+      name: a.userName,
+      id: a.userId,
+    })) || [];
+
+  const inventoryItems = Array.isArray(inventoryData?.items)
+    ? inventoryData.items.map((item) => ({
+        name: item.itemName,
+        id: item.itemId,
+      }))
+    : [];
+
+  const assigneeItemTemplate = (option: Assignee) => {
+    return (
+      <div className="flex items-center py-1 px-2">
+        <span>{option.name}</span>
+      </div>
+    );
+  };
+
+  const handleDialogOpenChange = (open: boolean) => {
+    if (!open) {
+      formik.resetForm();
+      setSelectedAssignees([]);
+    }
+    setIsDialogOpen(open);
   };
 
   return (
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+    <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
       <DialogTrigger className="flex gap-1 bg-green-600 py-2 pl-2 sm:pr-2 pr-2 items-center rounded-md text-white max-h-[38px] text-xsxl">
         <div className="flex items-center gap-1">
           <Plus strokeWidth={1.4} />
           <span className="hidden xl:inline">Create Task</span>
         </div>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[450px] max-h-[100vh]"> {/* Increased max-width for more space */}
+      <DialogContent className="sm:max-w-[450px] max-h-[100vh]">
         <DialogHeader>
           <DialogTitle>Add Task</DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-4 py-2">
-          {/* Added more height to ScrollArea to ensure all content is visible */}
-          <ScrollArea className="h-[65vh] pr-4">
-            {/* Increased spacing between form fields */}
-            <div className="grid gap-6"> {/* Changed gap-2 to gap-6 for more vertical spacing */}
-              <div className="grid gap-3"> {/* Changed gap-2 to gap-3 for more spacing between label and input */}
-                <Label htmlFor="taskName">Main Task</Label>
-                <Input
-                  id="taskName"
-                  placeholder="Add Task Name"
-                  value={taskName}
-                  onChange={(e) => setTaskName(e.target.value)}
-                />
-              </div>
+        <form onSubmit={formik.handleSubmit}>
+          <div className="grid gap-4 py-2">
+            <ScrollArea className="h-[65vh] pr-4">
+              <div className="grid gap-6">
+                <div className="grid gap-3">
+                  <Label htmlFor="taskName">Main Task</Label>
+                  <Input
+                    id="taskName"
+                    name="taskName"
+                    placeholder="Add Task Name"
+                    value={formik.values.taskName}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    className={
+                      formik.touched.taskName && formik.errors.taskName
+                        ? "border-red-500"
+                        : ""
+                    }
+                  />
+                  {formik.touched.taskName && formik.errors.taskName && (
+                    <div className="text-red-500 text-sm">
+                      {formik.errors.taskName}
+                    </div>
+                  )}
+                </div>
 
-              <div className="grid gap-3"> {/* Changed gap-2 to gap-3 */}
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Add Description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="min-h-[80px]"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="grid gap-3"> {/* Changed gap-2 to gap-3 */}
-                  <Label htmlFor="startDate">Start Date</Label>
-                  <DatePickerComponent
-                    selected={startDate}
-                    onChange={(date: Date | null) => setStartDate(date ?? undefined)}
-                    dateFormat="MMMM d, yyyy"
-                    className="w-full border rounded-md px-3 py-2 text-sm"
-                    placeholderText="Pick a date"
+                <div className="grid gap-3">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    placeholder="Add Description"
+                    value={formik.values.description}
+                    onChange={formik.handleChange}
+                    className="min-h-[80px]"
                   />
                 </div>
 
-                <div className="grid gap-3"> {/* Changed gap-2 to gap-3 */}
-                  <Label htmlFor="endDate">End Date</Label>
-                  <DatePickerComponent
-                    selected={endDate}
-                    onChange={(date: Date | null) => setEndDate(date ?? undefined)}
-                    dateFormat="MMMM d, yyyy"
-                    className="w-full border rounded-md px-3 py-2 text-sm"
-                    placeholderText="Pick a date"
-                  />
-                </div>
-              </div>
-
-              <div className="grid gap-3"> {/* Changed gap-2 to gap-3 */}
-                <Label htmlFor="assignees">Assignee</Label>
-                <MultiSelect
-                  id="assignees"
-                  value={assignees}
-                  onChange={(e) => setAssignees(e.value)}
-                  placeholder="Select Assignees"
-                  className="w-full"
-                />
-              </div>
-
-              <div className="grid gap-3"> {/* Changed gap-2 to gap-3 */}
-                <Label htmlFor="inventoryItems">Inventory Items</Label>
-                <MultiSelect
-                  id="inventoryItems"
-                  value={inventoryItems}
-                  onChange={(e) => setInventoryItems(e.value)}
-                  placeholder="Select Inventory Items"
-                  className="w-full"
-                />
-              </div>
-
-              <div className="grid gap-3"> {/* Changed gap-2 to gap-3 */}
-                <Label htmlFor="priority">Priority</Label>
-                {/* Increased width for priority dropdown */}
-                <div className="w-full"> {/* Added wrapper with full width */}
-                  <Select value={priority} onValueChange={setPriority}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select Priority" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="high">High</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="low">Low</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid gap-3"> {/* Changed gap-2 to gap-3 */}
-                <Label>Subtasks</Label>
-                {subTasks.map((subtask, index) => (
-                  <div key={index} className="flex items-center gap-2"> {/* Added flex container for input + delete icon */}
-                    <Input
-                      placeholder="Add Subtask"
-                      value={subtask.name}
-                      onChange={(e) => handleSubTaskChange(index, e.target.value)}
-                      className="mb-2 flex-1" /* Added flex-1 to make input take available space */
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid gap-3">
+                    <Label htmlFor="startDate">Start Date</Label>
+                    <DatePickerComponent
+                      selected={formik.values.startDate}
+                      onChange={(date) =>
+                        formik.setFieldValue("startDate", date)
+                      }
+                      dateFormat="MMMM d, yyyy"
+                      className={`w-full border rounded-md px-3 py-2 text-sm ${
+                        formik.touched.startDate && formik.errors.startDate
+                          ? "border-red-500"
+                          : ""
+                      }`}
+                      placeholderText="Pick a date"
                     />
-                    {/* Added delete button with trash icon */}
+                    {formik.touched.startDate && formik.errors.startDate && (
+                      <div className="text-red-500 text-sm">
+                        {formik.errors.startDate}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid gap-3">
+                    <Label htmlFor="endDate">End Date</Label>
+                    <DatePickerComponent
+                      selected={formik.values.endDate}
+                      onChange={(date) => formik.setFieldValue("endDate", date)}
+                      dateFormat="MMMM d, yyyy"
+                      className={`w-full border rounded-md px-3 py-2 text-sm ${
+                        formik.touched.endDate && formik.errors.endDate
+                          ? "border-red-500"
+                          : ""
+                      }`}
+                      placeholderText="Pick a date"
+                    />
+                    {formik.touched.endDate && formik.errors.endDate && (
+                      <div className="text-red-500 text-sm">
+                        {formik.errors.endDate}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid gap-3">
+                  <Label htmlFor="assignees">Assignee</Label>
+                  <MultiSelect
+                    value={selectedAssignees}
+                    onChange={(e: any) => {
+                      const selected = e.value;
+                      setSelectedAssignees(selected);
+                      const assigneeIds = selected.map(
+                        (assignee: any) => assignee.id
+                      );
+                      formik.setFieldValue("assignees", assigneeIds);
+                    }}
+                    options={assignees}
+                    optionLabel="name"
+                    filterBy="name"
+                    dataKey="id"
+                    placeholder={
+                      assigneesLoading
+                        ? "Loading assignees..."
+                        : "Select assignees"
+                    }
+                    maxSelectedLabels={3}
+                    className="prime-multiselect w-full h-11"
+                    itemTemplate={assigneeItemTemplate}
+                    style={{ width: "100%" }}
+                    appendTo="self"
+                    filter={true}
+                    showClear={true}
+                    panelClassName="prime-panel"
+                  />
+
+                  {formik.touched.assignees && formik.errors.assignees && (
+                    <div className="text-red-500 text-sm">
+                      {formik.errors.assignees}
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid gap-3">
+                  <Label htmlFor="inventoryItems">Inventory Items</Label>
+                  <MultiSelect
+                    value={formik.values.inventoryItems}
+                    onChange={(e: any) => {
+                      formik.setFieldValue("inventoryItems", e.value);
+                    }}
+                    options={inventoryItems}
+                    optionLabel="name"
+                    filterBy="name"
+                    dataKey="id"
+                    placeholder={
+                      inventoryLoading
+                        ? "Loading inventory items..."
+                        : "Select inventory items"
+                    }
+                    maxSelectedLabels={3}
+                    className="prime-multiselect w-full h-11"
+                    style={{ width: "100%" }}
+                    appendTo="self"
+                    filter={true}
+                    showClear={true}
+                    panelClassName="prime-panel"
+                  />
+                </div>
+
+                <div className="grid gap-3">
+                  <Label htmlFor="priority">Priority</Label>
+                  <div className="w-full">
+                    <Select
+                      value={formik.values.priority}
+                      onValueChange={(value) =>
+                        formik.setFieldValue("priority", value)
+                      }
+                    >
+                      <SelectTrigger
+                        className={`w-full ${
+                          formik.touched.priority && formik.errors.priority
+                            ? "border-red-500"
+                            : ""
+                        }`}
+                        onBlur={() => formik.setFieldTouched("priority", true)}
+                      >
+                        <SelectValue placeholder="Select Priority" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="low">Low</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {formik.touched.priority && formik.errors.priority && (
+                      <div className="text-red-500 text-sm">
+                        {formik.errors.priority}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid gap-3">
+                  <Label>Subtasks</Label>
+                  {formik.values.subTasks.map((subtask, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <Input
+                        placeholder="Add Subtask"
+                        value={subtask.name}
+                        onChange={(e) =>
+                          handleSubTaskChange(index, e.target.value)
+                        }
+                        className="mb-2 flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteSubTask(index)}
+                        className="mb-2"
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </div>
+                  ))}
+
+                  <div className="mb-6">
                     <Button
                       type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteSubTask(index)}
-                      className="mb-2"
+                      variant="outline"
+                      onClick={handleAddSubTask}
+                      className="w-full"
                     >
-                      <Trash2 className="h-4 w-4 text-red-500" />
+                      Add Subtask
                     </Button>
                   </div>
-                ))}
-                
-                {/* Ensured "Add Subtask" button is fully visible with more bottom margin */}
-                <div className="mb-6"> {/* Added extra margin at bottom */}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleAddSubTask}
-                    className="w-full"
-                  >
-                    Add Subtask
-                  </Button>
                 </div>
               </div>
-            </div>
-          </ScrollArea>
-        </div>
+            </ScrollArea>
+          </div>
 
-        <DialogFooter className="flex justify-between sm:justify-between mt-4"> {/* Added more top margin */}
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setIsDialogOpen(false)}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            className="bg-green-600 hover:bg-green-700 text-white"
-            onClick={handleCreateTask}
-          >
-            Create Task
-          </Button>
-        </DialogFooter>
+          <DialogFooter className="flex justify-between sm:justify-between mt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleDialogOpenChange(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              className="bg-green-600 hover:bg-green-700 text-white"
+              disabled={isLoading}
+            >
+              {isLoading ? "Creating..." : "Create Task"}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
