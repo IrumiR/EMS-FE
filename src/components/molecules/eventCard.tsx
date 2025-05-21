@@ -11,6 +11,25 @@ import UpdateEventDialog from "./updateEvent";
 import { useState } from "react";
 import StatusSelect from "./updateEventStatus";
 
+const getStatusColor = (status: string) => {
+  switch(status) {
+    case "Approved":
+      return "bg-green-500 hover:bg-green-600";
+    case "Pending Approval":
+      return "bg-pink-500 hover:bg-pink-600";
+    case "In Progress":
+      return "bg-blue-500 hover:bg-blue-600";
+    case "Hold":
+      return "bg-red-500 hover:bg-red-600";
+    case "Completed":
+      return "bg-purple-500 hover:bg-purple-600";
+    case "Cancelled":
+      return "bg-amber-700 hover:bg-amber-800"; 
+    default:
+      return "bg-gray-500 hover:bg-gray-600";
+  }
+};
+
 function EventCard({
   id,
   image,
@@ -80,11 +99,7 @@ function EventCard({
         </div>
         <div className="absolute top-2 right-2">
           <Badge
-            className={`text-xs ${
-              status === "Approved"
-                ? "bg-green-500 hover:bg-green-600"
-                : "bg-pink-500 hover:bg-pink-600"
-            }`}
+            className={`text-xs text-white ${getStatusColor(status)}`}
           >
             {status}
           </Badge>
