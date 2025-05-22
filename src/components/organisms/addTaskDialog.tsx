@@ -27,10 +27,13 @@ import toast from "react-hot-toast";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import { useGetAssigneeOptions } from "@/api/authApi";
-import { useGetInventoryOptions } from "@/api/inventoryApi";
 import { Assignee } from "../types/addEventTypes";
+import { useParams } from "react-router-dom";
 
 export function AddTaskDialog() {
+
+  const { eventId } = useParams();
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedAssignees, setSelectedAssignees] = useState<any[]>([]);
   const { mutateAsync: createTask, isLoading } = useCreateTask(
@@ -61,19 +64,22 @@ export function AddTaskDialog() {
     priority: Yup.string().required("Priority is required"),
   });
 
+  const userId = localStorage.getItem("userId");
+
   const formik = useFormik({
     initialValues,
     validationSchema,
     onSubmit: async (values) => {
       try {
         const taskData: CreateTaskData = {
+          eventId: eventId || "",
           taskName: values.taskName,
           taskDescription: values.description || "",
           startDate: values.startDate
             ? new Date(values.startDate).toISOString()
             : "",
           endDate: values.endDate ? new Date(values.endDate).toISOString() : "",
-          assignees: selectedAssignees,
+          assignees: selectedAssignees.map((a) => a.id),
           inventoryItems: values.inventoryItems || [],
           priority: values.priority
             ? ((values.priority.charAt(0).toUpperCase() +
@@ -85,17 +91,14 @@ export function AddTaskDialog() {
           subTasks: values.subTasks
             .filter((task) => task.name.trim() !== "")
             .map((task) => task.name),
-          eventId: "6829a601723b243a7eef5ccd",
-          createdBy: "6819f775ef59b8af2dc50ecf",
+          createdBy: userId ?? "",
         };
 
         await createTask(taskData);
-        toast.success("Task created successfully!");
         formik.resetForm();
         setSelectedAssignees([]);
         setIsDialogOpen(false);
       } catch (error) {
-        toast.error("Failed to create task. Please try again.");
         console.error("Error creating task:", error);
       }
     },
@@ -122,21 +125,13 @@ export function AddTaskDialog() {
 
   const { data: assigneesData, isLoading: assigneesLoading } =
     useGetAssigneeOptions();
-  const { data: inventoryData, isLoading: inventoryLoading } =
-    useGetInventoryOptions();
-
+ 
   const assignees =
     assigneesData?.assignees?.map((a) => ({
       name: a.userName,
       id: a.userId,
     })) || [];
 
-  const inventoryItems = Array.isArray(inventoryData?.items)
-    ? inventoryData.items.map((item) => ({
-        name: item.itemName,
-        id: item.itemId,
-      }))
-    : [];
 
   const assigneeItemTemplate = (option: Assignee) => {
     return (
@@ -285,32 +280,6 @@ export function AddTaskDialog() {
                       {formik.errors.assignees}
                     </div>
                   )}
-                </div>
-
-                <div className="grid gap-3">
-                  <Label htmlFor="inventoryItems">Inventory Items</Label>
-                  <MultiSelect
-                    value={formik.values.inventoryItems}
-                    onChange={(e: any) => {
-                      formik.setFieldValue("inventoryItems", e.value);
-                    }}
-                    options={inventoryItems}
-                    optionLabel="name"
-                    filterBy="name"
-                    dataKey="id"
-                    placeholder={
-                      inventoryLoading
-                        ? "Loading inventory items..."
-                        : "Select inventory items"
-                    }
-                    maxSelectedLabels={3}
-                    className="prime-multiselect w-full h-11"
-                    style={{ width: "100%" }}
-                    appendTo="self"
-                    filter={true}
-                    showClear={true}
-                    panelClassName="prime-panel"
-                  />
                 </div>
 
                 <div className="grid gap-3">
