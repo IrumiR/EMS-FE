@@ -1,5 +1,16 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Eye, Pencil, MessageCircle, MessageCircleHeart, ArrowUp, MoveDown } from "lucide-react";
+import {
+  Eye,
+  Pencil,
+  MessageCircle,
+  MessageCircleHeart,
+  ArrowUp,
+  MoveDown,
+  Edit,
+} from "lucide-react";
+import { useState } from "react";
+import { EditTaskDialog } from "../organisms/editTaskDialog";
+import { ViewTaskDialog } from "../organisms/viewTaskDialog";
 
 interface Task {
   id: string;
@@ -9,29 +20,34 @@ interface Task {
   endDate: string;
   priority: string;
   status: string;
+  subTasks: string[];
+  eventId: string;
 }
 
 export default function TaskCard({ task }: { task: Task }) {
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+
   const getPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {
-      case 'high':
-        return 'text-red-500 bg-red-50';
-      case 'medium':
-        return 'text-orange-500 bg-orange-50';
-      case 'low':
-        return 'text-green-500 bg-green-50';
+      case "high":
+        return "text-red-500 bg-red-50";
+      case "medium":
+        return "text-orange-500 bg-orange-50";
+      case "low":
+        return "text-green-500 bg-green-50";
       default:
-        return 'text-gray-500 bg-gray-50';
+        return "text-gray-500 bg-gray-50";
     }
   };
 
   const getPriorityIcon = (priority: string) => {
     switch (priority.toLowerCase()) {
-      case 'high':
+      case "high":
         return <ArrowUp className="w-3 h-3" />;
-      case 'medium':
+      case "medium":
         return <ArrowUp className="w-3 h-3" />;
-      case 'low':
+      case "low":
         return <MoveDown className="w-3 h-3" />;
       default:
         return null;
@@ -40,28 +56,28 @@ export default function TaskCard({ task }: { task: Task }) {
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'to do':
-        return 'bg-blue-100 text-blue-800';
-      case 'in progress':
-        return 'bg-green-100 text-green-800';
-      case 'completed':
-        return 'bg-purple-100 text-purple-800';
-      case 'delayed':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800';
+      case "to do":
+        return "bg-blue-100 text-blue-800";
+      case "in progress":
+        return "bg-green-100 text-green-800";
+      case "completed":
+        return "bg-purple-100 text-purple-800";
+      case "delayed":
+        return "bg-yellow-100 text-yellow-800";
+      case "cancelled":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const formatDate = (dateString: string) => {
-    if (!dateString || dateString === 'NA') return 'NA';
+    if (!dateString || dateString === "NA") return "NA";
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
+    return date.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
     });
   };
 
@@ -71,14 +87,26 @@ export default function TaskCard({ task }: { task: Task }) {
         {/* Priority and Status Row */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center ${getPriorityColor(task.priority)}`}>
+            <div
+              className={`w-6 h-6 rounded-full flex items-center justify-center ${getPriorityColor(
+                task.priority
+              )}`}
+            >
               {getPriorityIcon(task.priority)}
             </div>
-            <span className={`text-sm font-medium ${getPriorityColor(task.priority).split(' ')[0]}`}>
+            <span
+              className={`text-sm font-medium ${
+                getPriorityColor(task.priority).split(" ")[0]
+              }`}
+            >
               {task.priority}
             </span>
           </div>
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(task.status)}`}>
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+              task.status
+            )}`}
+          >
             {task.status}
           </span>
         </div>
@@ -102,16 +130,34 @@ export default function TaskCard({ task }: { task: Task }) {
         </div>
       </CardContent>
 
+      <EditTaskDialog
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        task={task}
+      />
+
+      <ViewTaskDialog
+        open={isViewDialogOpen}
+        onOpenChange={setIsViewDialogOpen}
+        task={task}
+      />
+
       <CardFooter className="px-2 py-0 border-t border-gray-100">
         <div className="flex items-center gap-3">
           <button className="p-1 hover:bg-gray-100 rounded transition-colors">
             <MessageCircle className="w-4 h-4 text-gray-500" />
           </button>
           <button className="p-1 hover:bg-gray-100 rounded transition-colors">
-            <Pencil className="w-4 h-4 text-gray-500" />
+            <Pencil
+              onClick={() => setIsEditDialogOpen(true)}
+              className="w-4 h-4 text-gray-500"
+            />
           </button>
           <button className="p-1 hover:bg-gray-100 rounded transition-colors">
-            <Eye className="w-4 h-4 text-gray-500" />
+            <Eye
+              onClick={() => setIsViewDialogOpen(true)}
+              className="w-4 h-4 text-gray-500"
+            />
           </button>
           <button className="p-1 hover:bg-gray-100 rounded transition-colors">
             <MessageCircleHeart className="w-4 h-4 text-gray-500" />
