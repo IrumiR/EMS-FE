@@ -20,6 +20,9 @@ interface Task {
   status: string;
   subTasks: string[];
   eventId: string;
+  assignees: {
+    assigneeId: string;
+  }[];
 }
 
 interface ViewTaskDialogProps {
@@ -139,6 +142,24 @@ export function ViewTaskDialog({
                 : "N/A"}
             </span>
           </div>
+ 
+ <div className="grid grid-cols-3 gap-2">
+            <strong className="col-span-1">Assignees:</strong>
+            <div className="col-span-2">
+              {currentTask?.assignees.userName && currentTask.assignees.userName.length > 0 ? (
+                <div className="space-y-1">
+                  {currentTask.assignees.userName.map((assignee: string, index: number) => (
+                    <div key={index} className="text-sm">
+                      • {assignee}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-gray-500">None</span>
+              )}
+            </div>
+          </div>
+
           <div className="grid grid-cols-3 gap-2">
             <strong className="col-span-1">Sub Tasks:</strong>
             <div className="col-span-2">

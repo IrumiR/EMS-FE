@@ -151,6 +151,9 @@ function TasksScreen() {
                 startDate: task.startDate,
                 endDate: task.endDate,
                 priority: task.priority || "",
+                subTasks: task.subTasks ?? [],
+                eventId: task.eventId ?? "",
+                assignees: (task.assignees ?? []).map(a => ({ assigneeId: a.assigneeId ?? "" })),
               }}
             />
           ))

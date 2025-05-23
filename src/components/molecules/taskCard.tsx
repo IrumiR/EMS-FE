@@ -22,6 +22,9 @@ interface Task {
   status: string;
   subTasks: string[];
   eventId: string;
+  assignees: {
+    assigneeId: string;
+  }[];
 }
 
 export default function TaskCard({ task }: { task: Task }) {
