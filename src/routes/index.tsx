@@ -7,7 +7,6 @@ import {
 import DashboardScreen from "../pages/dashboard";
 import MainLayout from "../layout/main-layout";
 import EventsScreen from "@/pages/events";
-import EventDetailedScreen from "@/pages/events/eventDetailedScreen";
 import EventEditScreen from "@/pages/events/eventEditScreen";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
@@ -52,14 +51,6 @@ const AppRoutes = () => {
                   element={
                     <MainLayout role={role}>
                       <EventsScreen />
-                    </MainLayout>
-                  }
-                />
-                <Route
-                  path="events/:eventId"
-                  element={
-                    <MainLayout role={role}>
-                      <EventDetailedScreen />
                     </MainLayout>
                   }
                 />
