@@ -1,6 +1,6 @@
+import TaskCard from "@/components/molecules/taskCard";
+import { AddTaskDialog } from "@/components/organisms/addTaskDialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { HiPlus, HiSearch } from "react-icons/hi";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,11 +9,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import { ChevronDown } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { AddTaskDialog } from "@/components/organisms/addTaskDialog";
+import { HiSearch } from "react-icons/hi";
+import { Task, useGetAllTasksByEventId } from "@/api/taskApi";
+import { useEffect, useState } from "react";
 
+ 
 function TasksScreen() {
+
+  const { data, isLoading } = useGetAllTasksByEventId("") 
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+    if (data?.tasks) {
+      setTasks(data.tasks);
+    }
+  }, [data]);
+  console.log(data, "data");
+
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -25,7 +39,7 @@ function TasksScreen() {
         </div>
 
         <div>
-          <AddTaskDialog/>
+          <AddTaskDialog />
         </div>
       </div>
 
@@ -55,20 +69,29 @@ function TasksScreen() {
         </div>
       </div>
 
-      <div className="mt-8">
-        <Tabs defaultValue="my-tasks" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="my-tasks">My Tasks</TabsTrigger>
-            <TabsTrigger value="team-tasks">Team Tasks</TabsTrigger>
-            <TabsTrigger value="all">All Tasks</TabsTrigger>
-          </TabsList>
-          <TabsContent value="all">
-            {/* All tasks content goes here */}
-          </TabsContent>
-          <TabsContent value="my-tasks">
-            {/* My tasks content goes here */}
-          </TabsContent>
-        </Tabs>
+       <div className="mt-4 grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+        {isLoading ? (
+          <p>Loading tasks...</p>
+        ) : tasks.length > 0 ? (
+          tasks.map((task) => (
+            <TaskCard
+              key={task._id}
+              task={{
+                id: task._id,
+                taskName: task.taskName,
+                taskDescription: task.taskDescription ?? "",
+                status: task.status ?? "",
+                startDate: task.startDate,
+                endDate: task.endDate,
+                priority: task.priority || "",
+              }}
+            />
+          ))
+        ) : (
+          <p className="text-gray-500 col-span-full text-center">
+            No tasks found for this event.
+          </p>
+        )}
       </div>
     </div>
   );

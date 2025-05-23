@@ -29,6 +29,7 @@ export const useCreateEvent = (
   onSuccess: (message: string) => void,
   onError: (message: string) => void
 ) => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (eventData: CreateEventData) => {
       const response = await authFetch.post("/events/create", eventData);
@@ -36,6 +37,7 @@ export const useCreateEvent = (
     },
     onSuccess(data) {
       onSuccess("Event created successfully");
+       queryClient.invalidateQueries(["get_single_event"]);
     },
     onError(error) {
       const message = (error as any)?.response?.data?.message || "Event creation failed";

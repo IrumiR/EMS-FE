@@ -1,17 +1,21 @@
-import { useMutation, useQuery, useQueryClient, UseQueryResult } from "react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  UseQueryResult,
+} from "react-query";
 import authFetch from "./authInterceptor";
-
 
 export interface CreateTaskData {
   taskName: string;
   taskDescription?: string;
   startDate: string;
   endDate: string;
-  status?: 'To Do' | 'InProgress' | 'Completed' | 'Over Due' | 'Cancelled';
-  priority?: 'Low' | 'Medium' | 'High';
+  status?: "To Do" | "InProgress" | "Completed" | "Over Due" | "Cancelled";
+  priority?: "Low" | "Medium" | "High";
   assignees?: {
     assigneeId?: string;
-    role: 'manager' | 'team-member';
+    role: "manager" | "team-member";
   }[];
   inventoryItems?: string[];
   eventId: string;
@@ -32,6 +36,7 @@ export const useCreateTask = (
   onSuccess: (message: string) => void,
   onError: (message: string) => void
 ) => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (taskData: CreateTaskData) => {
       const response = await authFetch.post("/tasks/create", taskData);
@@ -39,9 +44,11 @@ export const useCreateTask = (
     },
     onSuccess(data) {
       onSuccess("Task created successfully");
+      queryClient.invalidateQueries(["get_all_by_event_tasks"]);
     },
     onError(error) {
-      const message = (error as any)?.response?.data?.message || "Task creation failed";
+      const message =
+        (error as any)?.response?.data?.message || "Task creation failed";
       onError(message);
     },
   });
@@ -53,8 +60,8 @@ export interface Task {
   taskDescription?: string;
   startDate: string;
   endDate: string;
-  status?: 'To Do' | 'InProgress' | 'Completed' | 'Over Due' | 'Cancelled';
-  priority?: 'Low' | 'Medium' | 'High';
+  status?: "To Do" | "InProgress" | "Completed" | "Over Due" | "Cancelled";
+  priority?: "Low" | "Medium" | "High";
   assignees?: {
     assigneeId?: string;
   }[];
@@ -96,11 +103,17 @@ export const useGetAllTasksByEventId = (
   search?: string
 ): UseQueryResult<TaskResponse> => {
   return useQuery({
-    queryKey: ["get_all_tasks", page, pageSize, search],
+    queryKey: ["get_all_by_event_tasks", eventId, page, pageSize, search],
     queryFn: async () => {
       try {
+        const params = new URLSearchParams();
+        if (page !== undefined) params.append("page", page.toString());
+        if (pageSize !== undefined)
+          params.append("pageSize", pageSize.toString());
+        if (search) params.append("search", search);
+
         const response = await authFetch.get<TaskResponse>(
-          `/tasks/all/${eventId}?page=${page}&pageSize=${pageSize}&search=${search}`
+          `/tasks/all/${eventId}?${params.toString()}`
         );
         return response.data;
       } catch (error) {
@@ -143,13 +156,17 @@ export const useGetAllTasks = (
 };
 
 export const useGetTaskById = (taskId: string | null) => {
-  return useQuery(["get_task_by_id", taskId], async () => {
-    if (!taskId) return null;
-    const response = await authFetch.get(`/tasks/${taskId}`);
-    return response.data;
-  }, {
-    enabled: !!taskId, 
-  });
+  return useQuery(
+    ["get_task_by_id", taskId],
+    async () => {
+      if (!taskId) return null;
+      const response = await authFetch.get(`/tasks/${taskId}`);
+      return response.data;
+    },
+    {
+      enabled: !!taskId,
+    }
+  );
 };
 
 export interface TaskData {
@@ -157,8 +174,8 @@ export interface TaskData {
   taskDescription?: string;
   startDate: string;
   endDate: string;
-  status?: 'To Do' | 'InProgress' | 'Completed' | 'Over Due' | 'Cancelled';
-  priority?: 'Low' | 'Medium' | 'High';
+  status?: "To Do" | "InProgress" | "Completed" | "Over Due" | "Cancelled";
+  priority?: "Low" | "Medium" | "High";
   assignees?: {
     assigneeId?: string;
   }[];
@@ -181,20 +198,63 @@ export const useUpdateTask = (
   onError: (message: string) => void
 ) => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: async ({ taskId, taskData }: { taskId: string, taskData: Partial<TaskData> }) => {
+    mutationFn: async ({
+      taskId,
+      taskData,
+    }: {
+      taskId: string;
+      taskData: Partial<TaskData>;
+    }) => {
       const response = await authFetch.put(`/tasks/${taskId}`, taskData);
       return response.data;
     },
     onSuccess: (data) => {
-       queryClient.invalidateQueries("tasks");
+      queryClient.invalidateQueries("tasks");
       queryClient.invalidateQueries(["task", data.task._id]);
       if (onSuccess) onSuccess(data);
     },
     onError(error) {
-      const message = (error as any)?.response?.data?.message || "Failed to update task";
+      const message =
+        (error as any)?.response?.data?.message || "Failed to update task";
       if (onError) onError(message);
     },
   });
+};
+
+export interface EventsListResponse {
+  message: string;
+  events: EventsOption[];
 }
+
+export interface EventsOption {
+  _id: string;
+  eventName: string;
+}
+
+export const useGetAllEventsDropdown =
+  (): UseQueryResult<EventsListResponse> => {
+    return useQuery({
+      queryKey: ["events_options"],
+      queryFn: async () => {
+        try {
+          const response = await authFetch.get<EventsListResponse>(
+            "/events/dropdown/events"
+          );
+          return {
+            message: response.data.message,
+            events: response.data.events,
+          };
+        } catch (error) {
+          throw error;
+        }
+      },
+      onSuccess: () => {
+        console.log("Assignee options retrieved successfully");
+      },
+      onError: (error) => {
+        console.error("Assignee options fetch error:", error);
+      },
+    });
+  };

@@ -71,7 +71,7 @@ const { eventId } = useParams();
         </div>
       </div>
 
-       <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+       <div className="mt-4 grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         {isLoading ? (
           <p>Loading tasks...</p>
         ) : tasks.length > 0 ? (

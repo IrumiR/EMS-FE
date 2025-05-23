@@ -66,7 +66,7 @@ export default function TaskCard({ task }: { task: Task }) {
   };
 
   return (
-    <Card className="w-full max-w-sm bg-white shadow-sm border border-gray-200 rounded-lg">
+    <Card className="w-full bg-white shadow-sm border border-gray-200 rounded-lg">
       <CardContent className="p-4 pt-2">
         {/* Priority and Status Row */}
         <div className="flex items-center justify-between mb-3">

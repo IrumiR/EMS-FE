@@ -22,7 +22,11 @@ import { useState } from "react";
 import DatePickerComponent from "../atoms/datePicker";
 import { MultiSelect } from "primereact/multiselect";
 import { ScrollArea } from "../ui/scroll-area";
-import { CreateTaskData, useCreateTask } from "@/api/taskApi";
+import {
+  CreateTaskData,
+  useCreateTask,
+  useGetAllEventsDropdown,
+} from "@/api/taskApi";
 import toast from "react-hot-toast";
 import * as Yup from "yup";
 import { useFormik } from "formik";
@@ -31,11 +35,13 @@ import { Assignee } from "../types/addEventTypes";
 import { useParams } from "react-router-dom";
 
 export function AddTaskDialog() {
-
   const { eventId } = useParams();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedAssignees, setSelectedAssignees] = useState<any[]>([]);
+  const eventList = useGetAllEventsDropdown();
+  console.log(eventList, "eventList");
+  const [selectedEventId, setSelectedEventId] = useState<string>("");
   const { mutateAsync: createTask, isLoading } = useCreateTask(
     (message: string) => {
       toast.success(message);
@@ -72,7 +78,7 @@ export function AddTaskDialog() {
     onSubmit: async (values) => {
       try {
         const taskData: CreateTaskData = {
-          eventId: eventId || "",
+          eventId: selectedEventId || eventId || "",
           taskName: values.taskName,
           taskDescription: values.description || "",
           startDate: values.startDate
@@ -125,13 +131,12 @@ export function AddTaskDialog() {
 
   const { data: assigneesData, isLoading: assigneesLoading } =
     useGetAssigneeOptions();
- 
+
   const assignees =
     assigneesData?.assignees?.map((a) => ({
       name: a.userName,
       id: a.userId,
     })) || [];
-
 
   const assigneeItemTemplate = (option: Assignee) => {
     return (
@@ -166,6 +171,35 @@ export function AddTaskDialog() {
           <div className="grid gap-4 py-2">
             <ScrollArea className="h-[65vh] pr-4">
               <div className="grid gap-6">
+                {!eventId && (
+                  <div className="grid gap-3">
+                    <Label htmlFor="event">Event</Label>
+                    <div className="w-full">
+                      <Select
+                        value={selectedEventId}
+                        onValueChange={(value) => setSelectedEventId(value)}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select Event" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {eventList.data?.events?.length ? (
+                            eventList.data.events.map((event) => (
+                              <SelectItem key={event._id} value={event._id}>
+                                {event.eventName}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="no-events" disabled>
+                              No events available
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+
                 <div className="grid gap-3">
                   <Label htmlFor="taskName">Main Task</Label>
                   <Input
