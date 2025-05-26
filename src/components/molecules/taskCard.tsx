@@ -6,11 +6,13 @@ import {
   MessageCircleHeart,
   ArrowUp,
   MoveDown,
-  Edit,
 } from "lucide-react";
 import { useState } from "react";
 import { EditTaskDialog } from "../organisms/editTaskDialog";
 import { ViewTaskDialog } from "../organisms/viewTaskDialog";
+import updateTaskStatus from "./updateTaskStatus";
+import TaskStatusSelect from "./updateTaskStatus";
+import TaskPrioritySelect from "./updatePriority";
 
 interface Task {
   id: string;
@@ -20,7 +22,7 @@ interface Task {
   endDate: string;
   priority: string;
   status: string;
-  subTasks: string[];
+  subTasks: { name: string }[];
   eventId: string;
   assignees: {
     assigneeId: string;
@@ -146,7 +148,7 @@ export default function TaskCard({ task }: { task: Task }) {
       />
 
       <CardFooter className="px-2 py-0 border-t border-gray-100">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 w-full">
           <button className="p-1 hover:bg-gray-100 rounded transition-colors">
             <MessageCircle className="w-4 h-4 text-gray-500" />
           </button>
@@ -165,6 +167,9 @@ export default function TaskCard({ task }: { task: Task }) {
           <button className="p-1 hover:bg-gray-100 rounded transition-colors">
             <MessageCircleHeart className="w-4 h-4 text-gray-500" />
           </button>
+
+          <TaskStatusSelect taskId={task.id} status={task.status} />
+          <TaskPrioritySelect taskId={task.id} priority={task.priority} />
         </div>
       </CardFooter>
     </Card>

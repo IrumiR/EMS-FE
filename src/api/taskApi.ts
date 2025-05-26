@@ -258,3 +258,70 @@ export const useGetAllEventsDropdown =
       },
     });
   };
+
+
+export interface TaskStatusApprove {
+  status: string;
+}  
+
+export const useApproveTask = (
+  onSuccess: (data: any) => void,
+  onError: (message: string) => void
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      taskId,
+      status,
+    }: {
+      taskId: string;
+      status: Partial<TaskStatusApprove>;
+    }) => {
+      const response = await authFetch.put(`/tasks/status/${taskId}`, status);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries("get_all_tasks");
+      if (onSuccess) onSuccess(data);
+    },
+    onError(error) {
+      const message =
+        (error as any)?.response?.data?.message || "Failed to update task";
+      if (onError) onError(message);
+    },
+  });
+};
+
+export interface TaskPriorityApprove {
+  priority: string;
+}
+
+export const useApproveTaskPriority = (
+  onSuccess: (data: any) => void,
+  onError: (message: string) => void
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      taskId,
+      priority,
+    }: {
+      taskId: string;
+      priority: Partial<TaskPriorityApprove>;
+    }) => {
+      const response = await authFetch.put(`/tasks/priority/${taskId}`, priority);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries("get_all_tasks");
+      if (onSuccess) onSuccess(data);
+    },
+    onError(error) {
+      const message =
+        (error as any)?.response?.data?.message || "Failed to update task";
+      if (onError) onError(message);
+    },
+  });
+};

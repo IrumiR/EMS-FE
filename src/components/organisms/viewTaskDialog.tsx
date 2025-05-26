@@ -18,7 +18,7 @@ interface Task {
   endDate: string;
   priority: string;
   status: string;
-  subTasks: string[];
+  subTasks: { name: string }[];
   eventId: string;
   assignees: {
     assigneeId: string;
