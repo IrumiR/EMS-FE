@@ -67,7 +67,10 @@ export interface Task {
   }[];
   inventoryItems?: string[];
   eventId: string;
-  subTasks?: string[];
+  subTasks?: {
+    subTaskName: string;
+    status?: string;
+  };
   comments?: {
     commentId?: string;
     userId?: string;

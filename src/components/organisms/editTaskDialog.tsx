@@ -41,7 +41,7 @@ interface Task {
   status: string;
   eventId?: string;
   assignees?: any[];
-  subTasks?: { name: string }[];
+  subTasks?: { subTaskName: string }[];
 }
 
 interface EditTaskDialogProps {
