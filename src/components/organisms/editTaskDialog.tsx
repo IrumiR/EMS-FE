@@ -150,8 +150,10 @@ export function EditTaskDialog({
           eventId: values.eventId || eventId,
           assignees: values.assignees.map((assignee) => assignee.id),
           subTasks: subTasks
-            .filter(subtask => subtask.name.trim() !== "")
-            .map(subtask => subtask.name),
+            .filter((subtask) => subtask.name.trim() !== "")
+            .map((subtask) => ({
+              subTaskName: subtask.name.trim(),
+            })),
         };
 
         await updateTaskMutation.mutateAsync({
@@ -210,12 +212,11 @@ export function EditTaskDialog({
 
       // Set subtasks properly
       if (taskDetails.subTasks && Array.isArray(taskDetails.subTasks) && taskDetails.subTasks.length > 0) {
-        const normalizedSubTasks = taskDetails.subTasks.map((subtask: any) => {
-          if (typeof subtask === 'string') {
-            return { name: subtask };
-          }
-          return { name: subtask.name || subtask };
-        });
+        const normalizedSubTasks = taskDetails.subTasks.map((subtask: any) => ({
+          name: subtask.subTaskName || "",
+          status: subtask.status || "To Do", 
+        }));
+
         setSubTasks(normalizedSubTasks);
       } else {
         setSubTasks([{ name: "" }]);
@@ -250,6 +251,7 @@ export function EditTaskDialog({
     setSubTasks([{ name: "" }]);
     onOpenChange(false);
   };
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

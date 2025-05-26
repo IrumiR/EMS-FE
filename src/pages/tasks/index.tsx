@@ -10,54 +10,42 @@ import {
 import { Input } from "@/components/ui/input";
 import { ChevronDown } from "lucide-react";
 import { HiSearch } from "react-icons/hi";
-import { Task, useGetAllTasksByEventId } from "@/api/taskApi";
-import { useEffect, useState } from "react";
+import { useGetAllTasksByEventId } from "@/api/taskApi";
+import { useState } from "react";
 
 function TasksScreen() {
-  const { data, isLoading } = useGetAllTasksByEventId("");
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(6);
-  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
+  const eventId = ""; // Replace with the actual event ID if available
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All Statuses");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // Set tasks when data is loaded
-  useEffect(() => {
-    if (data?.tasks) {
-      setTasks(data.tasks);
-    }
-  }, [data]);
-
-  // Filter tasks based on search term and status
-  useEffect(() => {
-    let filtered = [...tasks];
-
-    if (searchTerm.trim()) {
-      filtered = filtered.filter(
-        (task) =>
-          task.taskName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (task.taskDescription && 
-           task.taskDescription.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
-    }
-
-    // Filter by status
-    if (selectedStatus !== "All Statuses") {
-      filtered = filtered.filter((task) => task.status === selectedStatus);
-    }
-
-    setFilteredTasks(filtered);
-    setCurrentPage(1); 
-  }, [tasks, searchTerm, selectedStatus]);
-
-  console.log(data, "data");
-
-  const totalPages = Math.ceil(filteredTasks.length / rowsPerPage);
-  const paginatedTasks = filteredTasks.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
+  const { data, isLoading } = useGetAllTasksByEventId(
+    eventId,
+    currentPage,
+    rowsPerPage,
+    searchTerm
   );
+
+  const tasks = data?.tasks || [];
+  const totalTasks = data?.pagination.total || 0;
+  const totalPages = Math.ceil(totalTasks / rowsPerPage);
+
+  // Filter tasks by status (client-side, if needed)
+  const filteredTasks =
+    selectedStatus === "All Statuses"
+      ? tasks
+      : tasks.filter((task) => task.status === selectedStatus);
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleStatusChange = (status: string) => {
+    setSelectedStatus(status);
+    setCurrentPage(1);
+  };
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -65,17 +53,11 @@ function TasksScreen() {
     }
   };
 
-  const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleRowsPerPageChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
     setRowsPerPage(Number(event.target.value));
     setCurrentPage(1);
-  };
-
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-  };
-
-  const handleStatusChange = (status: string) => {
-    setSelectedStatus(status);
   };
 
   return (
@@ -96,9 +78,9 @@ function TasksScreen() {
       <div className="mt-4 flex items-center gap-4">
         <div className="relative flex-1">
           <HiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
-          <Input 
-            placeholder="Search tasks..." 
-            className="pl-10 w-full" 
+          <Input
+            placeholder="Search tasks..."
+            className="pl-10 w-full"
             value={searchTerm}
             onChange={handleSearchChange}
           />
@@ -113,24 +95,21 @@ function TasksScreen() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => handleStatusChange("All Statuses")}>
-                All Statuses
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusChange("To Do")}>
-                To Do
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusChange("In Progress")}>
-                In Progress
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusChange("Completed")}>
-                Completed
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusChange("Over Due")}>
-                Over Due
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusChange("Cancelled")}>
-                Cancelled
-              </DropdownMenuItem>
+              {[
+                "All Statuses",
+                "To Do",
+                "In Progress",
+                "Completed",
+                "Over Due",
+                "Cancelled",
+              ].map((status) => (
+                <DropdownMenuItem
+                  key={status}
+                  onClick={() => handleStatusChange(status)}
+                >
+                  {status}
+                </DropdownMenuItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -139,8 +118,8 @@ function TasksScreen() {
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         {isLoading ? (
           <p>Loading tasks...</p>
-        ) : paginatedTasks.length > 0 ? (
-          paginatedTasks.map((task) => (
+        ) : filteredTasks.length > 0 ? (
+          filteredTasks.map((task) => (
             <TaskCard
               key={task._id}
               task={{
@@ -151,16 +130,22 @@ function TasksScreen() {
                 startDate: task.startDate,
                 endDate: task.endDate,
                 priority: task.priority || "",
-                subTasks: task.subTasks ?? [],
+                subTasks: Array.isArray(task.subTasks)
+                  ? task.subTasks.map((subTask: any) => ({
+                      name: subTask.subTaskName ?? "",
+                    }))
+                  : [],
                 eventId: task.eventId ?? "",
-                assignees: (task.assignees ?? []).map(a => ({ assigneeId: a.assigneeId ?? "" })),
+                assignees: (task.assignees ?? []).map((a) => ({
+                  assigneeId: a.assigneeId ?? "",
+                })),
               }}
             />
           ))
         ) : (
           <p className="text-gray-500 col-span-full text-center">
-            {searchTerm || selectedStatus !== "All Statuses" 
-              ? "No tasks match your current filters." 
+            {searchTerm || selectedStatus !== "All Statuses"
+              ? "No tasks match your current filters."
               : "No tasks found for this event."}
           </p>
         )}

@@ -138,13 +138,27 @@ export default function TaskCard({ task }: { task: Task }) {
       <EditTaskDialog
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
-        task={task}
+       task={{
+          ...task,
+          subTasks:
+            task.subTasks?.map((st) => ({
+              subTaskName: st.name || "",
+            })) ?? [],
+        }}
       />
 
       <ViewTaskDialog
         open={isViewDialogOpen}
         onOpenChange={setIsViewDialogOpen}
-        task={task}
+         task={{
+          ...task,
+          subTasks:
+            task.subTasks?.map((st: any) => ({
+              subTaskName: st.name || "",
+              status: st.status || "",
+              _id: st._id || "",
+            })) ?? [],
+        }}
       />
 
       <CardFooter className="px-2 py-0 border-t border-gray-100">

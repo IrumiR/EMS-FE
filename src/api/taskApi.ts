@@ -70,7 +70,7 @@ export interface Task {
   subTasks?: {
     subTaskName: string;
     status?: string;
-  };
+  }[];
   comments?: {
     commentId?: string;
     userId?: string;
@@ -184,7 +184,10 @@ export interface TaskData {
   }[];
   inventoryItems?: string[];
   eventId: string;
-  subTasks?: string[];
+  subTasks?: {
+    subTaskName: string;
+    status?: string;
+  }[];
   comments?: {
     commentId?: string;
     userId?: string;
@@ -216,6 +219,7 @@ export const useUpdateTask = (
     onSuccess: (data) => {
       queryClient.invalidateQueries("tasks");
       queryClient.invalidateQueries(["task", data.task._id]);
+      queryClient.invalidateQueries("get_all_by_event_tasks")
       if (onSuccess) onSuccess(data);
     },
     onError(error) {
@@ -286,6 +290,7 @@ export const useApproveTask = (
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries("get_all_tasks");
+      queryClient.invalidateQueries("get_all_by_event_tasks");
       if (onSuccess) onSuccess(data);
     },
     onError(error) {
@@ -319,6 +324,7 @@ export const useApproveTaskPriority = (
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries("get_all_tasks");
+      queryClient.invalidateQueries("get_all_by_event_tasks");
       if (onSuccess) onSuccess(data);
     },
     onError(error) {

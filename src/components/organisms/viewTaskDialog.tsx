@@ -9,6 +9,7 @@ import {
 import { useGetTaskById } from "@/api/taskApi";
 import { Loader2 } from "lucide-react";
 import { Button } from "../ui/button";
+import { Key, ReactElement, JSXElementConstructor, ReactNode, ReactPortal } from "react";
 
 interface Task {
   id: string;
@@ -18,7 +19,7 @@ interface Task {
   endDate: string;
   priority: string;
   status: string;
-  subTasks: { name: string }[];
+  subTasks: { subTaskName: string; status: string; _id: string }[];
   eventId: string;
   assignees: {
     assigneeId: string;
@@ -142,17 +143,20 @@ export function ViewTaskDialog({
                 : "N/A"}
             </span>
           </div>
- 
- <div className="grid grid-cols-3 gap-2">
+
+          <div className="grid grid-cols-3 gap-2">
             <strong className="col-span-1">Assignees:</strong>
             <div className="col-span-2">
-              {currentTask?.assignees.userName && currentTask.assignees.userName.length > 0 ? (
+              {currentTask?.assignees.userName &&
+              currentTask.assignees.userName.length > 0 ? (
                 <div className="space-y-1">
-                  {currentTask.assignees.userName.map((assignee: string, index: number) => (
-                    <div key={index} className="text-sm">
-                      • {assignee}
-                    </div>
-                  ))}
+                  {currentTask.subTasks.map(
+                    (subTask: { name: string }, index: number) => (
+                      <div key={index} className="text-sm">
+                        • {subTask.name}
+                      </div>
+                    )
+                  )}
                 </div>
               ) : (
                 <span className="text-gray-500">None</span>
@@ -165,9 +169,9 @@ export function ViewTaskDialog({
             <div className="col-span-2">
               {currentTask?.subTasks && currentTask.subTasks.length > 0 ? (
                 <div className="space-y-1">
-                  {currentTask.subTasks.map((subTask: string, index: number) => (
-                    <div key={index} className="text-sm">
-                      • {subTask}
+                  {currentTask.subTasks.map((subTask: { _id: Key | null | undefined; subTaskName: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }, index: any) => (
+                    <div key={subTask._id} className="text-sm">
+                      • {subTask.subTaskName}
                     </div>
                   ))}
                 </div>

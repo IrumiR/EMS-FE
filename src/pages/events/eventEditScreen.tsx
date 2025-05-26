@@ -156,6 +156,15 @@ const { eventId } = useParams();
                 startDate: task.startDate,
                 endDate: task.endDate,
                 priority: task.priority || "",
+                subTasks: Array.isArray(task.subTasks)
+                  ? task.subTasks.map((subTask: any) => ({
+                      name: subTask.subTaskName ?? "",
+                    }))
+                  : [],
+                eventId: task.eventId ?? "",
+                assignees: (task.assignees ?? []).map((a) => ({
+                  assigneeId: a.assigneeId ?? "",
+                })),
               }}
             />
           ))
