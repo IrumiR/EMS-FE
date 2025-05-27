@@ -147,13 +147,12 @@ export function ViewTaskDialog({
           <div className="grid grid-cols-3 gap-2">
             <strong className="col-span-1">Assignees:</strong>
             <div className="col-span-2">
-              {currentTask?.assignees.userName &&
-              currentTask.assignees.userName.length > 0 ? (
+              {currentTask?.assignees && currentTask.assignees.length > 0 ? (
                 <div className="space-y-1">
-                  {currentTask.subTasks.map(
-                    (subTask: { name: string }, index: number) => (
-                      <div key={index} className="text-sm">
-                        • {subTask.name}
+                  {currentTask.assignees.map(
+                    (assignee: { userName?: string; assigneeId?: string; _id?: string }, index: number) => (
+                      <div key={assignee._id || assignee.assigneeId || index} className="text-sm">
+                        • {assignee.userName || assignee.assigneeId || 'Unknown User'}
                       </div>
                     )
                   )}
@@ -169,9 +168,9 @@ export function ViewTaskDialog({
             <div className="col-span-2">
               {currentTask?.subTasks && currentTask.subTasks.length > 0 ? (
                 <div className="space-y-1">
-                  {currentTask.subTasks.map((subTask: { _id: Key | null | undefined; subTaskName: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }, index: any) => (
-                    <div key={subTask._id} className="text-sm">
-                      • {subTask.subTaskName}
+                  {currentTask.subTasks.map((subTask: { _id: Key | null | undefined; subTaskName: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; status?: string }, index: number) => (
+                    <div key={subTask._id || index} className="text-sm">
+                      • {subTask.subTaskName} {subTask.status && `(${subTask.status})`}
                     </div>
                   ))}
                 </div>
