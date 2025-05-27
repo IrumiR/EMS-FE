@@ -16,6 +16,7 @@ import {
 import { useState } from "react";
 import { EditTaskDialog } from "../organisms/editTaskDialog";
 import { ViewTaskDialog } from "../organisms/viewTaskDialog";
+import { SubTaskDialog } from "../organisms/subTaskDialog";
 import TaskStatusSelect from "./updateTaskStatus";
 import TaskPrioritySelect from "./updatePriority";
 
@@ -131,12 +132,17 @@ export default function TaskCard({ task }: { task: Task }) {
           {task.taskDescription}
         </p>
 
-        {/* Due Date */}
-        <div className="text-right">
-          <span className="text-xs text-gray-500">Due Date: </span>
-          <span className="text-xs font-medium text-gray-700">
-            {formatDate(task.endDate)}
-          </span>
+        {/* Sub Task Dialog & Due Date */}
+        <div className="flex items-center justify-between mb-3">
+          <SubTaskDialog taskId={task.id} taskName={task.taskName} />
+          <div className="flex items-center gap-2">
+            <div className="">
+              <span className="text-xs text-gray-500">Due Date: </span>
+              <span className="text-xs font-medium text-gray-700">
+                {formatDate(task.endDate)}
+              </span>
+            </div>
+          </div>
         </div>
       </CardContent>
 
