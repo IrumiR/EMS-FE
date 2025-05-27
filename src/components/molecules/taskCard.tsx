@@ -1,5 +1,11 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
   Eye,
   Pencil,
   MessageCircle,
@@ -10,7 +16,6 @@ import {
 import { useState } from "react";
 import { EditTaskDialog } from "../organisms/editTaskDialog";
 import { ViewTaskDialog } from "../organisms/viewTaskDialog";
-import updateTaskStatus from "./updateTaskStatus";
 import TaskStatusSelect from "./updateTaskStatus";
 import TaskPrioritySelect from "./updatePriority";
 
@@ -162,29 +167,81 @@ export default function TaskCard({ task }: { task: Task }) {
       />
 
       <CardFooter className="px-2 py-0 border-t border-gray-100">
-        <div className="flex items-center gap-3 w-full">
-          <button className="p-1 hover:bg-gray-100 rounded transition-colors">
-            <MessageCircle className="w-4 h-4 text-gray-500" />
-          </button>
-          <button className="p-1 hover:bg-gray-100 rounded transition-colors">
-            <Pencil
-              onClick={() => setIsEditDialogOpen(true)}
-              className="w-4 h-4 text-gray-500"
-            />
-          </button>
-          <button className="p-1 hover:bg-gray-100 rounded transition-colors">
-            <Eye
-              onClick={() => setIsViewDialogOpen(true)}
-              className="w-4 h-4 text-gray-500"
-            />
-          </button>
-          <button className="p-1 hover:bg-gray-100 rounded transition-colors">
-            <MessageCircleHeart className="w-4 h-4 text-gray-500" />
-          </button>
+       <TooltipProvider>
+          <div className="flex items-center gap-3 w-full">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="p-1 hover:bg-gray-100 rounded transition-colors">
+                  <MessageCircle className="w-4 h-4 text-gray-500" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Comments</p>
+              </TooltipContent>
+            </Tooltip>
 
-          <TaskStatusSelect taskId={task.id} status={task.status} />
-          <TaskPrioritySelect taskId={task.id} priority={task.priority} />
-        </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button 
+                  className="p-1 hover:bg-gray-100 rounded transition-colors"
+                  onClick={() => setIsEditDialogOpen(true)}
+                >
+                  <Pencil className="w-4 h-4 text-gray-500" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Edit Task</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button 
+                  className="p-1 hover:bg-gray-100 rounded transition-colors"
+                  onClick={() => setIsViewDialogOpen(true)}
+                >
+                  <Eye className="w-4 h-4 text-gray-500" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>View Task</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="p-1 hover:bg-gray-100 rounded transition-colors">
+                  <MessageCircleHeart className="w-4 h-4 text-gray-500" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Feedback</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <TaskStatusSelect taskId={task.id} status={task.status} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Update Status</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <TaskPrioritySelect taskId={task.id} priority={task.priority} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Update Priority</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
       </CardFooter>
     </Card>
   );
