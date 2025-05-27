@@ -76,6 +76,27 @@ const validationSchema = Yup.object({
     .required("Assignees are required"),
 });
 
+
+const extractSubTaskName = (subtask: any) => {
+  if (subtask.subTaskName && typeof subtask.subTaskName === 'string') {
+    return subtask.subTaskName;
+  }
+  
+  // If subtask data is stored as character indices, reconstruct the string
+  const keys = Object.keys(subtask)
+    .filter(key => !isNaN(Number(key)) && key !== 'status' && key !== '_id')
+    .sort((a, b) => parseInt(a) - parseInt(b));
+  
+  if (keys.length > 0) {
+    return keys.map(key => subtask[key]).join('');
+  }
+
+  if (subtask.name && typeof subtask.name === 'string') {
+    return subtask.name;
+  }
+  return "";
+};
+
 export function EditTaskDialog({
   open,
   onOpenChange,
@@ -84,7 +105,6 @@ export function EditTaskDialog({
   const { eventId } = useParams();
   const eventList = useGetAllEventsDropdown();
   
-
   const { data: taskData, isLoading: taskLoading, refetch: refetchTask } = useGetTaskById(task.id);
   const { data: assigneesData, isLoading: assigneesLoading } = useGetAssigneeOptions();
   const updateTaskMutation = useUpdateTask(
@@ -171,7 +191,7 @@ export function EditTaskDialog({
     },
   });
 
-  // Helper function to normalize priority values
+
   const normalizePriority = (priority: string): string => {
     if (!priority) return "";
     const priorityLower = priority.toLowerCase();
@@ -188,10 +208,8 @@ export function EditTaskDialog({
       let extractedEventId = "";
       if (taskDetails.eventId) {
         if (typeof taskDetails.eventId === 'object' && taskDetails.eventId._id) {
-          // If eventId is an object with _id property
           extractedEventId = taskDetails.eventId._id;
         } else if (typeof taskDetails.eventId === 'string') {
-          // If eventId is already a string
           extractedEventId = taskDetails.eventId;
         }
       }
@@ -210,14 +228,22 @@ export function EditTaskDialog({
         isEventRequired: !eventId,
       });
 
-      // Set subtasks properly
+      // Fixed subtasks handling
       if (taskDetails.subTasks && Array.isArray(taskDetails.subTasks) && taskDetails.subTasks.length > 0) {
-        const normalizedSubTasks = taskDetails.subTasks.map((subtask: any) => ({
-          name: subtask.subTaskName || "",
-          status: subtask.status || "To Do", 
-        }));
+        const normalizedSubTasks = taskDetails.subTasks.map((subtask: any) => {
+          const extractedName = extractSubTaskName(subtask);
+          return {
+            name: extractedName,
+            status: subtask.status || "To Do", 
+          };
+        });
 
-        setSubTasks(normalizedSubTasks);
+        // Filter out empty subtasks and ensure we have valid data
+        const validSubTasks = normalizedSubTasks.filter((subtask: any) => 
+          subtask.name && subtask.name.trim() !== ""
+        );
+        
+        setSubTasks(validSubTasks.length > 0 ? validSubTasks : [{ name: "" }]);
       } else {
         setSubTasks([{ name: "" }]);
       }
@@ -236,7 +262,7 @@ export function EditTaskDialog({
 
   const handleSubTaskChange = (index: number, value: string) => {
     const updatedSubTasks = [...subTasks];
-    updatedSubTasks[index] = { name: value };
+    updatedSubTasks[index] = { ...updatedSubTasks[index], name: value };
     setSubTasks(updatedSubTasks);
   };
 
@@ -251,7 +277,6 @@ export function EditTaskDialog({
     setSubTasks([{ name: "" }]);
     onOpenChange(false);
   };
-
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -415,7 +440,7 @@ export function EditTaskDialog({
                     <div key={index} className="flex items-center gap-2">
                       <Input
                         placeholder="Add Subtask"
-                        value={subtask.name}
+                        value={subtask.name || ""}
                         onChange={(e) =>
                           handleSubTaskChange(index, e.target.value)
                         }
