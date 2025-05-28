@@ -112,7 +112,7 @@ export const useGetAllTasksByEventId = (
         const params = new URLSearchParams();
         if (page !== undefined) params.append("page", page.toString());
         if (pageSize !== undefined)
-          params.append("pageSize", pageSize.toString());
+          params.append("limit", pageSize.toString());
         if (search) params.append("search", search);
 
         const response = await authFetch.get<TaskResponse>(

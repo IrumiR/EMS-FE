@@ -14,11 +14,11 @@ import { useGetAllTasksByEventId } from "@/api/taskApi";
 import { useState } from "react";
 
 function TasksScreen() {
-  const eventId = ""; // Replace with the actual event ID if available
+  const eventId = ""; 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All Statuses");
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const { data, isLoading } = useGetAllTasksByEventId(
     eventId,
@@ -56,8 +56,9 @@ function TasksScreen() {
   const handleRowsPerPageChange = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
-    setRowsPerPage(Number(event.target.value));
-    setCurrentPage(1);
+    const newRowsPerPage = Number(event.target.value);
+    setRowsPerPage(newRowsPerPage);
+    setCurrentPage(1); // Reset to first page when changing page size
   };
 
   return (
@@ -179,7 +180,8 @@ function TasksScreen() {
             onChange={handleRowsPerPageChange}
             className="px-2 py-1 border border-gray-300 rounded"
           >
-            {[6, 12, 24].map((option) => (
+            {/* Updated options to include backend-compatible values */}
+            {[5, 10, 15, 20, 25].map((option) => (
               <option key={option} value={option}>
                 {option}
               </option>

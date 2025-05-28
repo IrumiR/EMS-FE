@@ -14,52 +14,42 @@ import { Task, useGetAllTasksByEventId } from "@/api/taskApi";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 
- 
 function EventEditScreen() {
+  const { eventId } = useParams();
 
-const { eventId } = useParams(); 
-  const { data, isLoading } = useGetAllTasksByEventId(eventId ?? ""); 
-  const [tasks, setTasks] = useState<Task[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(6);
-  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All Statuses");
 
-  useEffect(() => {
-    if (data?.tasks) {
-      setTasks(data.tasks);
-    }
-  }, [data]);
+  const { data, isLoading } = useGetAllTasksByEventId(
+    eventId ?? "",
+    currentPage,
+    rowsPerPage,
+    searchTerm
+  );
+
+  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
+
   console.log(data, "data");
 
-  // Filter tasks based on search term and status
+  // Filter tasks based on status (client-side filtering for status only)
   useEffect(() => {
-    let filtered = [...tasks];
+    if (data?.tasks) {
+      let filtered = [...data.tasks];
 
-    if (searchTerm.trim()) {
-      filtered = filtered.filter(
-        (task) =>
-          task.taskName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (task.taskDescription && 
-           task.taskDescription.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
+      // Filter by status
+      if (selectedStatus !== "All Statuses") {
+        filtered = filtered.filter((task) => task.status === selectedStatus);
+      }
+
+      setFilteredTasks(filtered);
     }
+  }, [data?.tasks, selectedStatus]);
 
-    // Filter by status
-    if (selectedStatus !== "All Statuses") {
-      filtered = filtered.filter((task) => task.status === selectedStatus);
-    }
-
-    setFilteredTasks(filtered);
-    setCurrentPage(1); 
-  }, [tasks, searchTerm, selectedStatus]);
-
-  const totalPages = Math.ceil(filteredTasks.length / rowsPerPage);
-  const paginatedTasks = filteredTasks.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  );
+  // Use backend pagination data
+  const totalPages = data?.pagination?.totalPages || 1;
+  const paginatedTasks = filteredTasks; // Use filtered tasks directly, no frontend slicing needed
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -67,19 +57,23 @@ const { eventId } = useParams();
     }
   };
 
-  const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setRowsPerPage(Number(event.target.value));
-    setCurrentPage(1);
+  const handleRowsPerPageChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const newRowsPerPage = Number(event.target.value);
+    setRowsPerPage(newRowsPerPage);
+    setCurrentPage(1); 
   };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
+    setCurrentPage(1);
   };
 
   const handleStatusChange = (status: string) => {
     setSelectedStatus(status);
+    setCurrentPage(1); // Reset to first page when changing status
   };
-
 
   return (
     <div>
@@ -99,9 +93,9 @@ const { eventId } = useParams();
       <div className="mt-4 flex items-center gap-4">
         <div className="relative flex-1">
           <HiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
-            <Input 
-            placeholder="Search tasks..." 
-            className="pl-10 w-full" 
+          <Input
+            placeholder="Search tasks..."
+            className="pl-10 w-full"
             value={searchTerm}
             onChange={handleSearchChange}
           />
@@ -111,18 +105,22 @@ const { eventId } = useParams();
           <DropdownMenu>
             <DropdownMenuTrigger>
               <Button variant="outline" className="bg-transparent">
-                All Statuses
+                {selectedStatus}
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-             <DropdownMenuItem onClick={() => handleStatusChange("All Statuses")}>
+              <DropdownMenuItem
+                onClick={() => handleStatusChange("All Statuses")}
+              >
                 All Statuses
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleStatusChange("To Do")}>
                 To Do
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusChange("In Progress")}>
+              <DropdownMenuItem
+                onClick={() => handleStatusChange("In Progress")}
+              >
                 In Progress
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleStatusChange("Completed")}>
@@ -139,7 +137,7 @@ const { eventId } = useParams();
         </div>
       </div>
 
-       <div className="mt-4 grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div className="mt-4 grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         {isLoading ? (
           <p>Loading tasks...</p>
         ) : paginatedTasks.length > 0 ? (
@@ -168,14 +166,14 @@ const { eventId } = useParams();
           ))
         ) : (
           <p className="text-gray-500 col-span-full text-center">
-             {searchTerm || selectedStatus !== "All Statuses" 
-              ? "No tasks match your current filters." 
+            {searchTerm || selectedStatus !== "All Statuses"
+              ? "No tasks match your current filters."
               : "No tasks found for this event."}
           </p>
         )}
       </div>
 
-       <div className="flex items-center justify-between mt-8">
+      <div className="flex items-center justify-between mt-8">
         <div className="flex items-center space-x-2">
           <button
             onClick={() => handlePageChange(currentPage - 1)}
@@ -203,7 +201,7 @@ const { eventId } = useParams();
             onChange={handleRowsPerPageChange}
             className="px-2 py-1 border border-gray-300 rounded"
           >
-            {[6, 12, 24].map((option) => (
+            {[5, 10, 15, 20, 25].map((option) => (
               <option key={option} value={option}>
                 {option}
               </option>
