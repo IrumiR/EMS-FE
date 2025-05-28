@@ -22,11 +22,12 @@ import { useGetEventById, useUpdateEvent } from "@/api/eventApi";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import { useEffect} from "react";
-import { Clock } from "lucide-react";
+import { Clock, Loader2 } from "lucide-react";
 import DatePickerComponent from "../atoms/datePicker";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
 import { toast } from "react-hot-toast";
+import { useGetClientOptions } from "@/api/authApi";
 
 interface UpdateEventDialogProps {
   title: string;
@@ -42,6 +43,8 @@ interface UpdateEventDialogProps {
   endTime: Date | undefined;
   setEndTime: (date: Date | undefined) => void;
   eventData?: any;
+  selectedClientId: string;
+  setSelectedClientId: (id: string) => void;
 }
 
 export default function UpdateEventDialog({
@@ -57,8 +60,11 @@ export default function UpdateEventDialog({
   setStartTime,
   endTime,
   setEndTime,
+  selectedClientId,
+  setSelectedClientId,
 }: UpdateEventDialogProps) {
 const { data, isLoading, isError } = useGetEventById(open ? eventId : null);
+const { data: clientsData, isLoading: clientsLoading } = useGetClientOptions();
 
 const onSuccess = () => {
   onOpenChange(false);
@@ -131,6 +137,7 @@ const onSuccess = () => {
             endDate: formattedEndDate,
             startTime: formattedStartTime,
             endTime: formattedEndTime,
+            clientId: selectedClientId,
           },
         },
         {
@@ -415,31 +422,35 @@ const onSuccess = () => {
             </div>
 
             <div>
-              <Label
-                htmlFor="client"
-                className="text-sm font-medium block mb-2"
-              >
-                Client
-              </Label>
-              <Input
-                id="client"
-                name="client"
-                placeholder="Client"
-                value={formik.values.client}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                className={
-                  formik.touched.client && formik.errors.client
-                    ? "border-red-500"
-                    : ""
-                }
-              />
-              {formik.touched.client && formik.errors.client ? (
-                <p className="text-red-500 text-xs mt-1">
-                  {formik.errors.client}
-                </p>
-              ) : null}
-            </div>
+        <Label htmlFor="client" className="text-sm font-medium block mb-1">
+          Client
+        </Label>
+        <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select client" />
+          </SelectTrigger>
+          <SelectContent>
+            {clientsLoading ? (
+              <SelectItem value="loading" disabled>
+                <div className="flex items-center">
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Loading clients...
+                </div>
+              </SelectItem>
+            ) : clientsData?.clients?.length ? (
+              clientsData.clients.map((client) => (
+                <SelectItem key={client.userId} value={client.userId}>
+                  {client.userName}
+                </SelectItem>
+              ))
+            ) : (
+              <SelectItem value="no-clients" disabled>
+                No clients available
+              </SelectItem>
+            )}
+          </SelectContent>
+        </Select>
+      </div>
 
             <div>
               <Label

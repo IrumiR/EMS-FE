@@ -8,6 +8,8 @@ import DashboardScreen from "../pages/dashboard";
 import MainLayout from "../layout/main-layout";
 import EventsScreen from "@/pages/events";
 import EventEditScreen from "@/pages/events/eventEditScreen";
+import BudgetScreen from "@/pages/budget";
+import CalendarScreen from "@/pages/calendar";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import TasksScreen from "@/pages/tasks";
@@ -83,6 +85,22 @@ const AppRoutes = () => {
                   element={
                     <MainLayout role={role}>
                       <TeamScreen />
+                    </MainLayout>
+                  }
+                />
+                <Route
+                  path="budget"
+                  element={
+                    <MainLayout role={role}>
+                      <BudgetScreen />
+                    </MainLayout>
+                  }
+                />
+                <Route
+                  path="calendar"
+                  element={
+                    <MainLayout role={role}>
+                      <CalendarScreen />
                     </MainLayout>
                   }
                 />

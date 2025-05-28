@@ -6,7 +6,6 @@ import {
   HiOutlineClipboardList,
   HiOutlineArchive,
   HiOutlineCurrencyDollar,
-  HiOutlineChatAlt,
   HiOutlineUsers,
   HiOutlineCog,
   HiChevronRight,
@@ -15,6 +14,7 @@ import {
 import { FiUser } from "react-icons/fi";
 import Logo from "../../assets/svg/sidebar-logo.svg";
 import { JSX, useState } from "react";
+import { CalendarClock } from "lucide-react";
 
 type SidebarProps = {
   role: UserRole;
@@ -43,7 +43,7 @@ const Sidebar = ({ role }: SidebarProps) => {
       { to: "/tasks", label: "TASKS", icon: <HiOutlineClipboardList size={20} /> },
       { to: "/inventory", label: "INVENTORY", icon: <HiOutlineArchive size={20} /> },
       { to: "/budget", label: "BUDGET", icon: <HiOutlineCurrencyDollar size={20} /> },
-      { to: "/reports", label: "REPORTS", icon: <HiOutlineChatAlt size={20} /> },
+      { to: "/calendar", label: "CALENDAR", icon: <CalendarClock size={20} /> },
       { to: "/team", label: "TEAM", icon: <HiOutlineUsers size={20} /> },
       { to: "/profile", label: "PROFILE", icon: <HiOutlineCog size={20} /> },
     ],
@@ -51,11 +51,13 @@ const Sidebar = ({ role }: SidebarProps) => {
       { to: "/events", label: "EVENTS", icon: <HiOutlineCalendar size={20} /> },
       { to: "/profile", label: "PROFILE", icon: <FiUser size={20} /> },
       { to: "/tasks", label: "TASKS", icon: <HiOutlineClipboardList size={20} /> },
+      { to: "/calendar", label: "CALENDAR", icon: <CalendarClock size={20} /> },
     ],
     client: [{ to: "/events", label: "MY EVENTS", icon: <HiOutlineCalendar size={20} /> }],
     "team-member": [
       { to: "/profile", label: "PROFILE", icon: <FiUser size={20} /> },
-      { to: "/tasks", label: "TASKS", icon: <HiOutlineClipboardList size={20} /> },],
+      { to: "/tasks", label: "TASKS", icon: <HiOutlineClipboardList size={20} /> },
+      { to: "/calendar", label: "CALENDAR", icon: <CalendarClock size={20} /> },]
   };
 
   const linksToRender = [...commonLinks, ...(roleLinks[userRole] || [])];
