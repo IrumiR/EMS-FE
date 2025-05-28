@@ -63,6 +63,7 @@ function EventCard({
     navigate(`/events/${id}`);
   };
 
+  const [selectedClientId, setSelectedClientId] = useState("");
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -198,6 +199,8 @@ function EventCard({
             setStartTime={setStartTime}
             endTime={endTime}
             setEndTime={setEndTime}
+            selectedClientId={selectedClientId}
+            setSelectedClientId={setSelectedClientId}
           />
         </div>
       </CardFooter>

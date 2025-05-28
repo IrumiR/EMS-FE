@@ -94,7 +94,7 @@ const onSuccess = () => {
     eventName: Yup.string().required("Event name is required"),
     eventType: Yup.string().required("Event type is required"),
     status: Yup.string().required("Status is required"),
-    description: Yup.string(),
+    eventDescription: Yup.string(),
     location: Yup.string().required("Location is required"),
     client: Yup.string().required("Client is required"),
   });
@@ -104,7 +104,7 @@ const onSuccess = () => {
       eventName: "",
       eventType: "",
       status: "",
-      description: "",
+      eventDescription: "",
       location: "",
       client: "",
       quotation: "",
@@ -117,10 +117,10 @@ const onSuccess = () => {
       const formattedEndDate = endDate ? format(endDate, "yyyy-MM-dd") : "";
       const formattedStartTime = startTime ? format(startTime, "HH:mm:ss") : "";
       const formattedEndTime = endTime ? format(endTime, "HH:mm:ss") : "";
-      const statusMap: Record<string, "Pending Approval" | "Approved" | "InProgress" | "Hold" | "Completed" | "Cancelled"> = {
+      const statusMap: Record<string, "Pending Approval" | "Approved" | "In Progress" | "Hold" | "Completed" | "Cancelled"> = {
         "pending approval": "Pending Approval",
         "approved": "Approved",
-        "in progress": "InProgress",
+        "in progress": "In Progress",
         "hold": "Hold",
         "completed": "Completed",
         "cancelled": "Cancelled",
@@ -138,6 +138,8 @@ const onSuccess = () => {
             startTime: formattedStartTime,
             endTime: formattedEndTime,
             clientId: selectedClientId,
+            eventDescription: values.eventDescription || "",
+            proposedLocation: values.location || "",
           },
         },
         {
@@ -155,12 +157,16 @@ const onSuccess = () => {
       eventName: event.eventName || "",
       eventType: Array.isArray(event.eventType) ? event.eventType[0] : "",
       status: event.status ? event.status.toLowerCase() : "",
-      description: event.eventDescription || "", 
+      eventDescription: event.eventDescription || "",
       location: event.proposedLocation || "", 
       client: event?.clientId?.userName || "",
       quotation: event.quotation || "",
     });
-
+    setStartDate(event.startDate ? new Date(event.startDate) : undefined);
+    setEndDate(event.endDate ? new Date(event.endDate) : undefined);
+    setStartTime(event.startTime ? new Date(`1970-01-01T${event.startTime}`) : undefined);
+    setEndTime(event.endTime ? new Date(`1970-01-01T${event.endTime}`) : undefined);
+    setSelectedClientId(event?.clientId?._id || "");
     
   }
 }, [data, setStartDate, setEndDate, setStartTime, setEndTime]);
@@ -297,10 +303,10 @@ const onSuccess = () => {
                 Description
               </Label>
               <Textarea
-                id="description"
-                name="description"
+                id="eventDescription"
+                name="eventDescription"
                 placeholder="Description"
-                value={formik.values.description}
+                value={formik.values.eventDescription}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
               />
@@ -425,7 +431,10 @@ const onSuccess = () => {
         <Label htmlFor="client" className="text-sm font-medium block mb-1">
           Client
         </Label>
-        <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+       <Select
+                value={selectedClientId}
+                onValueChange={setSelectedClientId}
+              >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select client" />
           </SelectTrigger>

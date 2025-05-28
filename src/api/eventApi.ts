@@ -11,7 +11,7 @@ export interface CreateEventData {
   startTime?: string;
   endTime?: string;
   proposedLocation?: string;
-  status?: "Pending Approval" | "Approved" | "InProgress" | "Hold" | "Completed" | "Cancelled";
+  status?: "Pending Approval" | "Approved" | "In Progress" | "Hold" | "Completed" | "Cancelled";
   clientId: string;
   quotationId?: string;
   feedbackId?: string;
@@ -55,7 +55,7 @@ export interface Event {
   startDate: string;
   endDate: string;
   proposedLocation?: string;
-  status?: "Pending Approval" | "Approved" | "InProgress" | "Hold" | "Completed" | "Cancelled";
+  status?: "Pending Approval" | "Approved" | "In Progress" | "Hold" | "Completed" | "Cancelled";
   clientId: string;
   quotationId?: string;
   feedbackId?: string;
@@ -132,7 +132,7 @@ export interface EventData {
   startDate: string;
   endDate: string;
   proposedLocation?: string;
-  status?: "Pending Approval" | "Approved" | "InProgress" | "Hold" | "Completed" | "Cancelled";
+  status?: "Pending Approval" | "Approved" | "In Progress" | "Hold" | "Completed" | "Cancelled";
   clientId: string;
   quotationId?: string;
   feedbackId?: string;
@@ -160,7 +160,7 @@ export const useUpdateEvent = (
       return response.data;
     },
     onSuccess: (data) => {
-       queryClient.invalidateQueries("events");
+       queryClient.invalidateQueries("get_all_events");
       queryClient.invalidateQueries(["event", data.event._id]);
       if (onSuccess) onSuccess(data);
     },
