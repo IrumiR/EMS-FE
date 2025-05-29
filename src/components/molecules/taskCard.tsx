@@ -4,7 +4,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
+} from "@/components/ui/tooltip";
 import {
   Eye,
   Pencil,
@@ -17,6 +17,7 @@ import { useState } from "react";
 import { EditTaskDialog } from "../organisms/editTaskDialog";
 import { ViewTaskDialog } from "../organisms/viewTaskDialog";
 import { SubTaskDialog } from "../organisms/subTaskDialog";
+import {CommentDialog} from "../organisms/commentDialog";
 import TaskStatusSelect from "./updateTaskStatus";
 import TaskPrioritySelect from "./updatePriority";
 
@@ -38,6 +39,7 @@ interface Task {
 export default function TaskCard({ task }: { task: Task }) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isCommentDialogOpen, setIsCommentDialogOpen] = useState(false);
 
   const getPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {
@@ -149,7 +151,7 @@ export default function TaskCard({ task }: { task: Task }) {
       <EditTaskDialog
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
-       task={{
+        task={{
           ...task,
           subTasks:
             task.subTasks?.map((st) => ({
@@ -161,7 +163,7 @@ export default function TaskCard({ task }: { task: Task }) {
       <ViewTaskDialog
         open={isViewDialogOpen}
         onOpenChange={setIsViewDialogOpen}
-         task={{
+        task={{
           ...task,
           subTasks:
             task.subTasks?.map((st: any) => ({
@@ -172,12 +174,20 @@ export default function TaskCard({ task }: { task: Task }) {
         }}
       />
 
+      <CommentDialog
+        open={isCommentDialogOpen}
+        onOpenChange={setIsCommentDialogOpen}
+      />
+
       <CardFooter className="px-2 py-0 border-t border-gray-100">
-       <TooltipProvider>
+        <TooltipProvider>
           <div className="flex items-center gap-3 w-full">
             <Tooltip>
               <TooltipTrigger asChild>
-                <button className="p-1 hover:bg-gray-100 rounded transition-colors">
+                <button
+                  className="p-1 hover:bg-gray-100 rounded transition-colors"
+                  onClick={() => setIsCommentDialogOpen(true)}
+                >
                   <MessageCircle className="w-4 h-4 text-gray-500" />
                 </button>
               </TooltipTrigger>
@@ -188,7 +198,7 @@ export default function TaskCard({ task }: { task: Task }) {
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <button 
+                <button
                   className="p-1 hover:bg-gray-100 rounded transition-colors"
                   onClick={() => setIsEditDialogOpen(true)}
                 >
@@ -202,7 +212,7 @@ export default function TaskCard({ task }: { task: Task }) {
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <button 
+                <button
                   className="p-1 hover:bg-gray-100 rounded transition-colors"
                   onClick={() => setIsViewDialogOpen(true)}
                 >
@@ -239,7 +249,10 @@ export default function TaskCard({ task }: { task: Task }) {
             <Tooltip>
               <TooltipTrigger asChild>
                 <div>
-                  <TaskPrioritySelect taskId={task.id} priority={task.priority} />
+                  <TaskPrioritySelect
+                    taskId={task.id}
+                    priority={task.priority}
+                  />
                 </div>
               </TooltipTrigger>
               <TooltipContent>
