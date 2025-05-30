@@ -1,41 +1,46 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Trash2, Send, Paperclip, CornerDownRight, X } from 'lucide-react';
+import { Trash2, Send, Paperclip, CornerDownRight, X, Loader2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-interface Message {
-  id: number;
-  sender: string;
-  avatar: string;
-  content: string;
-  timestamp: string;
-  isReply?: boolean;
-  images?: string[]; 
-  parentId?: number;
-}
+import { useCommentData } from "@/hooks/commentHandler";
 
 interface CommentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  taskId: string;
   taskName?: string;
 }
 
-export default function CommentDialog({ open, onOpenChange, taskName = "Task" }: CommentDialogProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
-
+export default function CommentDialog({ open, onOpenChange, taskId, taskName = "Task" }: CommentDialogProps) {
   const [newMessage, setNewMessage] = useState("");
-  const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyMessage, setReplyMessage] = useState("");
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [showReplyFileUpload, setShowReplyFileUpload] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [selectedReplyFiles, setSelectedReplyFiles] = useState<File[]>([]);
+
+  // Use the data handler hook
+  const {
+    messagesWithReplies,
+    replyingTo,
+    isLoading,
+    handleSendMessage,
+    handleSendReply,
+    handleDeleteMessage,
+    handleForwardMessage,
+    getParentMessage,
+    setReplyingTo,
+    isCreatingComment,
+    isCreatingReply,
+    isDeletingComment
+  } = useCommentData(taskId, open);
+  console.log(messagesWithReplies, "messagesWithReplies");
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>, isReply = false) => {
     const files = Array.from(event.target.files || []);
@@ -58,73 +63,30 @@ export default function CommentDialog({ open, onOpenChange, taskName = "Task" }:
     return URL.createObjectURL(file);
   };
 
-  const handleSendMessage = () => {
+  const handleSendNewMessage = async () => {
     if (newMessage.trim() || selectedFiles.length > 0) {
-      const imageUrls = selectedFiles.map(file => createImageUrl(file));
-      const message: Message = {
-        id: messages.length + 1,
-        sender: "You",
-        avatar: "/api/placeholder/40/40",
-        content: newMessage || "",
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isReply: true,
-        images: imageUrls.length > 0 ? imageUrls : undefined
-      };
-      setMessages([...messages, message]);
+      await handleSendMessage(newMessage, selectedFiles);
       setNewMessage("");
       setSelectedFiles([]);
       setShowFileUpload(false);
     }
   };
 
-  const handleSendReply = () => {
+  const handleSendNewReply = async () => {
     if ((replyMessage.trim() || selectedReplyFiles.length > 0) && replyingTo) {
-      const imageUrls = selectedReplyFiles.map(file => createImageUrl(file));
-      const reply: Message = {
-        id: messages.length + 1,
-        sender: "You",
-        avatar: "/api/placeholder/40/40",
-        content: replyMessage || "",
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isReply: true,
-        parentId: replyingTo,
-        images: imageUrls.length > 0 ? imageUrls : undefined
-      };
-      setMessages([...messages, reply]);
+      await handleSendReply(replyMessage, replyingTo, selectedReplyFiles);
       setReplyMessage("");
       setSelectedReplyFiles([]);
-      setReplyingTo(null);
       setShowReplyFileUpload(false);
     }
   };
 
-  const handleDeleteMessage = (id: number) => {
-    setMessages(messages.filter(msg => msg.id !== id));
+  const handleCancelReply = () => {
+    setReplyingTo(null);
+    setReplyMessage("");
+    setSelectedReplyFiles([]);
+    setShowReplyFileUpload(false);
   };
-
-  const handleForwardMessage = (id: number) => {
-    setReplyingTo(id);
-  };
-
-  const getParentMessage = (parentId: number) => {
-    return messages.find(msg => msg.id === parentId);
-  };
-
-  const getMessageWithReplies = () => {
-    const topLevelMessages = messages.filter(msg => !msg.parentId);
-    const replies = messages.filter(msg => msg.parentId);
-    
-    const result: (Message & { replies?: Message[] })[] = [];
-    
-    topLevelMessages.forEach(msg => {
-      const messageReplies = replies.filter(reply => reply.parentId === msg.id);
-      result.push({ ...msg, replies: messageReplies });
-    });
-    
-    return result;
-  };
-
-  const messagesWithReplies = getMessageWithReplies();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -136,7 +98,12 @@ export default function CommentDialog({ open, onOpenChange, taskName = "Task" }:
         <div className="flex flex-col h-full min-h-0">
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
-            {messagesWithReplies.length === 0 ? (
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
+                <span className="ml-2 text-gray-500">Loading comments...</span>
+              </div>
+            ) : messagesWithReplies.length === 0 ? (
               <div className="text-center text-gray-500 py-8">
                 <p>No comments yet</p>
               </div>
@@ -168,9 +135,15 @@ export default function CommentDialog({ open, onOpenChange, taskName = "Task" }:
                               </div>
                             )}
                           </div>
-                          <span className="text-xs text-gray-500 mt-1 px-2">
-                            {message.timestamp}
-                          </span>
+                          <div className="flex items-center gap-2 mt-1 px-2">
+                            <span className="text-xs text-gray-500">
+                              {message.sender}
+                            </span>
+                            <span className="text-xs text-gray-400">•</span>
+                            <span className="text-xs text-gray-500">
+                              {message.timestamp}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -183,6 +156,7 @@ export default function CommentDialog({ open, onOpenChange, taskName = "Task" }:
                           size="sm"
                           className="h-6 w-6 p-0 text-gray-400 hover:text-blue-600"
                           onClick={() => handleForwardMessage(message.id)}
+                          disabled={isCreatingReply}
                         >
                           <CornerDownRight className="w-3 h-3" />
                         </Button>
@@ -191,8 +165,13 @@ export default function CommentDialog({ open, onOpenChange, taskName = "Task" }:
                           size="sm"
                           className="h-6 w-6 p-0 text-gray-400 hover:text-red-600"
                           onClick={() => handleDeleteMessage(message.id)}
+                          disabled={isDeletingComment}
                         >
-                          <Trash2 className="w-3 h-3" />
+                          {isDeletingComment ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-3 h-3" />
+                          )}
                         </Button>
                       </div>
                     </div>
@@ -247,9 +226,15 @@ export default function CommentDialog({ open, onOpenChange, taskName = "Task" }:
                                       </div>
                                     )}
                                   </div>
-                                  <span className="text-xs text-gray-500 mt-1 px-2">
-                                    {reply.timestamp}
-                                  </span>
+                                  <div className="flex items-center gap-2 mt-1 px-2">
+                                    <span className="text-xs text-gray-500">
+                                      {reply.sender}
+                                    </span>
+                                    <span className="text-xs text-gray-400">•</span>
+                                    <span className="text-xs text-gray-500">
+                                      {reply.timestamp}
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -262,6 +247,7 @@ export default function CommentDialog({ open, onOpenChange, taskName = "Task" }:
                                   size="sm"
                                   className="h-6 w-6 p-0 text-gray-400 hover:text-blue-600"
                                   onClick={() => handleForwardMessage(reply.id)}
+                                  disabled={isCreatingReply}
                                 >
                                   <CornerDownRight className="w-3 h-3" />
                                 </Button>
@@ -270,8 +256,13 @@ export default function CommentDialog({ open, onOpenChange, taskName = "Task" }:
                                   size="sm"
                                   className="h-6 w-6 p-0 text-gray-400 hover:text-red-600"
                                   onClick={() => handleDeleteMessage(reply.id)}
+                                  disabled={isDeletingComment}
                                 >
-                                  <Trash2 className="w-3 h-3" />
+                                  {isDeletingComment ? (
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                  ) : (
+                                    <Trash2 className="w-3 h-3" />
+                                  )}
                                 </Button>
                               </div>
                             </div>
@@ -366,26 +357,28 @@ export default function CommentDialog({ open, onOpenChange, taskName = "Task" }:
                   placeholder="Type your reply..."
                   value={replyMessage}
                   onChange={(e) => setReplyMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSendReply()}
+                  onKeyPress={(e) => e.key === 'Enter' && !isCreatingReply && handleSendNewReply()}
                   className="flex-1 rounded-full border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  disabled={isCreatingReply}
                 />
                 <Button
-                  onClick={handleSendReply}
+                  onClick={handleSendNewReply}
                   size="sm"
                   className="rounded-full bg-green-600 hover:bg-green-700 text-white p-2 flex-shrink-0"
-                  disabled={!replyMessage.trim() && selectedReplyFiles.length === 0}
+                  disabled={(!replyMessage.trim() && selectedReplyFiles.length === 0) || isCreatingReply}
                 >
-                  <Send className="w-4 h-4" />
+                  {isCreatingReply ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
                 </Button>
                 <Button
-                  onClick={() => {
-                    setReplyingTo(null);
-                    setShowReplyFileUpload(false);
-                    setSelectedReplyFiles([]);
-                  }}
+                  onClick={handleCancelReply}
                   variant="ghost"
                   size="sm"
                   className="rounded-full text-gray-500 hover:text-gray-700 p-2 flex-shrink-0"
+                  disabled={isCreatingReply}
                 >
                   Cancel
                 </Button>
@@ -466,16 +459,21 @@ export default function CommentDialog({ open, onOpenChange, taskName = "Task" }:
                   placeholder="Add a comment..."
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                  onKeyPress={(e) => e.key === 'Enter' && !isCreatingComment && handleSendNewMessage()}
                   className="flex-1 rounded-full border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  disabled={isCreatingComment}
                 />
                 <Button
-                  onClick={handleSendMessage}
+                  onClick={handleSendNewMessage}
                   size="sm"
                   className="rounded-full bg-green-600 hover:bg-green-700 text-white p-2 flex-shrink-0"
-                  disabled={!newMessage.trim() && selectedFiles.length === 0}
+                  disabled={(!newMessage.trim() && selectedFiles.length === 0) || isCreatingComment}
                 >
-                  <Send className="w-4 h-4" />
+                  {isCreatingComment ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
                 </Button>
               </div>
             </div>

@@ -177,6 +177,8 @@ export default function TaskCard({ task }: { task: Task }) {
       <CommentDialog
         open={isCommentDialogOpen}
         onOpenChange={setIsCommentDialogOpen}
+        taskId={task.id}
+        taskName={task.taskName}
       />
 
       <CardFooter className="px-2 py-0 border-t border-gray-100">
