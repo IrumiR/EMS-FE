@@ -17,7 +17,7 @@ import { useState } from "react";
 import { EditTaskDialog } from "../organisms/editTaskDialog";
 import { ViewTaskDialog } from "../organisms/viewTaskDialog";
 import { SubTaskDialog } from "../organisms/subTaskDialog";
-import {CommentDialog} from "../organisms/commentDialog";
+import CommentDialog from "../organisms/commentDialog";
 import TaskStatusSelect from "./updateTaskStatus";
 import TaskPrioritySelect from "./updatePriority";
 
