@@ -96,7 +96,7 @@ export function AddTaskDialog() {
             : undefined,
           subTasks: values.subTasks
             .filter((task) => task.name.trim() !== "")
-            .map((task) => task.name),
+          .map((task) => ({ subTaskName: task.name })),
           createdBy: userId ?? "",
         };
 
@@ -249,6 +249,8 @@ export function AddTaskDialog() {
                           : ""
                       }`}
                       placeholderText="Pick a date"
+                      useMinDate={true} 
+                      minDate={new Date()}
                     />
                     {formik.touched.startDate && formik.errors.startDate && (
                       <div className="text-red-500 text-sm">
@@ -264,11 +266,18 @@ export function AddTaskDialog() {
                       onChange={(date) => formik.setFieldValue("endDate", date)}
                       dateFormat="MMMM d, yyyy"
                       className={`w-full border rounded-md px-3 py-2 text-sm ${
+                        !formik.values.startDate
+                          ? "bg-gray-100 cursor-not-allowed"
+                          : ""
+                      } ${
                         formik.touched.endDate && formik.errors.endDate
                           ? "border-red-500"
                           : ""
                       }`}
                       placeholderText="Pick a date"
+                      minDate={formik.values.startDate || undefined} // 👈 restrict to after startDate
+                      disabled={!formik.values.startDate}
+                      useMinDate={!!formik.values.startDate}
                     />
                     {formik.touched.endDate && formik.errors.endDate && (
                       <div className="text-red-500 text-sm">

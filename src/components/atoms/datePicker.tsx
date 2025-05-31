@@ -8,6 +8,9 @@ interface DatePickerComponentProps {
   dateFormat?: string;
   className?: string;
   placeholderText?: string;
+  minDate?: Date;
+  useMinDate?: boolean;
+  disabled?: boolean
 }
 
 const DatePickerComponent: React.FC<DatePickerComponentProps> = ({
@@ -16,6 +19,9 @@ const DatePickerComponent: React.FC<DatePickerComponentProps> = ({
   dateFormat = "MMMM d, yyyy",
   className,
   placeholderText = "Pick a date",
+  minDate = new Date(),
+  useMinDate = false,
+  disabled = false,
 }) => {
     return (
     <div>
@@ -26,6 +32,8 @@ const DatePickerComponent: React.FC<DatePickerComponentProps> = ({
         dateFormat={dateFormat}
         className={className}
         calendarClassName="custom-calendar"
+        minDate={useMinDate ? minDate : undefined}
+        disabled={disabled}
       />
     </div>
   );

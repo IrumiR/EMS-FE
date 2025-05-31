@@ -19,7 +19,9 @@ export interface CreateTaskData {
   }[];
   inventoryItems?: string[];
   eventId: string;
-  subTasks?: string[];
+ subTasks?: {
+    subTaskName: string;
+  }[];
   comments?: {
     commentId?: string;
     userId?: string;

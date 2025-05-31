@@ -61,6 +61,8 @@ export function DateLocationStep({
             dateFormat="MMMM d, yyyy"
             className="w-full border rounded-md px-3 py-2 text-sm"
             placeholderText="Pick a date"
+            useMinDate={true} // 👈 will restrict past dates
+            minDate={new Date()}
           />
         </div>
         <div>
@@ -73,6 +75,8 @@ export function DateLocationStep({
             dateFormat="MMMM d, yyyy"
             className="w-full border rounded-md px-3 py-2 text-sm"
             placeholderText="Pick a date"
+            minDate={startDate || undefined} // 👈 restrict to after startDate
+            disabled={!startDate}
           />
         </div>
       </div>

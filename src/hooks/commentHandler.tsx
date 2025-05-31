@@ -86,7 +86,7 @@ export const useCommentData = (taskId: string, isOpen: boolean) => {
         comment.replies.forEach((reply) => {
           const replyMessage: CommentMessage = {
             id: reply._id || `temp-reply-${Date.now()}`,
-            sender: reply.createdBy.userName,
+           sender: reply.createdBy.userName || 'Unknown',
             avatar: "/api/placeholder/40/40",
             content: reply.commentText,
             timestamp: reply.createdAt 
@@ -106,9 +106,9 @@ export const useCommentData = (taskId: string, isOpen: boolean) => {
   };
 
   // Update messages when API data changes
-  useEffect(() => {
-    if (commentsData?.comments) {
-      const transformedMessages = transformCommentsToMessages(commentsData.comments);
+ useEffect(() => {
+    if (Array.isArray(commentsData)) {
+      const transformedMessages = transformCommentsToMessages(commentsData);
       setMessages(transformedMessages);
     }
   }, [commentsData]);
@@ -157,12 +157,12 @@ export const useCommentData = (taskId: string, isOpen: boolean) => {
         return;
       }
 
-      const currentUser = getCurrentUser();
+      const currentUser = localStorage.getItem(`userId`) || "current-user-id";
       
       await addReplyMutation.mutateAsync({
         commentId: originalCommentId,
         replyText: content,
-        createdBy: currentUser.id
+        createdBy: currentUser
       });
 
       setReplyingTo(null);

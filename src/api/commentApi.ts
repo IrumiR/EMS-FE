@@ -69,7 +69,7 @@ export const addReplyToComment = (
       createdBy: string;
     }) => {
       const response = await authFetch.post(`/comments/${commentId}/reply`, {
-        commentText: replyText,  // 👈 Match backend param
+        replyText: replyText,  // 👈 Match backend param
         createdBy,
       });
       return response.data;
