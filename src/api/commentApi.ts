@@ -2,6 +2,7 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
+  UseQueryOptions,
   UseQueryResult,
 } from "react-query";
 import authFetch from "./authInterceptor";
@@ -92,24 +93,24 @@ export interface CommentResponse {
 }
 
 export const useGetAllCommentsByTaskId = (
-  taskId: string
+  taskId: string,
+  options?: UseQueryOptions<CommentResponse>
 ): UseQueryResult<CommentResponse> => {
-  return useQuery({
+  return useQuery<CommentResponse>({
     queryKey: ["get_all_comments_by_task_id", taskId],
     queryFn: async () => {
-      try {
-        const response = await authFetch.get<CommentResponse>(`/comments/${taskId}`);
-        return response.data;
-      } catch (error) {
-        throw error;
-      }
+      const response = await authFetch.get<CommentResponse>(
+        `/comments/${taskId}`
+      );
+      return response.data;
     },
-    onSuccess: () => {
+onSuccess: () => {
       console.log("Comments retrieved successfully");
     },
     onError: (error) => {
       console.error("Error fetching comments:", error);
     },
+    ...options, // Spread in custom options like `enabled`
   });
 };
 

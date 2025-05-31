@@ -68,7 +68,7 @@ export function SubTaskDialog({ taskId, taskName }: SubTaskDialogProps) {
     { name: "", status: "To Do" },
   ]);
 
-  const { data: taskData, isLoading: taskLoading, refetch: refetchTask } = useGetTaskById(taskId);
+  const { data: taskData, isLoading: taskLoading, refetch: refetchTask } = useGetTaskById(taskId, isOpen);
   
   const updateTaskMutation = useUpdateTask(
     (data: any) => {

@@ -105,7 +105,7 @@ export function EditTaskDialog({
   const { eventId } = useParams();
   const eventList = useGetAllEventsDropdown();
   
-  const { data: taskData, isLoading: taskLoading, refetch: refetchTask } = useGetTaskById(task.id);
+  const { data: taskData, isLoading: taskLoading, refetch: refetchTask } = useGetTaskById(task.id, open);
   const { data: assigneesData, isLoading: assigneesLoading } = useGetAssigneeOptions();
   const updateTaskMutation = useUpdateTask(
     (data: any) => {

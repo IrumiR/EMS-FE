@@ -26,7 +26,13 @@ export const useCommentData = (taskId: string, isOpen: boolean) => {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
 
   // API hooks
-  const { data: commentsData, isLoading, refetch } = useGetAllCommentsByTaskId(taskId);
+ const {
+    data: commentsData,
+    isLoading,
+    refetch,
+  } = useGetAllCommentsByTaskId(taskId, {
+    enabled: isOpen,
+  });
    console.log(commentsData, "commentsData");
 
   const createCommentMutation = createComment(
@@ -120,14 +126,15 @@ export const useCommentData = (taskId: string, isOpen: boolean) => {
 
     try {
       // Get current user info
-      const currentUser = getCurrentUser(); 
+     const currentUser = localStorage.getItem(`userId`) || 'current-user-id';
+    const userName = localStorage.getItem(`userName`) || 'You';
       
       const commentData: Comment = {
         taskId,
         commentText: content,
-        createdBy: {
-          _id: currentUser.id,
-          userName: currentUser.userName
+       createdBy: {
+          _id: currentUser,
+          userName: userName
         }
       };
 

@@ -158,7 +158,10 @@ export const useGetAllTasks = (
   });
 };
 
-export const useGetTaskById = (taskId: string | null) => {
+export const useGetTaskById = (
+  taskId: string | null,
+  enabled: boolean = true
+) => {
   return useQuery(
     ["get_task_by_id", taskId],
     async () => {
@@ -167,7 +170,7 @@ export const useGetTaskById = (taskId: string | null) => {
       return response.data;
     },
     {
-      enabled: !!taskId,
+      enabled: !!taskId && enabled,
     }
   );
 };
