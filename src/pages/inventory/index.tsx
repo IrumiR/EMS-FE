@@ -12,6 +12,8 @@ import TableComponent from "@/components/molecules/table";
 import AddItemDialog from "@/components/organisms/addItemDialog";
 import { useGetAllInventory } from "@/api/inventoryApi";
 import { useState } from "react";
+import { ViewItemDialog } from "@/components/organisms/viewItemDialog";
+import { EditItemDialog } from "@/components/organisms/editItemDialog";
 
 function InventoryScreen() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -19,6 +21,10 @@ function InventoryScreen() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All Statuses");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
+
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
 
   const columns = [
     { key: "itemName", label: "Item Name" },
@@ -39,11 +45,15 @@ function InventoryScreen() {
 
   console.log("Inventory data", data?.inventoryItems);
 
-  const formattedItems = inventoryItems.map(item => ({
+  const formattedItems = inventoryItems.map((item) => ({
     ...item,
     // Format arrays to display as comma-separated strings
-    category: Array.isArray(item.category) ? item.category.join(", ") : item.category,
-    condition: Array.isArray(item.condition) ? item.condition.join(", ") : item.condition
+    category: Array.isArray(item.category)
+      ? item.category.join(", ")
+      : item.category,
+    condition: Array.isArray(item.condition)
+      ? item.condition.join(", ")
+      : item.condition,
   }));
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,9 +103,9 @@ function InventoryScreen() {
       <div className="mt-4 flex items-center justify-between">
         <div className="relative w-2/3 flex justify-start">
           <HiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
-          <Input 
-            placeholder="Search inventory..." 
-            className="pl-10 w-full" 
+          <Input
+            placeholder="Search inventory..."
+            className="pl-10 w-full"
             value={searchTerm}
             onChange={handleSearchChange}
           />
@@ -109,13 +119,17 @@ function InventoryScreen() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => handleStatusChange("All Statuses")}>
+              <DropdownMenuItem
+                onClick={() => handleStatusChange("All Statuses")}
+              >
                 All Statuses
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleStatusChange("Available")}>
                 Available
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusChange("Out of Stock")}>
+              <DropdownMenuItem
+                onClick={() => handleStatusChange("Out of Stock")}
+              >
                 Out of Stock
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleStatusChange("Reserved")}>
@@ -135,22 +149,34 @@ function InventoryScreen() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => handleCategoryChange("All Categories")}>
+              <DropdownMenuItem
+                onClick={() => handleCategoryChange("All Categories")}
+              >
                 All Categories
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleCategoryChange("Equipment")}>
+              <DropdownMenuItem
+                onClick={() => handleCategoryChange("Equipment")}
+              >
                 Equipment
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleCategoryChange("Furniture")}>
+              <DropdownMenuItem
+                onClick={() => handleCategoryChange("Furniture")}
+              >
                 Furniture
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleCategoryChange("Electronics")}>
+              <DropdownMenuItem
+                onClick={() => handleCategoryChange("Electronics")}
+              >
                 Electronics
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleCategoryChange("Decorations")}>
+              <DropdownMenuItem
+                onClick={() => handleCategoryChange("Decorations")}
+              >
                 Decorations
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleCategoryChange("Catering")}>
+              <DropdownMenuItem
+                onClick={() => handleCategoryChange("Catering")}
+              >
                 Catering
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -167,19 +193,54 @@ function InventoryScreen() {
             data={formattedItems}
             actions={(row) => (
               <div className="flex items-center space-x-2">
-                <Button variant="ghost" size="sm" className="p-1 hover:bg-gray-100">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="p-1 hover:bg-gray-100"
+                  onClick={() => {
+                    setSelectedItem(row._id);
+                    setViewDialogOpen(true);
+                  }}
+                >
                   <Eye className="h-4 w-4 text-blue-600" />
                 </Button>
-                <Button variant="ghost" size="sm" className="p-1 hover:bg-gray-100">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="p-1 hover:bg-gray-100"
+                  onClick={() => {
+                    setSelectedItem(row);
+                    setEditDialogOpen(true);
+                  }}
+                >
                   <FilePenLine className="h-4 w-4 text-green-600" />
                 </Button>
-                <Button variant="ghost" size="sm" className="p-1 hover:bg-gray-100">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="p-1 hover:bg-gray-100"
+                >
                   <CalendarCheck className="h-4 w-4 text-purple-600" />
                 </Button>
               </div>
             )}
           />
         )}
+      </div>
+
+      <div>
+        <ViewItemDialog
+          open={viewDialogOpen}
+          onOpenChange={setViewDialogOpen}
+          itemId={selectedItem}
+        />
+      </div>
+
+      <div>
+        <EditItemDialog
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+        />
       </div>
 
       {/* Single Pagination Controls */}

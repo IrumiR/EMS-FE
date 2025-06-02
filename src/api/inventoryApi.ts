@@ -53,7 +53,7 @@ export const useInventoryItems = () => {
 export const useInventoryItem = (itemId: string | null) => {
   return useQuery(["inventoryItem", itemId], async () => {
     if (!itemId) return null;
-    const response = await authFetch.get(`/api/inventory/${itemId}`);
+    const response = await authFetch.get(`/inventory/${itemId}`);
     return response.data;
   }, {
     enabled: !!itemId, 
