@@ -14,6 +14,7 @@ import { useGetAllInventory } from "@/api/inventoryApi";
 import { useState } from "react";
 import { ViewItemDialog } from "@/components/organisms/viewItemDialog";
 import { EditItemDialog } from "@/components/organisms/editItemDialog";
+import { ReserveItemDialog } from "@/components/organisms/reserveItemDialog";
 
 function InventoryScreen() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -24,6 +25,8 @@ function InventoryScreen() {
 
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [reserveDialogOpen, setReserveDialogOpen] = useState(false);
+  const [reserveItemId, setReserveItemId] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<any>(null);
 
   const columns = [
@@ -219,6 +222,10 @@ function InventoryScreen() {
                   variant="ghost"
                   size="sm"
                   className="p-1 hover:bg-gray-100"
+                  onClick={() => {
+                    setReserveItemId(row._id);
+                    setReserveDialogOpen(true);
+                  }}
                 >
                   <CalendarCheck className="h-4 w-4 text-purple-600" />
                 </Button>
@@ -241,6 +248,13 @@ function InventoryScreen() {
           open={editDialogOpen}
           onOpenChange={setEditDialogOpen}
           itemId={selectedItem}
+        />
+      </div>
+
+      <div>
+        <ReserveItemDialog
+          open={reserveDialogOpen}
+          onOpenChange={setReserveDialogOpen}
         />
       </div>
 
