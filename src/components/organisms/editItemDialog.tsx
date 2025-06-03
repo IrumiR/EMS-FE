@@ -15,13 +15,13 @@ import { Switch } from "../ui/switch";
 import { FileUpload } from "primereact/fileupload";
 import { Textarea } from "../ui/textarea";
 import InputField from "../atoms/inputField";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { useRef, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import toast from "react-hot-toast";
 import { useInventoryItem, useUpdateInventoryMutation } from "@/api/inventoryApi";
 import { Loader2 } from "lucide-react";
+import { MultiSelect, MultiSelectChangeEvent } from "primereact/multiselect";
 
 interface EditItemDialogProps {
   open: boolean;
@@ -42,6 +42,17 @@ const validationSchema = Yup.object({
     .required("Price is required"),
   isExternal: Yup.boolean().required(),
 });
+
+const categoryOptions = [
+  { name: "Audio", id: "Audio" },
+  { name: "Lighting", id: "Lighting" },
+  { name: "Staging", id: "Staging" }
+];
+
+const conditionOptions = [
+  { name: "New", id: "New" },
+  { name: "Used", id: "Used" }
+];
 
 export function EditItemDialog({ open, onOpenChange, itemId }: EditItemDialogProps) {
   const { data: response, isLoading: isLoadingItem, error } = useInventoryItem(itemId);
@@ -119,22 +130,20 @@ export function EditItemDialog({ open, onOpenChange, itemId }: EditItemDialogPro
     onOpenChange(false);
   };
 
-  const handleCategoryChange = (value: string) => {
-    const currentCategories = formik.values.category;
-    const updatedCategories = currentCategories.includes(value)
-      ? currentCategories.filter(cat => cat !== value)
-      : [...currentCategories, value];
-    
-    formik.setFieldValue("category", updatedCategories);
+  const categoryItemTemplate = (option: { name: string; id: string }) => {
+    return (
+      <div className="flex items-center py-1 px-2">
+        <span>{option.name}</span>
+      </div>
+    );
   };
 
-  const handleConditionChange = (value: string) => {
-    const currentConditions = formik.values.condition;
-    const updatedConditions = currentConditions.includes(value)
-      ? currentConditions.filter(cond => cond !== value)
-      : [...currentConditions, value];
-    
-    formik.setFieldValue("condition", updatedConditions);
+  const conditionItemTemplate = (option: { name: string; id: string }) => {
+    return (
+      <div className="flex items-center py-1 px-2">
+        <span>{option.name}</span>
+      </div>
+    );
   };
 
   if (error) {
@@ -189,34 +198,27 @@ export function EditItemDialog({ open, onOpenChange, itemId }: EditItemDialogPro
                         >
                           Category
                         </label>
-                        <Select onValueChange={handleCategoryChange}>
-                          <SelectTrigger className="w-full h-9 mt-3">
-                            <SelectValue placeholder={
-                              formik.values.category.length > 0 
-                                ? `${formik.values.category.length} selected`
-                                : "Select category"
-                            } />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Equipment">Equipment</SelectItem>
-                            <SelectItem value="Furniture">Furniture</SelectItem>
-                            <SelectItem value="Electronics">Electronics</SelectItem>
-                            <SelectItem value="Decorations">Decorations</SelectItem>
-                            <SelectItem value="Catering">Catering</SelectItem>
-                            <SelectItem value="Audio">Audio</SelectItem>
-                            <SelectItem value="Lighting">Lighting</SelectItem>
-                            <SelectItem value="Staging">Staging</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {formik.values.category.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {formik.values.category.map((cat, index) => (
-                              <span key={index} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                                {cat}
-                              </span>
-                            ))}
-                          </div>
-                        )}
+                        <div className="mt-3">
+                          <MultiSelect
+                            value={formik.values.category.map(cat => categoryOptions.find(opt => opt.id === cat)).filter(Boolean)}
+                            onChange={(e: MultiSelectChangeEvent) =>
+                              formik.setFieldValue("category", e.value.map((item: any) => item.id))
+                            }
+                            options={categoryOptions}
+                            optionLabel="name"
+                            dataKey="id"
+                            placeholder="Select categories"
+                            maxSelectedLabels={3}
+                            selectedItemsLabel="{0} items selected"
+                            className="prime-multiselect w-full h-9"
+                            itemTemplate={categoryItemTemplate}
+                            style={{ width: "100%" }}
+                            appendTo="self"
+                            filter={true}
+                            showClear={true}
+                            panelClassName="prime-panel"
+                          />
+                        </div>
                         {formik.touched.category && formik.errors.category && (
                           <p className="text-red-500 text-xs mt-1">{formik.errors.category}</p>
                         )}
@@ -228,30 +230,27 @@ export function EditItemDialog({ open, onOpenChange, itemId }: EditItemDialogPro
                         >
                           Condition
                         </label>
-                        <Select onValueChange={handleConditionChange}>
-                          <SelectTrigger className="w-full h-9 mt-3">
-                            <SelectValue placeholder={
-                              formik.values.condition.length > 0 
-                                ? `${formik.values.condition.length} selected`
-                                : "Select condition"
-                            } />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="New">New</SelectItem>
-                            <SelectItem value="Used">Used</SelectItem>
-                            <SelectItem value="Refurbished">Refurbished</SelectItem>
-                            <SelectItem value="Damaged">Damaged</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {formik.values.condition.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {formik.values.condition.map((cond, index) => (
-                              <span key={index} className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
-                                {cond}
-                              </span>
-                            ))}
-                          </div>
-                        )}
+                        <div className="mt-3">
+                          <MultiSelect
+                            value={formik.values.condition.map(cond => conditionOptions.find(opt => opt.id === cond)).filter(Boolean)}
+                            onChange={(e: MultiSelectChangeEvent) =>
+                              formik.setFieldValue("condition", e.value.map((item: any) => item.id))
+                            }
+                            options={conditionOptions}
+                            optionLabel="name"
+                            dataKey="id"
+                            placeholder="Select conditions"
+                            maxSelectedLabels={3}
+                            selectedItemsLabel="{0} items selected"
+                            className="prime-multiselect w-full h-9"
+                            itemTemplate={conditionItemTemplate}
+                            style={{ width: "100%" }}
+                            appendTo="self"
+                            filter={true}
+                            showClear={true}
+                            panelClassName="prime-panel"
+                          />
+                        </div>
                         {formik.touched.condition && formik.errors.condition && (
                           <p className="text-red-500 text-xs mt-1">{formik.errors.condition}</p>
                         )}
