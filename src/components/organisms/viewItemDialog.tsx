@@ -219,7 +219,7 @@ export function ViewItemDialog({
                 </div>
 
                 {/* Assigned Events */}
-                {item.assignedEvent &&
+                {/* {item.assignedEvent &&
                   Array.isArray(item.assignedEvent) &&
                   item.assignedEvent.length > 0 && (
                     <div>
@@ -238,7 +238,7 @@ export function ViewItemDialog({
                         ))}
                       </div>
                     </div>
-                  )}
+                  )} */}
 
                 {/* Timestamps */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-gray-500 pt-4 border-t">

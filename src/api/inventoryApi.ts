@@ -68,12 +68,11 @@ export const useUpdateInventoryMutation = (
   
   return useMutation({
     mutationFn: async ({ itemId, itemData }: { itemId: string, itemData: Partial<InventoryItemData> }) => {
-      const response = await authFetch.put(`/api/inventory/${itemId}`, itemData);
+      const response = await authFetch.put(`/inventory/${itemId}`, itemData);
       return response.data;
     },
     onSuccess: (data) => {
-      // Invalidate and refetch inventory list and the specific item
-      queryClient.invalidateQueries("inventoryItems");
+      queryClient.invalidateQueries("get_all_inventory");
       queryClient.invalidateQueries(["inventoryItem", data.inventoryItem._id]);
       if (onSuccess) onSuccess(data);
     },

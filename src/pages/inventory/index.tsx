@@ -209,7 +209,7 @@ function InventoryScreen() {
                   size="sm"
                   className="p-1 hover:bg-gray-100"
                   onClick={() => {
-                    setSelectedItem(row);
+                    setSelectedItem(row._id);
                     setEditDialogOpen(true);
                   }}
                 >
@@ -240,6 +240,7 @@ function InventoryScreen() {
         <EditItemDialog
           open={editDialogOpen}
           onOpenChange={setEditDialogOpen}
+          itemId={selectedItem}
         />
       </div>
 

@@ -4,36 +4,398 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "../ui/button";
+import { ScrollArea } from "../ui/scroll-area";
+import { Separator } from "../ui/separator";
+import { Label } from "../ui/label";
+import { Switch } from "../ui/switch";
+import { FileUpload } from "primereact/fileupload";
+import { Textarea } from "../ui/textarea";
+import InputField from "../atoms/inputField";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { useRef, useEffect } from "react";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import toast from "react-hot-toast";
+import { useInventoryItem, useUpdateInventoryMutation } from "@/api/inventoryApi";
+import { Loader2 } from "lucide-react";
 
 interface EditItemDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  itemId: string | null;
 }
 
+const validationSchema = Yup.object({
+  itemName: Yup.string().required("Item name is required"),
+  category: Yup.array().min(1, "At least one category is required"),
+  condition: Yup.array().min(1, "At least one condition is required"),
+  totalQuantity: Yup.number()
+    .positive("Total quantity must be positive")
+    .integer("Total quantity must be an integer")
+    .required("Total quantity is required"),
+  price: Yup.number()
+    .positive("Price must be positive")
+    .required("Price is required"),
+  isExternal: Yup.boolean().required(),
+});
 
-export function EditItemDialog({open, onOpenChange}: EditItemDialogProps) {
+export function EditItemDialog({ open, onOpenChange, itemId }: EditItemDialogProps) {
+  const { data: response, isLoading: isLoadingItem, error } = useInventoryItem(itemId);
+  const updateInventoryMutation = useUpdateInventoryMutation();
+  const closeRef = useRef<HTMLButtonElement>(null);
 
-    const handleOpenChange = (newOpen: boolean) => {
-        onOpenChange(newOpen);
-    };
- 
+  const item = response?.inventoryItem || response?.data || response;
+
+  const formik = useFormik({
+    initialValues: {
+      itemName: "",
+      category: [] as string[],
+      condition: [] as string[],
+      totalQuantity: "",
+      price: "",
+      itemDescription: "",
+      isExternal: false,
+    },
+    validationSchema,
+    onSubmit: async (values) => {
+      if (!itemId) return;
+
+      try {
+        const updateData = {
+          itemName: values.itemName,
+          category: values.category,
+          condition: values.condition,
+          totalQuantity: parseInt(values.totalQuantity),
+          price: parseFloat(values.price),
+          itemDescription: values.itemDescription,
+          isExternal: values.isExternal,
+        };
+
+        await updateInventoryMutation.mutateAsync({
+          itemId: itemId,
+          itemData: updateData,
+        });
+
+        toast.success("Item updated successfully!");
+        onOpenChange(false);
+      } catch (error) {
+        toast.error("Failed to update item. Please try again.");
+        console.error("Update error:", error);
+      }
+    },
+  });
+
+  // Load item data when dialog opens and item data is available
+  useEffect(() => {
+    if (open && item && typeof item === "object") {
+      formik.setValues({
+        itemName: item.itemName || "",
+        category: Array.isArray(item.category) ? item.category : item.category ? [item.category] : [],
+        condition: Array.isArray(item.condition) ? item.condition : item.condition ? [item.condition] : [],
+        totalQuantity: item.totalQuantity ? item.totalQuantity.toString() : "",
+        price: item.price ? item.price.toString() : "",
+        itemDescription: item.itemDescription || "",
+        isExternal: item.isExternal || false,
+      });
+    }
+  }, [open, item]);
+
+  // Reset form when dialog closes
+  useEffect(() => {
+    if (!open) {
+      formik.resetForm();
+    }
+  }, [open]);
+
+  const handleOpenChange = (newOpen: boolean) => {
+    onOpenChange(newOpen);
+  };
+
+  const handleCancel = () => {
+    onOpenChange(false);
+  };
+
+  const handleCategoryChange = (value: string) => {
+    const currentCategories = formik.values.category;
+    const updatedCategories = currentCategories.includes(value)
+      ? currentCategories.filter(cat => cat !== value)
+      : [...currentCategories, value];
+    
+    formik.setFieldValue("category", updatedCategories);
+  };
+
+  const handleConditionChange = (value: string) => {
+    const currentConditions = formik.values.condition;
+    const updatedConditions = currentConditions.includes(value)
+      ? currentConditions.filter(cond => cond !== value)
+      : [...currentConditions, value];
+    
+    formik.setFieldValue("condition", updatedConditions);
+  };
+
+  if (error) {
+    toast.error("Failed to load item details");
+  }
+
   return (
-   <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild></DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Edit Item</DialogTitle>
-          <DialogDescription>Edit item details here.</DialogDescription>
-        </DialogHeader>
-        {/* Add your item details here */}
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="p-0 w-[90vw] sm:w-[85vw] md:w-[75vw] lg:w-[600px] max-h-[80vh]">
+        <ScrollArea className="w-full max-h-[80vh]">
+          <form onSubmit={formik.handleSubmit}>
+            <DialogHeader>
+              <DialogTitle className="py-5 px-4 sm:px-7 -mb-2">
+                Edit Item
+              </DialogTitle>
+              <Separator />
+              <DialogDescription className="py-4 px-4 sm:px-7">
+                {isLoadingItem ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                    <span className="ml-2 text-gray-600">Loading item details...</span>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="w-full">
+                      <label
+                        htmlFor="itemName"
+                        className="text-sm font-medium text-gray-700 text-left"
+                      >
+                        Item Name
+                      </label>
+                      <InputField
+                        id="itemName"
+                        name="itemName"
+                        type="text"
+                        placeholder="Enter item name"
+                        className="h-9 mt-3"
+                        value={formik.values.itemName}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                      />
+                      {formik.touched.itemName && formik.errors.itemName && (
+                        <p className="text-red-500 text-xs mt-1">{formik.errors.itemName}</p>
+                      )}
+                    </div>
+                    
+                    <div className="flex flex-col sm:flex-row sm:gap-4">
+                      <div className="w-full mb-4 sm:mb-0">
+                        <label
+                          htmlFor="category"
+                          className="mb-2 text-sm font-medium text-gray-700 text-left"
+                        >
+                          Category
+                        </label>
+                        <Select onValueChange={handleCategoryChange}>
+                          <SelectTrigger className="w-full h-9 mt-3">
+                            <SelectValue placeholder={
+                              formik.values.category.length > 0 
+                                ? `${formik.values.category.length} selected`
+                                : "Select category"
+                            } />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Equipment">Equipment</SelectItem>
+                            <SelectItem value="Furniture">Furniture</SelectItem>
+                            <SelectItem value="Electronics">Electronics</SelectItem>
+                            <SelectItem value="Decorations">Decorations</SelectItem>
+                            <SelectItem value="Catering">Catering</SelectItem>
+                            <SelectItem value="Audio">Audio</SelectItem>
+                            <SelectItem value="Lighting">Lighting</SelectItem>
+                            <SelectItem value="Staging">Staging</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {formik.values.category.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {formik.values.category.map((cat, index) => (
+                              <span key={index} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                                {cat}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {formik.touched.category && formik.errors.category && (
+                          <p className="text-red-500 text-xs mt-1">{formik.errors.category}</p>
+                        )}
+                      </div>
+                      <div className="w-full">
+                        <label
+                          htmlFor="condition"
+                          className="mb-2 text-sm font-medium text-gray-700 text-left"
+                        >
+                          Condition
+                        </label>
+                        <Select onValueChange={handleConditionChange}>
+                          <SelectTrigger className="w-full h-9 mt-3">
+                            <SelectValue placeholder={
+                              formik.values.condition.length > 0 
+                                ? `${formik.values.condition.length} selected`
+                                : "Select condition"
+                            } />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="New">New</SelectItem>
+                            <SelectItem value="Used">Used</SelectItem>
+                            <SelectItem value="Refurbished">Refurbished</SelectItem>
+                            <SelectItem value="Damaged">Damaged</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {formik.values.condition.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {formik.values.condition.map((cond, index) => (
+                              <span key={index} className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+                                {cond}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {formik.touched.condition && formik.errors.condition && (
+                          <p className="text-red-500 text-xs mt-1">{formik.errors.condition}</p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col sm:flex-row sm:gap-4">
+                      <div className="w-full mb-4 sm:mb-0">
+                        <label
+                          htmlFor="totalQuantity"
+                          className="mb-2 text-sm font-medium text-gray-700 text-left"
+                        >
+                          Total Quantity
+                        </label>
+                        <InputField
+                          id="totalQuantity"
+                          name="totalQuantity"
+                          type="number"
+                          placeholder="Enter total quantity"
+                          className="h-9 mt-3"
+                          value={formik.values.totalQuantity}
+                          onChange={formik.handleChange}
+                          onBlur={formik.handleBlur}
+                        />
+                        {formik.touched.totalQuantity && formik.errors.totalQuantity && (
+                          <p className="text-red-500 text-xs mt-1">{formik.errors.totalQuantity}</p>
+                        )}
+                      </div>
+                      <div className="w-full">
+                        <label
+                          htmlFor="price"
+                          className="mb-2 text-sm font-medium text-gray-700 text-left"
+                        >
+                          Unit Price
+                        </label>
+                        <InputField
+                          id="price"
+                          name="price"
+                          type="number"
+                          step="0.01"
+                          placeholder="Enter price"
+                          className="h-9 mt-3"
+                          value={formik.values.price}
+                          onChange={formik.handleChange}
+                          onBlur={formik.handleBlur}
+                        />
+                        {formik.touched.price && formik.errors.price && (
+                          <p className="text-red-500 text-xs mt-1">{formik.errors.price}</p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label
+                        htmlFor="itemDescription"
+                        className="mb-2 text-sm font-medium text-gray-700 text-left"
+                      >
+                        Description
+                      </label>
+                      <Textarea
+                        id="itemDescription"
+                        name="itemDescription"
+                        placeholder="Enter item description"
+                        className="h-24 mt-3"
+                        value={formik.values.itemDescription}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                      />
+                      {formik.touched.itemDescription && formik.errors.itemDescription && (
+                        <p className="text-red-500 text-xs mt-1">{formik.errors.itemDescription}</p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <label
+                        htmlFor="images"
+                        className="mb-2 text-sm font-medium text-gray-700 text-left"
+                      >
+                        Images
+                      </label>
+                      <div className="mt-3">
+                        <div className="border rounded-md p-2">
+                          <FileUpload
+                            name="demo[]"
+                            url={'/api/upload'}
+                            multiple
+                            accept="image/*"
+                            maxFileSize={1000000}
+                            className="w-full custom-file-upload"
+                            emptyTemplate={
+                              <p className="text-sm text-gray-500 text-center py-4">
+                                Drag and drop files here to upload.
+                              </p>
+                            }
+                          />
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Max file size: 1MB. Accepted formats: JPG, PNG, GIF.
+                      </p>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Switch 
+                        id="isExternal"
+                        checked={formik.values.isExternal}
+                        onCheckedChange={(checked) => formik.setFieldValue("isExternal", checked)}
+                      />
+                      <Label className="text-sm font-medium text-gray-700">
+                        Is External
+                      </Label>
+                    </div>
+                  </div>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            <Separator />
+            <DialogFooter className="p-3 flex flex-col sm:flex-row gap-2 sm:gap-3 justify-end">
+              <DialogClose
+                ref={closeRef}
+                className="bg-[#EDF2F6] text-[#475569] hover:bg-slate-200 text-sm font-medium py-2 px-4 rounded-lg w-full sm:w-auto flex justify-center items-center"
+                onClick={handleCancel}
+                type="button"
+              >
+                Cancel
+              </DialogClose>
+              <Button
+                type="submit"
+                disabled={updateInventoryMutation.isLoading || isLoadingItem}
+                className="bg-green-600 text-white text-sm font-medium py-2 px-4 rounded-lg w-full sm:w-auto flex justify-center items-center"
+              >
+                {updateInventoryMutation.isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Updating...
+                  </>
+                ) : (
+                  "Save"
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </ScrollArea>
       </DialogContent>
-      <DialogFooter>
-      
-      </DialogFooter>
     </Dialog>
   );
 }
