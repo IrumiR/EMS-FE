@@ -44,7 +44,7 @@ export const useCreateInventoryMutation = (
 //getAll
 export const useInventoryItems = () => {
   return useQuery("inventoryItems", async () => {
-    const response = await authFetch.get("/api/inventory/all");
+    const response = await authFetch.get("/inventory/all");
     return response.data;
   });
 };
@@ -92,7 +92,7 @@ export const useDeleteInventoryMutation = (
   
   return useMutation({
     mutationFn: async (itemId: string) => {
-      const response = await authFetch.delete(`/api/inventory/${itemId}`);
+      const response = await authFetch.delete(`/inventory/${itemId}`);
       return response.data;
     },
     onSuccess: () => {
