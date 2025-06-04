@@ -15,12 +15,13 @@ import { useState } from "react";
 import { ViewItemDialog } from "@/components/organisms/viewItemDialog";
 import { EditItemDialog } from "@/components/organisms/editItemDialog";
 import { ReserveItemDialog } from "@/components/organisms/reserveItemDialog";
+import { Badge } from "@/components/ui/badge";
 
 function InventoryScreen() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("All Statuses");
+  const [selectedItemType, setSelectedItemType] = useState("All");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
 
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
@@ -34,13 +35,14 @@ function InventoryScreen() {
     { key: "category", label: "Category" },
     { key: "condition", label: "Condition" },
     { key: "totalQuantity", label: "Total Quantity" },
-    { key: "remainingQuantity", label: "Remaining Quantity" },
+    { key: "itemType", label: "Item Type" },
   ];
 
   const { data, isLoading } = useGetAllInventory(
     currentPage,
     rowsPerPage,
-    searchTerm
+    searchTerm,
+    selectedItemType !== "All" ? selectedItemType.toLowerCase() : undefined
   );
 
   const inventoryItems = data?.inventoryItems || [];
@@ -57,15 +59,18 @@ function InventoryScreen() {
     condition: Array.isArray(item.condition)
       ? item.condition.join(", ")
       : item.condition,
+     itemType: (
+    <Badge 
+      variant={item.isExternal ? "destructive" : "default"}
+      className={item.isExternal ? "bg-red-100 text-red-800 hover:bg-red-200" : "bg-green-100 text-green-800 hover:bg-green-200"}
+    >
+      {item.isExternal ? "External" : "Internal"}
+    </Badge>
+  ),
   }));
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
-    setCurrentPage(1);
-  };
-
-  const handleStatusChange = (status: string) => {
-    setSelectedStatus(status);
     setCurrentPage(1);
   };
 
@@ -117,29 +122,19 @@ function InventoryScreen() {
           <DropdownMenu>
             <DropdownMenuTrigger>
               <Button variant="outline" className="bg-transparent">
-                {selectedStatus}
+                {selectedItemType}
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem
-                onClick={() => handleStatusChange("All Statuses")}
-              >
-                All Statuses
+              <DropdownMenuItem onClick={() => setSelectedItemType("All")}>
+                All
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusChange("Available")}>
-                Available
+              <DropdownMenuItem onClick={() => setSelectedItemType("Internal")}>
+                Internal
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleStatusChange("Out of Stock")}
-              >
-                Out of Stock
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusChange("Reserved")}>
-                Reserved
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusChange("Damaged")}>
-                Damaged
+              <DropdownMenuItem onClick={() => setSelectedItemType("External")}>
+                External
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -158,29 +153,19 @@ function InventoryScreen() {
                 All Categories
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => handleCategoryChange("Equipment")}
+                onClick={() => handleCategoryChange("Audio")}
               >
-                Equipment
+                Audio
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => handleCategoryChange("Furniture")}
+                onClick={() => handleCategoryChange("Staging")}
               >
-                Furniture
+                Staging
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => handleCategoryChange("Electronics")}
+                onClick={() => handleCategoryChange("Lighting")}
               >
-                Electronics
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleCategoryChange("Decorations")}
-              >
-                Decorations
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleCategoryChange("Catering")}
-              >
-                Catering
+                Lighting
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

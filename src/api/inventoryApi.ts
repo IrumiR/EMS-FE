@@ -142,32 +142,34 @@ export interface InventoryItem {
   }
 
 
-  export const useGetAllInventory = (
-    page?: number,
-    pageSize?: number,
-    search?: string
-  ): UseQueryResult<InventoryResponse> => {
-    return useQuery({
-      queryKey: ["get_all_inventory", page, pageSize, search],
-      queryFn: async () => {
-        try {
-          const response = await authFetch.get<InventoryResponse>(
-            `/inventory/all?limit=${pageSize ?? 10}&page=${page ?? 1}${search ? `&search=${encodeURIComponent(search)}` : ""}`
-          );
-          return response.data;
-        } catch (error) {
-          throw error;
-        }
-      },
-      onSuccess: () => {
-        console.log("Inventory items retrieved successfully");
-      },
-      onError: (error) => {
-        console.error("Fetch error:", error);
-      },
-    });
-  };
-  
+ export const useGetAllInventory = (
+  page?: number,
+  pageSize?: number,
+  search?: string,
+  itemType?: string 
+): UseQueryResult<InventoryResponse> => {
+  return useQuery({
+    queryKey: ["get_all_inventory", page, pageSize, search, itemType],
+    queryFn: async () => {
+      try {
+        const response = await authFetch.get<InventoryResponse>(
+          `/inventory/all?limit=${pageSize ?? 10}&page=${page ?? 1}${
+            search ? `&search=${encodeURIComponent(search)}` : ""
+          }${itemType ? `&itemType=${itemType}` : ""}` // ✅ itemType added here
+        );
+        return response.data;
+      } catch (error) {
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      console.log("Inventory items retrieved successfully");
+    },
+    onError: (error) => {
+      console.error("Fetch error:", error);
+    },
+  });
+};
 
   export interface InventoryOption{
     itemId: string;
