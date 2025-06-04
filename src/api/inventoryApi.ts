@@ -202,3 +202,37 @@ export interface InventoryItem {
       },
     });
   };
+
+   export interface ReserveInventory{
+    itemId: string;
+    eventId: string;
+    date: string;
+    reservedQuantity: number;
+  }
+
+ export interface ReserveInventoryResponse {
+    message: string;
+    items: ReserveInventory[];
+  }
+
+  export const useReserveInventoryMutation = (
+    onSuccess?: (data: ReserveInventoryResponse) => void,
+    onError?: (message: string) => void
+  ) => {
+    const queryClient = useQueryClient();
+    
+    return useMutation({
+      mutationFn: async (reservationData: ReserveInventory) => {
+        const response = await authFetch.post("/inventory/reserve", reservationData);
+        return response.data;
+      },
+      onSuccess: (data) => {
+        queryClient.invalidateQueries("inventoryItems");
+        if (onSuccess) onSuccess(data);
+      },
+      onError: (error) => {
+        const message = (error as any)?.response?.data?.message || "Failed to reserve inventory item";
+        if (onError) onError(message);
+      },
+    });
+  }

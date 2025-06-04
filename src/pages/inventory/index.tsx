@@ -255,6 +255,7 @@ function InventoryScreen() {
         <ReserveItemDialog
           open={reserveDialogOpen}
           onOpenChange={setReserveDialogOpen}
+          itemId={reserveItemId ?? ""}
         />
       </div>
 
