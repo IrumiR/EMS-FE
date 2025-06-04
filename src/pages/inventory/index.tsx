@@ -11,7 +11,7 @@ import { HiSearch } from "react-icons/hi";
 import TableComponent from "@/components/molecules/table";
 import AddItemDialog from "@/components/organisms/addItemDialog";
 import { useGetAllInventory } from "@/api/inventoryApi";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ViewItemDialog } from "@/components/organisms/viewItemDialog";
 import { EditItemDialog } from "@/components/organisms/editItemDialog";
 import { ReserveItemDialog } from "@/components/organisms/reserveItemDialog";
@@ -50,7 +50,24 @@ function InventoryScreen() {
 
   console.log("Inventory data", data?.inventoryItems);
 
-  const formattedItems = inventoryItems.map((item) => ({
+  // Filter items by category on the frontend
+  const filteredItems = useMemo(() => {
+    if (selectedCategory === "All Categories") {
+      return inventoryItems;
+    }
+    
+    return inventoryItems.filter((item) => {
+      const itemCategories = Array.isArray(item.category) 
+        ? item.category 
+        : [item.category];
+      
+      return itemCategories.some(category => 
+        category?.toLowerCase() === selectedCategory.toLowerCase()
+      );
+    });
+  }, [inventoryItems, selectedCategory]);
+
+  const formattedItems = filteredItems.map((item) => ({
     ...item,
     // Format arrays to display as comma-separated strings
     category: Array.isArray(item.category)
