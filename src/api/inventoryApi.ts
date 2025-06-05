@@ -31,7 +31,7 @@ export const useCreateInventoryMutation = (
       return response.data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries("inventoryItems");
+      queryClient.invalidateQueries("get_all_inventory");
       if (onSuccess) onSuccess(data);
     },
     onError: (error) => {
@@ -41,13 +41,6 @@ export const useCreateInventoryMutation = (
   });
 };
 
-//getAll
-export const useInventoryItems = () => {
-  return useQuery("inventoryItems", async () => {
-    const response = await authFetch.get("/inventory/all");
-    return response.data;
-  });
-};
 
 //getById
 export const useInventoryItem = (itemId: string | null) => {
@@ -229,7 +222,7 @@ export interface InventoryItem {
         return response.data;
       },
       onSuccess: (data) => {
-        queryClient.invalidateQueries("inventoryItems");
+        queryClient.invalidateQueries("get_all_inventory");
         if (onSuccess) onSuccess(data);
       },
       onError: (error) => {

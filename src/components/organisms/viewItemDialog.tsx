@@ -95,7 +95,6 @@ export function ViewItemDialog({
                     </p>
                   )}
                 </div>
-
                 {/* Categories and Conditions */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
@@ -125,7 +124,9 @@ export function ViewItemDialog({
                   </div>
 
                   <div>
-                    <h4 className="font-medium text-gray-700 mb-2">Conditions</h4>
+                    <h4 className="font-medium text-gray-700 mb-2">
+                      Conditions
+                    </h4>
                     <div className="flex flex-wrap gap-1">
                       {item.condition &&
                       Array.isArray(item.condition) &&
@@ -147,27 +148,15 @@ export function ViewItemDialog({
                     </div>
                   </div>
                 </div>
-
                 {/* Quantity and Price */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
                   <div className="text-center">
                     <p className="text-sm text-gray-600">Total Quantity</p>
                     <p className="text-xl font-semibold text-blue-600">
                       {item.totalQuantity || 0}
                     </p>
                   </div>
-                  <div className="text-center">
-                    <p className="text-sm text-gray-600">Remaining</p>
-                    <p
-                      className={`text-xl font-semibold ${
-                        (item.remainingQuantity || 0) > 0
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      {item.remainingQuantity || 0}
-                    </p>
-                  </div>
+                 
                   <div className="text-center">
                     <p className="text-sm text-gray-600 flex items-center justify-center gap-1">
                       Unit Price
@@ -177,8 +166,7 @@ export function ViewItemDialog({
                     </p>
                   </div>
                 </div>
-
-                 {/* Variations and Source */}
+                {/* Variations and Source */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
                   {item.variations &&
                     Array.isArray(item.variations) &&
@@ -218,27 +206,52 @@ export function ViewItemDialog({
                   </div>
                 </div>
 
-                {/* Assigned Events */}
-                {/* {item.assignedEvent &&
-                  Array.isArray(item.assignedEvent) &&
-                  item.assignedEvent.length > 0 && (
+                {/* Reservations */}
+                {item.reservations &&
+                  Array.isArray(item.reservations) &&
+                  item.reservations.length > 0 && (
                     <div>
-                      <h4 className="font-medium text-gray-700 mb-2">
-                        Assigned Events
+                      <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        Reservations ({item.reservations.length})
                       </h4>
-                      <div className="flex flex-wrap gap-1">
-                        {item.assignedEvent.map((eventId: string, index: number) => (
-                          <Badge
-                            key={index}
-                            variant="outline"
-                            className="text-xs bg-blue-50 text-blue-700"
-                          >
-                            {item.eventNames?.[eventId] || eventId}
-                          </Badge>
-                        ))}
+                      <div className="space-y-2 max-h-40 overflow-y-auto">
+                        {item.reservations.map(
+                          (reservation: any, index: number) => (
+                            <div
+                              key={reservation._id || index}
+                              className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-100"
+                            >
+                              <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-2">
+                                  <Badge
+                                    variant="outline"
+                                    className="text-xs bg-white"
+                                  >
+                                    {reservation.eventId?.eventName || "Unknown Event"}
+                                  </Badge>
+                                  <span className="text-xs text-gray-600">
+                                    Qty: {reservation.reservedQuantity || 0}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-gray-500">
+                                  {reservation.date
+                                    ? new Date(
+                                        reservation.date
+                                      ).toLocaleDateString("en-US", {
+                                        year: "numeric",
+                                        month: "short",
+                                        day: "numeric",
+                                      })
+                                    : "No date"}
+                                </p>
+                              </div>
+                            </div>
+                          )
+                        )}
                       </div>
                     </div>
-                  )} */}
+                  )}
 
                 {/* Timestamps */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-gray-500 pt-4 border-t">
@@ -246,18 +259,21 @@ export function ViewItemDialog({
                     <Calendar className="h-3 w-3" />
                     <div>
                       <p className="font-medium">Created</p>
-                      <p>{item.createdAt ? formatDate(item.createdAt) : "N/A"}</p>
+                      <p>
+                        {item.createdAt ? formatDate(item.createdAt) : "N/A"}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Calendar className="h-3 w-3" />
                     <div>
                       <p className="font-medium">Last Updated</p>
-                      <p>{item.updatedAt ? formatDate(item.updatedAt) : "N/A"}</p>
+                      <p>
+                        {item.updatedAt ? formatDate(item.updatedAt) : "N/A"}
+                      </p>
                     </div>
                   </div>
                 </div>
-
                 {/* Item ID */}
                 <div className="text-xs text-gray-400 font-mono bg-gray-50 p-2 rounded">
                   Item ID: {item._id}
