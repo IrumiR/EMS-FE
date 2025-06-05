@@ -18,6 +18,7 @@ import { Toaster } from "react-hot-toast";
 import TeamScreen from "@/pages/team";
 import ProtectedRoute from "./ProtectedRoutes";
 import Unauthorized from "@/pages/unauthorized";
+import ProfileScreen from "@/pages/profile";
 
 const AppRoutes = () => {
   const role =
@@ -101,6 +102,14 @@ const AppRoutes = () => {
                   element={
                     <MainLayout role={role}>
                       <CalendarScreen />
+                    </MainLayout>
+                  }
+                />
+                <Route
+                  path="profile"
+                  element={
+                    <MainLayout role={role}>
+                      <ProfileScreen />
                     </MainLayout>
                   }
                 />
