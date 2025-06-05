@@ -9,7 +9,6 @@ import {
   Eye,
   Pencil,
   MessageCircle,
-  MessageCircleHeart,
   ArrowUp,
   MoveDown,
 } from "lucide-react";
@@ -94,6 +93,16 @@ export default function TaskCard({ task }: { task: Task }) {
     });
   };
 
+  // Check if task is overdue
+  const isTaskOverdue = () => {
+    if (!task.endDate || task.endDate === "NA") return false;
+    const endDate = new Date(task.endDate);
+    const currentDate = new Date();
+    endDate.setHours(0, 0, 0, 0);
+    currentDate.setHours(0, 0, 0, 0);
+    return endDate < currentDate;
+  };
+
   return (
     <Card className="w-full bg-white shadow-sm border border-gray-200 rounded-lg">
       <CardContent className="p-4 pt-2">
@@ -146,6 +155,15 @@ export default function TaskCard({ task }: { task: Task }) {
             </div>
           </div>
         </div>
+
+        {/* Overdue Message */}
+        {isTaskOverdue() && (
+          <div className="mb-3">
+            <span className="px-2 py-1 rounded-full text-sm text-red-500 bg-red-50 font-medium">
+              This task is overdue
+            </span>
+          </div>
+        )}
       </CardContent>
 
       <EditTaskDialog
@@ -223,17 +241,6 @@ export default function TaskCard({ task }: { task: Task }) {
               </TooltipTrigger>
               <TooltipContent>
                 <p>View Task</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button className="p-1 hover:bg-gray-100 rounded transition-colors">
-                  <MessageCircleHeart className="w-4 h-4 text-gray-500" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Feedback</p>
               </TooltipContent>
             </Tooltip>
 

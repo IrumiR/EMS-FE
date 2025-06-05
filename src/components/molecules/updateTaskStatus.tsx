@@ -11,7 +11,7 @@ interface StatusSelectProps {
   status: string;
 }
 
-const statusOptions = ["To Do", "In Progress", "Over Due", "Completed", "Cancelled"];
+const statusOptions = ["To Do", "In Progress", "Completed", "Cancelled"];
 
 const getStatusColor = (status: string) => {
   switch (status.toLowerCase()) {
