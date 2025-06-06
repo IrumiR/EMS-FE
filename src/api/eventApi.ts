@@ -91,14 +91,29 @@ export interface EventResponse {
 export const useGetAllEvents = (
   page?: number,
   pageSize?: number,
-  search?: string
+  search?: string,
+  clientId?: string
 ): UseQueryResult<EventResponse> => {
   return useQuery({
-    queryKey: ["get_all_events", page, pageSize, search],
+    queryKey: ["get_all_events", page, pageSize, search, clientId],
     queryFn: async () => {
       try {
+        // Retrieve user from localStorage
+        const role = localStorage.getItem("role");
+        const userId = localStorage.getItem("userId");
+
+        // If role is client, use their _id as clientId
+        const effectiveClientId =
+          role === "client" ? userId : clientId;
+
+        const params = new URLSearchParams();
+        params.append("limit", String(pageSize ?? 10));
+        params.append("page", String(page ?? 1));
+        if (search) params.append("search", search);
+        if (effectiveClientId) params.append("clientId", effectiveClientId);
+
         const response = await authFetch.get<EventResponse>(
-          `/events/all?limit=${pageSize ?? 10}&page=${page ?? 1}${search ? `&search=${encodeURIComponent(search)}` : ""}`
+          `/events/all?${params.toString()}`
         );
         return response.data;
       } catch (error) {
@@ -113,6 +128,7 @@ export const useGetAllEvents = (
     },
   });
 };
+
 
 export const useGetEventById = (eventId: string | null) => {
   return useQuery(["get_event_by_id", eventId], async () => {

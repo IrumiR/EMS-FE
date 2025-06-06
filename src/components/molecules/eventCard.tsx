@@ -131,10 +131,10 @@ function EventCard({
         <div className="w-full">
           <Progress
             value={progress}
-            className="h-1 mb-1 [&>div]:bg-emerald-500"
+            className="h-2 mb-1 bg-teal-100 [&>div]:bg-emerald-500"
           />
           <div className="flex justify-between items-center text-xs">
-            <span className="text-gray-500">{progress}%</span>
+            <span className="text-gray-500">{progress.toFixed(0)}%</span>
             <div className="flex space-x-2">
               <Button
                 onClick={handleEdit}
