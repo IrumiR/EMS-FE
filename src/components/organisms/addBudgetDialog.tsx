@@ -17,8 +17,10 @@ import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { useGetAllEventsDropdown } from "@/api/taskApi";
+import { useGetClientOptions } from "@/api/authApi";
 
 interface Expense {
   expense: string;
@@ -33,6 +35,11 @@ export function AddBudgetDialog() {
     { expense: "", value: "" },
   ]);
   const [totalAmount, setTotalAmount] = useState("");
+  const eventList = useGetAllEventsDropdown();
+  const [selectedEventId, setSelectedEventId] = useState<string>("");
+  const [selectedClientId, setSelectedClientId] = useState<string>("");
+  const { data: clientsData, isLoading: clientsLoading } =
+    useGetClientOptions();
 
   // Calculate total from all expense values
   const calculateTotal = () => {
@@ -134,15 +141,32 @@ export function AddBudgetDialog() {
             {/* Client Dropdown */}
             <div className="grid gap-2">
               <Label htmlFor="client">Client</Label>
-              <Select value={client} onValueChange={setClient}>
+              <Select
+                value={selectedClientId}
+                onValueChange={(value) => setSelectedClientId(value)}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select Client" />
                 </SelectTrigger>
                 <SelectContent>
-                  {/* Add your client options here */}
-                  <SelectItem value="placeholder">
-                    No clients available
-                  </SelectItem>
+                  {clientsLoading ? (
+                    <SelectItem value="loading" disabled>
+                      <div className="flex items-center">
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Loading clients...
+                      </div>
+                    </SelectItem>
+                  ) : clientsData?.clients?.length ? (
+                    clientsData.clients.map((client) => (
+                      <SelectItem key={client.userId} value={client.userId}>
+                        {client.userName}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="no-clients" disabled>
+                      No clients available
+                    </SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -150,15 +174,25 @@ export function AddBudgetDialog() {
             {/* Event Dropdown */}
             <div className="grid gap-2">
               <Label htmlFor="event">Event</Label>
-              <Select value={event} onValueChange={setEvent}>
+              <Select
+                value={selectedEventId}
+                onValueChange={(value) => setSelectedEventId(value)}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select Event" />
                 </SelectTrigger>
                 <SelectContent>
-                  {/* Add your event options here */}
-                  <SelectItem value="placeholder">
-                    No events available
-                  </SelectItem>
+                  {eventList.data?.events?.length ? (
+                    eventList.data.events.map((event) => (
+                      <SelectItem key={event._id} value={event._id}>
+                        {event.eventName}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="no-events" disabled>
+                      No events available
+                    </SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>
