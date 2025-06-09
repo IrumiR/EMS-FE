@@ -24,38 +24,21 @@ import { useUpdateBudget } from "@/api/budgetApi";
 import toast from "react-hot-toast";
 import * as Yup from "yup";
 import { useFormik } from "formik";
+import { Budget } from "../types";
 
-interface Expense {
+type Expense = {
   expenseName: string;
-  amount: string;
+  amount: string; 
   _id?: string;
-}
+};
 
-interface Budget {
-  _id: string;
-  eventId: {
-    _id: string;
-    eventName: string;
-  };
-  clientId: {
-    _id: string;
-    userName: string;
-  };
-  isApproved: boolean;
-  expenses: Array<{
-    expenseName: string;
-    amount: number;
-    _id: string;
-  }>;
-  totalAmount: number;
-  discount: number;
-  remarks: string;
-}
+
 
 interface EditBudgetDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  budget?: Budget | null;
+  budget?: Budget ;
+  budgetId: string
 }
 
 // Validation schema
@@ -81,16 +64,36 @@ const validationSchema = Yup.object({
     }),
 });
 
-export function EditBudgetDialog({ open, onOpenChange, budget }: EditBudgetDialogProps) {
+const onSuccess = () => {
+  toast.success("Budget updated successfully!", {
+    id: "success-toast",
+    position: "top-center",
+    duration: 3000,
+  });
+};
+
+const onError = (message: string) => {
+  toast.error(message, {
+    id: "error-toast",
+    position: "top-center",
+    duration: 4000,
+  });
+};
+
+export function EditBudgetDialog({ open, onOpenChange, budget, budgetId }: EditBudgetDialogProps) {
   const eventList = useGetAllEventsDropdown();
   const { data: clientsData, isLoading: clientsLoading } = useGetClientOptions();
-  const { mutate: updateBudget, isLoading: isUpdating } = useUpdateBudget();
+  const { mutate: updateBudget, isLoading: isUpdating } = useUpdateBudget(
+    budgetId,
+    onSuccess,
+    onError
+  );
 
   const formik = useFormik({
     initialValues: {
       clientId: "",
       eventId: "",
-      expenses: [{ expenseName: "", amount: "" }] as Expense[],
+      expenses: [{ expenseName: "", amount: "" }] as unknown as Expense[],
       totalAmount: "",
     },
     validationSchema,
@@ -198,14 +201,14 @@ export function EditBudgetDialog({ open, onOpenChange, budget }: EditBudgetDialo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh]">
+      <DialogContent className="max-w-2xl h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-center">Edit Budget</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={formik.handleSubmit}>
-          <ScrollArea className="max-h-[50vh] pr-4">
-            <div className="grid gap-4 py-4">
+        <form onSubmit={formik.handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <ScrollArea className="flex-1 min-h-0">
+            <div className="grid gap-4 py-4 pr-4">
               {/* Client Dropdown */}
               <div className="grid gap-2">
                 <Label htmlFor="client">Client</Label>
@@ -272,7 +275,7 @@ export function EditBudgetDialog({ open, onOpenChange, budget }: EditBudgetDialo
               </div>
 
               {/* Expenses Section */}
-              <div className="grid gap-3">
+              <div className="grid gap-3 overflow-auto">
                 <Label>Expenses</Label>
                 {formik.values.expenses.map((expense, index) => (
                   <div key={index}>
@@ -364,7 +367,7 @@ export function EditBudgetDialog({ open, onOpenChange, budget }: EditBudgetDialo
             </div>
           </ScrollArea>
 
-          <DialogFooter className="flex justify-between sm:justify-between">
+          <DialogFooter className="flex justify-between sm:justify-between pt-4 border-t flex-shrink-0">
             <Button type="button" variant="outline" onClick={handleCancel}>
               Cancel
             </Button>

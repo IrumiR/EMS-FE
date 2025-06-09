@@ -57,17 +57,16 @@ export function AddBudgetDialog() {
 
   // Create budget mutation
   const createBudgetMutation = useCreateBudget(
-    (data) => {
-      toast.success(data || "Budget created successfully!");
-      setIsOpen(false);
-      formik.resetForm();
+    (message: string) => {
+      toast.success(message);
+      setIsOpen(false); 
+      formik.resetForm(); 
     },
-    (error) => {
-      toast.error(error || "Failed to create budget");
+    (message: string) => {
+      toast.error(message);
     }
   );
 
-  // Formik setup
   const formik = useFormik({
     initialValues: {
       selectedClientId: "",
@@ -77,7 +76,6 @@ export function AddBudgetDialog() {
     },
     validationSchema,
     onSubmit: async (values) => {
-      
       const userId = localStorage.getItem("userId");
 
       const budgetData: CreateBudgetData = {
@@ -95,16 +93,14 @@ export function AddBudgetDialog() {
     },
   });
 
-  // Calculate total from all expense values
   const calculateTotal = () => {
     const total = formik.values.expenses.reduce((sum, expense) => {
       const value = parseFloat(expense.value) || 0;
       return sum + value;
     }, 0);
-    formik.setFieldValue("totalAmount", total.toString());
+    formik.setFieldValue("totalAmount", total);
   };
 
-  // Update total whenever expenses change
   const handleExpenseChange = (
     index: number,
     field: keyof Expense,
@@ -121,7 +117,7 @@ export function AddBudgetDialog() {
           const val = parseFloat(expense.value) || 0;
           return sum + val;
         }, 0);
-        formik.setFieldValue("totalAmount", total.toString());
+        formik.setFieldValue("totalAmount", total);
       }, 0);
     }
   };
@@ -145,7 +141,7 @@ export function AddBudgetDialog() {
         const val = parseFloat(expense.value) || 0;
         return sum + val;
       }, 0);
-      formik.setFieldValue("totalAmount", total.toString());
+      formik.setFieldValue("totalAmount", total);
     }, 0);
   };
 
@@ -334,6 +330,7 @@ export function AddBudgetDialog() {
             Cancel
           </Button>
           <Button
+            type="submit"
             onClick={handleCreateBudget}
             className="bg-green-600 hover:bg-green-700 text-white"
             disabled={createBudgetMutation.isLoading}

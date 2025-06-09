@@ -4,19 +4,7 @@ import { Edit } from "lucide-react";
 import ViewMore from "./viewMore";
 import { useState } from "react";
 import { EditBudgetDialog } from "../organisms/editBudgetDialog";
-
-interface Expense {
-  name: string;
-  amount: number;
-}
-
-interface Budget {
-  id: number;
-  eventName: string;
-  isApproved: boolean;
-  totalAmount: number;
-  expenses: Expense[];
-}
+import { Budget } from "../types";
 
 interface BudgetCardProps {
   budgets?: Budget[];
@@ -25,6 +13,7 @@ interface BudgetCardProps {
 const BudgetCard = ({ budgets = [] }: BudgetCardProps) => {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedBudgetId, setSelectedBudgetId] = useState<string | null>("");
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -39,11 +28,15 @@ const BudgetCard = ({ budgets = [] }: BudgetCardProps) => {
     }
   };
 
+  const selectedBudget = budgets.find(
+    (b) => b._id.toString() === selectedBudgetId
+  );
+ 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
       {budgets.map((budget) => (
         <Card
-          key={budget.id}
+          key={budget._id}
           className="w-full bg-white shadow-sm border border-gray-200 rounded-lg relative"
         >
           <CardContent className="p-4 pt-2">
@@ -60,10 +53,10 @@ const BudgetCard = ({ budgets = [] }: BudgetCardProps) => {
 
             {/* Event Name */}
             <h3 className="text-base font-semibold text-blue-600 mb-2 leading-tight">
-              {budget.eventName}
+              {budget.eventId.eventName}
             </h3>
 
-            {/* Total Amount and Total Budget on same line */}
+            {/* Total Amount */}
             <div className="mb-4">
               <p className="text-lg font-bold text-gray-900">
                 Rs. {budget.totalAmount.toLocaleString()}
@@ -80,7 +73,7 @@ const BudgetCard = ({ budgets = [] }: BudgetCardProps) => {
                   key={index}
                   className="flex justify-between items-center text-sm"
                 >
-                  <span className="text-gray-600">{expense.name}</span>
+                  <span className="text-gray-600">{expense.expenseName}</span>
                   <span className="font-medium text-gray-900">
                     Rs. {expense.amount.toLocaleString()}
                   </span>
@@ -94,7 +87,10 @@ const BudgetCard = ({ budgets = [] }: BudgetCardProps) => {
                 variant="outline"
                 size="sm"
                 className="w-full text-sm border-gray-300 hover:bg-gray-50"
-                onClick={() => setIsViewDialogOpen(true)}
+                onClick={() => {
+                  setSelectedBudgetId(budget._id.toString());
+                  setIsViewDialogOpen(true);
+                }}
               >
                 View More
               </Button>
@@ -105,23 +101,31 @@ const BudgetCard = ({ budgets = [] }: BudgetCardProps) => {
             <ViewMore
               open={isViewDialogOpen}
               onOpenChange={() => setIsViewDialogOpen(false)}
+              budget={selectedBudget}
             />
           </div>
 
-          <button className="absolute bottom-2 right-2 p-2 rounded-full hover:bg-blue-100 transition-colors duration-200">
-            <Edit
-              className="w-4 h-4 text-blue-600"
-              onClick={() => setIsEditDialogOpen(true)}
-            />
+          <button
+            className="absolute bottom-2 right-2 p-2 rounded-full hover:bg-blue-100 transition-colors duration-200"
+            onClick={() => {
+              setSelectedBudgetId(budget._id.toString());
+              setIsEditDialogOpen(true);
+            }}
+          >
+            <Edit className="w-4 h-4 text-blue-600" />
           </button>
         </Card>
       ))}
 
-      <EditBudgetDialog
-        open={isEditDialogOpen}
-        onOpenChange={() => setIsEditDialogOpen(false)}
-        budget={budgets} 
-      />
+      {/* Edit Dialog with selected budget */}
+      {selectedBudgetId !== null && (
+        <EditBudgetDialog
+          budgetId={selectedBudgetId}
+          open={isEditDialogOpen}
+          onOpenChange={() => setIsEditDialogOpen(false)}
+          budget={selectedBudget}
+        />
+      )}
     </div>
   );
 };

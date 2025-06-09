@@ -9,10 +9,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Budget } from "../types";
 
 interface BudgetViewDialogProps {
   open: boolean;
   onOpenChange: () => void;
+  budget?: Budget ;
   budgetData?: {
     eventName: string;
     clientName: string;
@@ -27,7 +29,8 @@ interface BudgetViewDialogProps {
 export default function BudgetViewDialog({ 
   open, 
   onOpenChange,
-  budgetData
+  budgetData,
+  budget
 }: BudgetViewDialogProps) {
   const [showRejectField, setShowRejectField] = useState(false);
   const [rejectRemarks, setRejectRemarks] = useState("");
@@ -74,12 +77,12 @@ export default function BudgetViewDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
         <DialogHeader className="relative">
-          
           <DialogTitle className="text-lg font-semibold text-left">
             View Budget
           </DialogTitle>
           <p className="text-sm text-gray-600 text-left">
-            Viewing budget information for event: {budgetData?.eventName || 'N/A'}
+            Viewing budget information for event:{" "}
+            {budget?.eventId.eventName || "N/A"}
           </p>
         </DialogHeader>
 
@@ -89,7 +92,9 @@ export default function BudgetViewDialog({
             <Label className="text-sm font-medium text-gray-700">
               Event Name:
             </Label>
-            <p className="text-sm text-gray-900">{budgetData?.eventName || 'N/A'}</p>
+            <p className="text-sm text-gray-900">
+              {budget?.eventId.eventName || "N/A"}
+            </p>
           </div>
 
           {/* Client Name */}
@@ -97,16 +102,20 @@ export default function BudgetViewDialog({
             <Label className="text-sm font-medium text-gray-700">
               Client Name:
             </Label>
-            <p className="text-sm text-gray-900">{budgetData?.clientName || 'N/A'}</p>
+            <p className="text-sm text-gray-900">
+              {budget?.clientId.userName || "N/A"}
+            </p>
           </div>
 
           {/* Status */}
           <div className="flex flex-col space-y-1">
-            <Label className="text-sm font-medium text-gray-700">
-              Status:
-            </Label>
-            <p className={`text-sm font-medium ${getStatusColor(budgetData?.status || '')}`}>
-              {budgetData?.status || 'N/A'}
+            <Label className="text-sm font-medium text-gray-700">Status:</Label>
+            <p
+              className={`text-sm font-medium ${getStatusColor(
+                budgetData?.status || ""
+              )}`}
+            >
+              {budgetData?.status || "N/A"}
             </p>
           </div>
 
@@ -116,14 +125,21 @@ export default function BudgetViewDialog({
               Expenses:
             </Label>
             <div className="space-y-2">
-              {budgetData?.expenses?.map((expense, index) => (
-                <div key={index} className="flex justify-between items-center py-1 px-2 bg-gray-50 rounded">
-                  <span className="text-sm text-gray-700">• {expense.name}</span>
+              {budget?.expenses?.map((expense, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center py-1 px-2 bg-gray-50 rounded"
+                >
+                  <span className="text-sm text-gray-700">
+                    • {expense.expenseName}
+                  </span>
                   <span className="text-sm font-medium text-gray-900">
-                    Rs. {expense.value.toLocaleString()}
+                    Rs. {expense.amount.toLocaleString()}
                   </span>
                 </div>
-              )) || <p className="text-sm text-gray-500">No expenses recorded</p>}
+              )) || (
+                <p className="text-sm text-gray-500">No expenses recorded</p>
+              )}
             </div>
           </div>
 
@@ -133,7 +149,7 @@ export default function BudgetViewDialog({
               Total Amount:
             </Label>
             <p className="text-lg font-semibold text-gray-900">
-              Rs. {budgetData?.totalAmount?.toLocaleString() || '0'}
+              Rs. {budget?.totalAmount?.toLocaleString() || "0"}
             </p>
           </div>
 
@@ -142,7 +158,9 @@ export default function BudgetViewDialog({
             <Label className="text-sm font-medium text-gray-700">
               Remarks:
             </Label>
-            <p className="text-sm text-gray-900">{budgetData?.remarks || 'No remarks'}</p>
+            <p className="text-sm text-gray-900">
+              {budgetData?.remarks || "No remarks"}
+            </p>
           </div>
 
           {/* Created By */}
@@ -150,7 +168,9 @@ export default function BudgetViewDialog({
             <Label className="text-sm font-medium text-gray-700">
               Created By:
             </Label>
-            <p className="text-sm text-gray-900">{budgetData?.createdBy || 'N/A'}</p>
+            <p className="text-sm text-gray-900">
+              {budget?.createdBy.userName || "N/A"}
+            </p>
           </div>
 
           {/* Reject Remarks Field */}

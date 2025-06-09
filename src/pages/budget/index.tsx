@@ -3,6 +3,7 @@ import BudgetCard from "@/components/molecules/budgetCard";
 import { useGetAllBudgets } from "@/api/budgetApi";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { Budget } from "@/components/types";
 
 function BudgetScreen() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -33,20 +34,12 @@ const { data, isLoading, error } = useGetAllBudgets(
 const totalBudgets = data?.pagination?.total || 0;
 const totalPages = Math.ceil(totalBudgets / rowsPerPage);
 
-const budgets = (data?.budgets as BudgetType[] || []).map((budget) => ({
-  id: Number(budget._id),
-  eventName:
-    typeof budget.eventId === "object" && budget.eventId && "eventName" in budget.eventId && budget.eventId.eventName
-      ? budget.eventId.eventName
-      : "Unknown Event",
-  isApproved: budget.isApproved,
-  totalAmount: budget.totalAmount,
-  expenses: (budget.expenses || []).map((expense) => ({
-    name: expense.expenseName || "Unnamed Expense",
-    amount: expense.amount || 0,
-  })),
+const budgets: Budget[] = (data?.budgets || []).map((budget: any) => ({
+  ...budget,
+  eventId: typeof budget.eventId === "string"
+    ? { _id: budget.eventId, eventName: "" }
+    : budget.eventId,
 }));
-
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {

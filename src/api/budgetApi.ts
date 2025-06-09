@@ -32,7 +32,8 @@ export const useCreateBudget = (
     },
     onSuccess(data) {
       queryClient.invalidateQueries(["get_all_budgets"]);
-      if (onSuccess) onSuccess(data);
+      const message = data?.message || "Budget created successfully";
+      if (onSuccess) onSuccess(message);
     },
     onError(error) {
       const message =
@@ -84,8 +85,7 @@ export const useGetAllBudgets = (
       try {
         const params = new URLSearchParams();
         if (page !== undefined) params.append("page", page.toString());
-        if (pageSize !== undefined)
-          params.append("limit", pageSize.toString());
+        if (pageSize !== undefined) params.append("limit", pageSize.toString());
         if (search) params.append("search", search);
 
         const response = await authFetch.get<BudgetResponse>(
@@ -105,93 +105,90 @@ export const useGetAllBudgets = (
   });
 };
 
-export const useGetBudgetById = (
-  budgetId: string
-): UseQueryResult<Budget> => {
-    return useQuery({
-        queryKey: ["get_budget_by_id", budgetId],
-        queryFn: async () => {
-        try {
-            const response = await authFetch.get<Budget>(`/budget/${budgetId}`);
-            return response.data;
-        } catch (error) {
-            throw error;
-        }
-        },
-        onSuccess: () => {
-        console.log("Budget retrieved successfully");
-        },
-        onError: (error) => {
-        console.error("Fetch error:", error);
-        },
-    });
-}
+export const useGetBudgetById = (budgetId: string): UseQueryResult<Budget> => {
+  return useQuery({
+    queryKey: ["get_budget_by_id", budgetId],
+    queryFn: async () => {
+      try {
+        const response = await authFetch.get<Budget>(`/budget/${budgetId}`);
+        return response.data;
+      } catch (error) {
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      console.log("Budget retrieved successfully");
+    },
+    onError: (error) => {
+      console.error("Fetch error:", error);
+    },
+  });
+};
 
 export const useUpdateBudget = (
   budgetId: string,
   onSuccess: (message: string) => void,
   onError: (message: string) => void
 ) => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async (budgetData: Partial<CreateBudgetData>) => {
-        const response = await authFetch.put(`/budget/${budgetId}`, budgetData);
-        return response.data;
-        },
-        onSuccess(data) {
-        queryClient.invalidateQueries(["get_all_budgets"]);
-        if (onSuccess) onSuccess(data.message);
-        },
-        onError(error) {
-        const message =
-            (error as any)?.response?.data?.message || "Budget update failed";
-        if (onError) onError(message);
-        },
-    });
-}
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (budgetData: Partial<CreateBudgetData>) => {
+      const response = await authFetch.put(`/budget/${budgetId}`, budgetData);
+      return response.data;
+    },
+    onSuccess() {
+      queryClient.invalidateQueries(["get_all_budgets"]);
+    },
+    onError(error) {
+      const message =
+        (error as any)?.response?.data?.message || "Budget update failed";
+      if (onError) onError(message);
+    },
+  });
+};
 
 export const useDeleteBudget = (
   budgetId: string,
-  onSuccess: (message: string) => void, 
+  onSuccess: (message: string) => void,
   onError: (message: string) => void
 ) => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async () => {
-        const response = await authFetch.delete(`/budget/${budgetId}`);
-        return response.data;
-        },
-        onSuccess(data) {
-        queryClient.invalidateQueries(["get_all_budgets"]);
-        if (onSuccess) onSuccess(data.message);
-        },
-        onError(error) {
-        const message =
-            (error as any)?.response?.data?.message || "Budget deletion failed";
-        if (onError) onError(message);
-        },
-    });
-}
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const response = await authFetch.delete(`/budget/${budgetId}`);
+      return response.data;
+    },
+    onSuccess(data) {
+      queryClient.invalidateQueries(["get_all_budgets"]);
+      if (onSuccess) onSuccess(data.message);
+    },
+    onError(error) {
+      const message =
+        (error as any)?.response?.data?.message || "Budget deletion failed";
+      if (onError) onError(message);
+    },
+  });
+};
 
 export const useApproveBudget = (
   budgetId: string,
-  onSuccess: (message: string) => void, 
+  onSuccess: (message: string) => void,
   onError: (message: string) => void
 ) => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async () => {
-        const response = await authFetch.put(`/budget/status/${budgetId}`);
-        return response.data;
-        },
-        onSuccess(data) {
-        queryClient.invalidateQueries(["get_all_budgets"]);
-        if (onSuccess) onSuccess(data.message);
-        },
-        onError(error) {
-        const message =
-            (error as any)?.response?.data?.message || "Budget approval failed";
-        if (onError) onError(message);
-        },
-    });
-}
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const response = await authFetch.put(`/budget/status/${budgetId}`);
+      return response.data;
+    },
+    onSuccess(data) {
+      queryClient.invalidateQueries(["get_all_budgets"]);
+      if (onSuccess) onSuccess(data.message);
+    },
+    onError(error) {
+      const message =
+        (error as any)?.response?.data?.message || "Budget approval failed";
+      if (onError) onError(message);
+    },
+  });
+};
