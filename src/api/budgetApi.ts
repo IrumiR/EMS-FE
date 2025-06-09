@@ -74,18 +74,22 @@ export interface BudgetResponse {
 }
 
 export const useGetAllBudgets = (
-  page: number,
-  pageSize: number,
-  search: string
+  page?: number,
+  pageSize?: number,
+  search?: string
 ): UseQueryResult<BudgetResponse> => {
   return useQuery({
     queryKey: ["get_all_budgets", page, pageSize, search],
     queryFn: async () => {
       try {
+        const params = new URLSearchParams();
+        if (page !== undefined) params.append("page", page.toString());
+        if (pageSize !== undefined)
+          params.append("limit", pageSize.toString());
+        if (search) params.append("search", search);
+
         const response = await authFetch.get<BudgetResponse>(
-          `/budget/all?limit=${pageSize ?? 10}&page=${page ?? 1}${
-            search ? `&search=${encodeURIComponent(search)}` : ""
-          }`
+          `/budget/all/?${params.toString()}`
         );
         return response.data;
       } catch (error) {

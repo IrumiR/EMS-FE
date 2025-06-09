@@ -5,46 +5,26 @@ import ViewMore from "./viewMore";
 import { useState } from "react";
 import { EditBudgetDialog } from "../organisms/editBudgetDialog";
 
-const BudgetCard = () => {
+interface Expense {
+  name: string;
+  amount: number;
+}
+
+interface Budget {
+  id: number;
+  eventName: string;
+  isApproved: boolean;
+  totalAmount: number;
+  expenses: Expense[];
+}
+
+interface BudgetCardProps {
+  budgets?: Budget[];
+}
+
+const BudgetCard = ({ budgets = [] }: BudgetCardProps) => {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-
-  // Dummy data for budget cards
-  const budgetData = [
-    {
-      id: 1,
-      eventName: "Annual Conference",
-      status: "Approved",
-      totalAmount: 150000,
-      expenses: [
-        { name: "Decorations", amount: 50000 },
-        { name: "Catering", amount: 75000 },
-        { name: "Venue", amount: 25000 },
-      ],
-    },
-    {
-      id: 2,
-      eventName: "Team Building Event",
-      status: "Pending",
-      totalAmount: 80000,
-      expenses: [
-        { name: "Activities", amount: 40000 },
-        { name: "Refreshments", amount: 25000 },
-        { name: "Transportation", amount: 15000 },
-      ],
-    },
-    {
-      id: 3,
-      eventName: "Product Launch",
-      status: "Rejected",
-      totalAmount: 200000,
-      expenses: [
-        { name: "Marketing", amount: 100000 },
-        { name: "Venue Setup", amount: 60000 },
-        { name: "Entertainment", amount: 40000 },
-      ],
-    },
-  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -61,7 +41,7 @@ const BudgetCard = () => {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-      {budgetData.map((budget) => (
+      {budgets.map((budget) => (
         <Card
           key={budget.id}
           className="w-full bg-white shadow-sm border border-gray-200 rounded-lg relative"
@@ -71,10 +51,10 @@ const BudgetCard = () => {
             <div className="flex items-center justify-end mb-3">
               <span
                 className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                  budget.status
+                  budget.isApproved ? "Approved" : "Pending"
                 )}`}
               >
-                {budget.status}
+                {budget.isApproved ? "Approved" : "Pending"}
               </span>
             </div>
 
@@ -108,18 +88,6 @@ const BudgetCard = () => {
               ))}
             </div>
 
-            <div>
-              <ViewMore
-                open={isViewDialogOpen}
-                onOpenChange={() => setIsViewDialogOpen(false)}
-              />
-            </div>
-
-            <div>
-                <EditBudgetDialog 
-                open={isEditDialogOpen} onOpenChange={() => setIsEditDialogOpen(false)}/>
-            </div>
-
             {/* View More Button */}
             <div className="mt-3">
               <Button
@@ -133,14 +101,27 @@ const BudgetCard = () => {
             </div>
           </CardContent>
 
-          <button 
-            className="absolute bottom-2 right-2 p-2 rounded-full hover:bg-blue-100 transition-colors duration-200"
-          >
-            <Edit className="w-4 h-4 text-blue-600" 
-            onClick={() => setIsEditDialogOpen(true)}/>
+          <div>
+            <ViewMore
+              open={isViewDialogOpen}
+              onOpenChange={() => setIsViewDialogOpen(false)}
+            />
+          </div>
+
+          <button className="absolute bottom-2 right-2 p-2 rounded-full hover:bg-blue-100 transition-colors duration-200">
+            <Edit
+              className="w-4 h-4 text-blue-600"
+              onClick={() => setIsEditDialogOpen(true)}
+            />
           </button>
         </Card>
       ))}
+
+      <EditBudgetDialog
+        open={isEditDialogOpen}
+        onOpenChange={() => setIsEditDialogOpen(false)}
+        budget={budgets} 
+      />
     </div>
   );
 };

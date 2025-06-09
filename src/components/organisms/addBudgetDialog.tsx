@@ -21,33 +21,87 @@ import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useGetAllEventsDropdown } from "@/api/taskApi";
 import { useGetClientOptions } from "@/api/authApi";
+import { useCreateBudget, CreateBudgetData } from "@/api/budgetApi";
+import toast from "react-hot-toast";
+import * as Yup from "yup";
+import { useFormik } from "formik";
 
 interface Expense {
   expense: string;
   value: string;
 }
 
+// Validation schema
+const validationSchema = Yup.object({
+  selectedClientId: Yup.string().required("Client is required"),
+  selectedEventId: Yup.string().required("Event is required"),
+  expenses: Yup.array()
+    .of(
+      Yup.object({
+        expense: Yup.string().required("Expense name is required"),
+        value: Yup.number()
+          .positive("Amount must be positive")
+          .required("Amount is required"),
+      })
+    )
+    .min(1, "At least one expense is required"),
+  totalAmount: Yup.number()
+    .positive("Total amount must be positive")
+    .required("Total amount is required"),
+});
+
 export function AddBudgetDialog() {
   const [isOpen, setIsOpen] = useState(false);
-  const [client, setClient] = useState("");
-  const [event, setEvent] = useState("");
-  const [expenses, setExpenses] = useState<Expense[]>([
-    { expense: "", value: "" },
-  ]);
-  const [totalAmount, setTotalAmount] = useState("");
   const eventList = useGetAllEventsDropdown();
-  const [selectedEventId, setSelectedEventId] = useState<string>("");
-  const [selectedClientId, setSelectedClientId] = useState<string>("");
-  const { data: clientsData, isLoading: clientsLoading } =
-    useGetClientOptions();
+  const { data: clientsData, isLoading: clientsLoading } = useGetClientOptions();
+
+  // Create budget mutation
+  const createBudgetMutation = useCreateBudget(
+    (data) => {
+      toast.success(data || "Budget created successfully!");
+      setIsOpen(false);
+      formik.resetForm();
+    },
+    (error) => {
+      toast.error(error || "Failed to create budget");
+    }
+  );
+
+  // Formik setup
+  const formik = useFormik({
+    initialValues: {
+      selectedClientId: "",
+      selectedEventId: "",
+      expenses: [{ expense: "", value: "" }] as Expense[],
+      totalAmount: 0,
+    },
+    validationSchema,
+    onSubmit: async (values) => {
+      
+      const userId = localStorage.getItem("userId");
+
+      const budgetData: CreateBudgetData = {
+        eventId: values.selectedEventId,
+        clientId: values.selectedClientId,
+        expenses: values.expenses.map((exp) => ({
+          expenseName: exp.expense,
+          amount: Number(exp.value),
+        })),
+        totalAmount: Number(values.totalAmount),
+        createdBy: userId || "",
+      };
+
+      createBudgetMutation.mutate(budgetData);
+    },
+  });
 
   // Calculate total from all expense values
   const calculateTotal = () => {
-    const total = expenses.reduce((sum, expense) => {
+    const total = formik.values.expenses.reduce((sum, expense) => {
       const value = parseFloat(expense.value) || 0;
       return sum + value;
     }, 0);
-    setTotalAmount(total.toString());
+    formik.setFieldValue("totalAmount", total.toString());
   };
 
   // Update total whenever expenses change
@@ -56,9 +110,9 @@ export function AddBudgetDialog() {
     field: keyof Expense,
     value: string
   ) => {
-    const updatedExpenses = [...expenses];
+    const updatedExpenses = [...formik.values.expenses];
     updatedExpenses[index] = { ...updatedExpenses[index], [field]: value };
-    setExpenses(updatedExpenses);
+    formik.setFieldValue("expenses", updatedExpenses);
 
     // Auto-calculate total if value field changed
     if (field === "value") {
@@ -67,22 +121,23 @@ export function AddBudgetDialog() {
           const val = parseFloat(expense.value) || 0;
           return sum + val;
         }, 0);
-        setTotalAmount(total.toString());
+        formik.setFieldValue("totalAmount", total.toString());
       }, 0);
     }
   };
 
   const handleAddExpense = () => {
-    setExpenses([...expenses, { expense: "", value: "" }]);
+    const newExpenses = [...formik.values.expenses, { expense: "", value: "" }];
+    formik.setFieldValue("expenses", newExpenses);
   };
 
   const handleDeleteExpense = (index: number) => {
-    const updatedExpenses = [...expenses];
+    const updatedExpenses = [...formik.values.expenses];
     updatedExpenses.splice(index, 1);
     const finalExpenses = updatedExpenses.length
       ? updatedExpenses
       : [{ expense: "", value: "" }];
-    setExpenses(finalExpenses);
+    formik.setFieldValue("expenses", finalExpenses);
 
     // Recalculate total after deletion
     setTimeout(() => {
@@ -90,36 +145,17 @@ export function AddBudgetDialog() {
         const val = parseFloat(expense.value) || 0;
         return sum + val;
       }, 0);
-      setTotalAmount(total.toString());
+      formik.setFieldValue("totalAmount", total.toString());
     }, 0);
   };
 
   const handleCancel = () => {
     setIsOpen(false);
-    // Reset form
-    setClient("");
-    setEvent("");
-    setExpenses([{ expense: "", value: "" }]);
-    setTotalAmount("");
+    formik.resetForm();
   };
 
   const handleCreateBudget = () => {
-    // Add your budget creation logic here
-    console.log({
-      client,
-      event,
-      expenses: expenses.filter(
-        (exp) => exp.expense.trim() !== "" || exp.value.trim() !== ""
-      ),
-      totalAmount,
-    });
-
-    // Close dialog and reset form
-    setIsOpen(false);
-    setClient("");
-    setEvent("");
-    setExpenses([{ expense: "", value: "" }]);
-    setTotalAmount("");
+    formik.handleSubmit();
   };
 
   return (
@@ -142,8 +178,8 @@ export function AddBudgetDialog() {
             <div className="grid gap-2">
               <Label htmlFor="client">Client</Label>
               <Select
-                value={selectedClientId}
-                onValueChange={(value) => setSelectedClientId(value)}
+                value={formik.values.selectedClientId}
+                onValueChange={(value) => formik.setFieldValue("selectedClientId", value)}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select Client" />
@@ -169,14 +205,17 @@ export function AddBudgetDialog() {
                   )}
                 </SelectContent>
               </Select>
+              {formik.touched.selectedClientId && formik.errors.selectedClientId && (
+                <span className="text-red-500 text-sm">{formik.errors.selectedClientId}</span>
+              )}
             </div>
 
             {/* Event Dropdown */}
             <div className="grid gap-2">
               <Label htmlFor="event">Event</Label>
               <Select
-                value={selectedEventId}
-                onValueChange={(value) => setSelectedEventId(value)}
+                value={formik.values.selectedEventId}
+                onValueChange={(value) => formik.setFieldValue("selectedEventId", value)}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select Event" />
@@ -195,48 +234,67 @@ export function AddBudgetDialog() {
                   )}
                 </SelectContent>
               </Select>
+              {formik.touched.selectedEventId && formik.errors.selectedEventId && (
+                <span className="text-red-500 text-sm">{formik.errors.selectedEventId}</span>
+              )}
             </div>
 
             {/* Expenses Section */}
             <div className="grid gap-3">
               <Label>Expenses</Label>
-              {expenses.map((expense, index) => (
-                <div
-                  key={index}
-                  className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 items-start sm:items-center"
-                >
-                  {/* Expense Field */}
-                  <Input
-                    placeholder="Expense"
-                    value={expense.expense}
-                    onChange={(e) =>
-                      handleExpenseChange(index, "expense", e.target.value)
-                    }
-                    className="w-full"
-                  />
+              {formik.values.expenses.map((expense, index) => (
+                <div key={index}>
+                  <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 items-start sm:items-center">
+                    {/* Expense Field */}
+                    <Input
+                      placeholder="Expense"
+                      value={expense.expense}
+                      onChange={(e) =>
+                        handleExpenseChange(index, "expense", e.target.value)
+                      }
+                      className="w-full"
+                    />
 
-                  {/* Value Field */}
-                  <Input
-                    placeholder="Value"
-                    type="number"
-                    value={expense.value}
-                    onChange={(e) =>
-                      handleExpenseChange(index, "value", e.target.value)
-                    }
-                    className="w-full"
-                  />
+                    {/* Value Field */}
+                    <Input
+                      placeholder="Value"
+                      type="number"
+                      value={expense.value}
+                      onChange={(e) =>
+                        handleExpenseChange(index, "value", e.target.value)
+                      }
+                      className="w-full"
+                    />
 
-                  {/* Delete Button */}
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDeleteExpense(index)}
-                    className="text-red-500 hover:text-red-600 hover:bg-red-50 justify-self-end sm:justify-self-auto"
-                    disabled={expenses.length === 1}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                    {/* Delete Button */}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteExpense(index)}
+                      className="text-red-500 hover:text-red-600 hover:bg-red-50 justify-self-end sm:justify-self-auto"
+                      disabled={formik.values.expenses.length === 1}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  {/* Expense validation errors */}
+                  {formik.touched.expenses?.[index] && formik.errors.expenses?.[index] && (
+                    <div className="text-red-500 text-sm mt-1">
+                      {typeof formik.errors.expenses[index] === 'object' ? (
+                        <>
+                          {(formik.errors.expenses[index] as any)?.expense && (
+                            <div>{(formik.errors.expenses[index] as any).expense}</div>
+                          )}
+                          {(formik.errors.expenses[index] as any)?.value && (
+                            <div>{(formik.errors.expenses[index] as any).value}</div>
+                          )}
+                        </>
+                      ) : (
+                        <div>{formik.errors.expenses[index]}</div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
 
@@ -260,13 +318,17 @@ export function AddBudgetDialog() {
                 id="totalAmount"
                 placeholder="Total Amount"
                 type="number"
-                value={totalAmount}
-                onChange={(e) => setTotalAmount(e.target.value)}
+                value={formik.values.totalAmount}
+                onChange={formik.handleChange}
                 className="w-full"
               />
+              {formik.touched.totalAmount && formik.errors.totalAmount && (
+                <span className="text-red-500 text-sm">{formik.errors.totalAmount}</span>
+              )}
             </div>
           </div>
         </ScrollArea>
+
         <DialogFooter className="flex justify-between sm:justify-between">
           <Button variant="outline" onClick={handleCancel}>
             Cancel
@@ -274,8 +336,16 @@ export function AddBudgetDialog() {
           <Button
             onClick={handleCreateBudget}
             className="bg-green-600 hover:bg-green-700 text-white"
+            disabled={createBudgetMutation.isLoading}
           >
-            Create Budget
+            {createBudgetMutation.isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              "Create Budget"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
