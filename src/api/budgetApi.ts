@@ -177,8 +177,11 @@ export const useApproveBudget = (
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async () => {
-      const response = await authFetch.put(`/budget/status/${budgetId}`);
+    mutationFn: async ({ isApproved, remarks }: { isApproved: boolean; remarks: string }) => {
+      const response = await authFetch.put(`/budget/status/${budgetId}`, {
+        isApproved,
+        remarks
+      });
       return response.data;
     },
     onSuccess(data) {
@@ -187,7 +190,7 @@ export const useApproveBudget = (
     },
     onError(error) {
       const message =
-        (error as any)?.response?.data?.message || "Budget approval failed";
+        (error as any)?.response?.data?.message || "Budget status update failed";
       if (onError) onError(message);
     },
   });

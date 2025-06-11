@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Budget } from "../types";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useApproveBudget } from "@/api/budgetApi";
+import toast from "react-hot-toast";
 
 interface BudgetViewDialogProps {
   open: boolean;
@@ -30,35 +32,91 @@ interface BudgetViewDialogProps {
 export default function BudgetViewDialog({ 
   open, 
   onOpenChange,
-  budgetData,
   budget
 }: BudgetViewDialogProps) {
-  const [showRejectField, setShowRejectField] = useState(false);
-  const [rejectRemarks, setRejectRemarks] = useState("");
+  const [showRemarksField, setShowRemarksField] = useState(false);
+  const [remarks, setRemarks] = useState("");
+  const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
+
+  // Initialize the mutation hook
+  const budgetMutation = useApproveBudget(
+    budget?._id || "",
+    (message: string) => {
+      toast.success(message);
+      resetForm();
+      onOpenChange();
+    },
+    (message: string) => {
+      toast.error(message);
+    }
+  );
+
+  // Function to get status from isApproved field
+  const getStatusFromBudget = (isApproved: boolean | null): string => {
+    if (isApproved === null) return "Pending";
+    if (isApproved === true) return "Approved";
+    if (isApproved === false) return "Rejected";
+    return "Pending";
+  };
+
+  // Function to get remarks based on status
+  const getRemarksFromBudget = (isApproved: boolean | null, remarks: string): string => {
+    if (isApproved === true) return remarks || "No remarks";
+    if (isApproved === false && remarks) return remarks;
+    if (isApproved === false && !remarks) return "No rejection reason provided";
+    return remarks || "No remarks";
+  };
 
   const handleReject = () => {
-    if (!showRejectField) {
-      setShowRejectField(true);
+    if (!showRemarksField) {
+      setActionType('reject');
+      setShowRemarksField(true);
     } else {
-      // Handle reject logic here
-      console.log("Rejected with remarks:", rejectRemarks);
-      // Reset and close
-      setShowRejectField(false);
-      setRejectRemarks("");
-      onOpenChange();
+      // Validate remarks
+      if (!remarks.trim()) {
+        toast.error("Please provide remarks for rejection");
+        return;
+      }
+      
+      // Call API to reject budget
+      budgetMutation.mutate({
+        isApproved: false,
+        remarks: remarks.trim()
+      });
     }
   };
 
   const handleApprove = () => {
-    // Handle approve logic here
-    console.log("Budget approved");
-    onOpenChange();
+    if (!showRemarksField) {
+      setActionType('approve');
+      setShowRemarksField(true);
+    } else {
+      // Validate remarks
+      if (!remarks.trim()) {
+        toast.error("Please provide remarks for approval");
+        return;
+      }
+      
+      // Call API to approve budget
+      budgetMutation.mutate({
+        isApproved: true,
+        remarks: remarks.trim()
+      });
+    }
   };
 
   const handleCancel = () => {
-    setShowRejectField(false);
-    setRejectRemarks("");
+    if (budgetMutation.isLoading) {
+      return; // Prevent canceling during API call
+    }
+    resetForm();
     onOpenChange();
+  };
+
+  const resetForm = () => {
+    setShowRemarksField(false);
+    setRemarks("");
+    setActionType(null);
   };
 
   const getStatusColor = (status: string) => {
@@ -73,6 +131,31 @@ export default function BudgetViewDialog({
         return 'text-gray-600';
     }
   };
+
+  // Get current status and remarks from budget
+  const currentStatus = getStatusFromBudget(budget?.isApproved ?? null);
+  const currentRemarks = getRemarksFromBudget(budget?.isApproved ?? null, budget?.remarks || "");
+
+  // Show action buttons only for pending budgets
+  const showActionButtons = budget?.isApproved === null;
+
+  const getRemarksFieldStyle = () => {
+    if (actionType === 'approve') {
+      return {
+        containerClass: "p-3 bg-green-50 rounded-lg border border-green-200",
+        labelClass: "text-sm font-medium text-green-700",
+        textareaClass: "border-green-300 focus:border-green-500"
+      };
+    } else {
+      return {
+        containerClass: "p-3 bg-red-50 rounded-lg border border-red-200",
+        labelClass: "text-sm font-medium text-red-700",
+        textareaClass: "border-red-300 focus:border-red-500"
+      };
+    }
+  };
+
+  const remarksFieldStyle = getRemarksFieldStyle();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -113,11 +196,9 @@ export default function BudgetViewDialog({
             <div className="flex flex-col space-y-1">
               <Label className="text-sm font-medium text-gray-700">Status:</Label>
               <p
-                className={`text-sm font-medium ${getStatusColor(
-                  budgetData?.status || ""
-                )}`}
+                className={`text-sm font-medium ${getStatusColor(currentStatus)}`}
               >
-                {budgetData?.status || "N/A"}
+                {currentStatus}
               </p>
             </div>
 
@@ -161,7 +242,7 @@ export default function BudgetViewDialog({
                 Remarks:
               </Label>
               <p className="text-sm text-gray-900">
-                {budgetData?.remarks || "No remarks"}
+                {currentRemarks}
               </p>
             </div>
 
@@ -175,17 +256,21 @@ export default function BudgetViewDialog({
               </p>
             </div>
 
-            {/* Reject Remarks Field */}
-            {showRejectField && (
-              <div className="flex flex-col space-y-2 p-3 bg-red-50 rounded-lg border border-red-200">
-                <Label className="text-sm font-medium text-red-700">
-                  Rejection Remarks:
+            {/* Remarks Field - Show for both approve and reject actions */}
+            {showRemarksField && showActionButtons && (
+              <div className={`flex flex-col space-y-2 ${remarksFieldStyle.containerClass}`}>
+                <Label className={remarksFieldStyle.labelClass}>
+                  {actionType === 'approve' ? 'Approval Remarks:' : 'Rejection Remarks:'}
                 </Label>
                 <Textarea
-                  placeholder="Please provide reason for rejection..."
-                  value={rejectRemarks}
-                  onChange={(e) => setRejectRemarks(e.target.value)}
-                  className="min-h-[80px] border-red-300 focus:border-red-500"
+                  placeholder={
+                    actionType === 'approve' 
+                      ? "Please provide remarks for approval..." 
+                      : "Please provide reason for rejection..."
+                  }
+                  value={remarks}
+                  onChange={(e) => setRemarks(e.target.value)}
+                  className={`min-h-[80px] ${remarksFieldStyle.textareaClass}`}
                 />
               </div>
             )}
@@ -193,26 +278,52 @@ export default function BudgetViewDialog({
         </ScrollArea>
 
         <DialogFooter className="flex flex-col gap-2 pt-4">
-          <Button
-            variant="outline"
-            onClick={handleCancel}
-            className="w-full sm:w-auto order-3 sm:order-1"
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={handleReject}
-            className="w-full sm:w-auto order-2"
-          >
-            {showRejectField ? "Confirm Reject" : "Reject"}
-          </Button>
-          <Button
-            onClick={handleApprove}
-            className="w-full sm:w-auto order-1 sm:order-3 bg-green-600 hover:bg-green-700"
-          >
-            Approve
-          </Button>
+          {/* Only show action buttons for pending budgets */}
+          {showActionButtons ? (
+            <>
+              <Button
+                variant="outline"
+                onClick={handleCancel}
+                className="w-full sm:w-auto order-3 sm:order-1"
+                disabled={budgetMutation.isLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleReject}
+                className="w-full sm:w-auto order-2"
+                disabled={(showRemarksField && !remarks.trim()) || budgetMutation.isLoading || (showRemarksField && actionType === 'approve')}
+              >
+                {budgetMutation.isLoading && actionType === 'reject' 
+                  ? "Processing..." 
+                  : showRemarksField && actionType === 'reject' 
+                    ? "Confirm Reject" 
+                    : "Reject"
+                }
+              </Button>
+              <Button
+                onClick={handleApprove}
+                className="w-full sm:w-auto order-1 sm:order-3 bg-green-600 hover:bg-green-700"
+                disabled={(showRemarksField && !remarks.trim()) || budgetMutation.isLoading || (showRemarksField && actionType === 'reject')}
+              >
+                {budgetMutation.isLoading && actionType === 'approve' 
+                  ? "Processing..." 
+                  : showRemarksField && actionType === 'approve' 
+                    ? "Confirm Approve" 
+                    : "Approve"
+                }
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="outline"
+              onClick={onOpenChange}
+              className="w-full sm:w-auto"
+            >
+              Close
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
