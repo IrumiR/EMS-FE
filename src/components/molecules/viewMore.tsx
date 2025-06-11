@@ -10,11 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Budget } from "../types";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface BudgetViewDialogProps {
   open: boolean;
   onOpenChange: () => void;
-  budget?: Budget ;
+  budget?: Budget;
   budgetData?: {
     eventName: string;
     clientName: string;
@@ -75,8 +76,8 @@ export default function BudgetViewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="relative">
+      <DialogContent className="max-w-2xl max-h-[100vh]">
+        <DialogHeader>
           <DialogTitle className="text-lg font-semibold text-left">
             View Budget
           </DialogTitle>
@@ -86,110 +87,112 @@ export default function BudgetViewDialog({
           </p>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {/* Event Name */}
-          <div className="flex flex-col space-y-1">
-            <Label className="text-sm font-medium text-gray-700">
-              Event Name:
-            </Label>
-            <p className="text-sm text-gray-900">
-              {budget?.eventId.eventName || "N/A"}
-            </p>
-          </div>
-
-          {/* Client Name */}
-          <div className="flex flex-col space-y-1">
-            <Label className="text-sm font-medium text-gray-700">
-              Client Name:
-            </Label>
-            <p className="text-sm text-gray-900">
-              {budget?.clientId.userName || "N/A"}
-            </p>
-          </div>
-
-          {/* Status */}
-          <div className="flex flex-col space-y-1">
-            <Label className="text-sm font-medium text-gray-700">Status:</Label>
-            <p
-              className={`text-sm font-medium ${getStatusColor(
-                budgetData?.status || ""
-              )}`}
-            >
-              {budgetData?.status || "N/A"}
-            </p>
-          </div>
-
-          {/* Expenses */}
-          <div className="flex flex-col space-y-2">
-            <Label className="text-sm font-medium text-gray-700">
-              Expenses:
-            </Label>
-            <div className="space-y-2">
-              {budget?.expenses?.map((expense, index) => (
-                <div
-                  key={index}
-                  className="flex justify-between items-center py-1 px-2 bg-gray-50 rounded"
-                >
-                  <span className="text-sm text-gray-700">
-                    • {expense.expenseName}
-                  </span>
-                  <span className="text-sm font-medium text-gray-900">
-                    Rs. {expense.amount.toLocaleString()}
-                  </span>
-                </div>
-              )) || (
-                <p className="text-sm text-gray-500">No expenses recorded</p>
-              )}
-            </div>
-          </div>
-
-          {/* Total Amount */}
-          <div className="flex flex-col space-y-1">
-            <Label className="text-sm font-medium text-gray-700">
-              Total Amount:
-            </Label>
-            <p className="text-lg font-semibold text-gray-900">
-              Rs. {budget?.totalAmount?.toLocaleString() || "0"}
-            </p>
-          </div>
-
-          {/* Remarks */}
-          <div className="flex flex-col space-y-1">
-            <Label className="text-sm font-medium text-gray-700">
-              Remarks:
-            </Label>
-            <p className="text-sm text-gray-900">
-              {budgetData?.remarks || "No remarks"}
-            </p>
-          </div>
-
-          {/* Created By */}
-          <div className="flex flex-col space-y-1">
-            <Label className="text-sm font-medium text-gray-700">
-              Created By:
-            </Label>
-            <p className="text-sm text-gray-900">
-              {budget?.createdBy.userName || "N/A"}
-            </p>
-          </div>
-
-          {/* Reject Remarks Field */}
-          {showRejectField && (
-            <div className="flex flex-col space-y-2 p-3 bg-red-50 rounded-lg border border-red-200">
-              <Label className="text-sm font-medium text-red-700">
-                Rejection Remarks:
+        <ScrollArea className="max-h-[50vh] pr-4">
+          <div className="grid gap-4 py-4">
+            {/* Event Name */}
+            <div className="flex flex-col space-y-1">
+              <Label className="text-sm font-medium text-gray-700">
+                Event Name:
               </Label>
-              <Textarea
-                placeholder="Please provide reason for rejection..."
-                value={rejectRemarks}
-                onChange={(e) => setRejectRemarks(e.target.value)}
-                className="min-h-[80px] border-red-300 focus:border-red-500"
-              />
+              <p className="text-sm text-gray-900">
+                {budget?.eventId.eventName || "N/A"}
+              </p>
             </div>
-          )}
-        </div>
 
-        <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-4">
+            {/* Client Name */}
+            <div className="flex flex-col space-y-1">
+              <Label className="text-sm font-medium text-gray-700">
+                Client Name:
+              </Label>
+              <p className="text-sm text-gray-900">
+                {budget?.clientId.userName || "N/A"}
+              </p>
+            </div>
+
+            {/* Status */}
+            <div className="flex flex-col space-y-1">
+              <Label className="text-sm font-medium text-gray-700">Status:</Label>
+              <p
+                className={`text-sm font-medium ${getStatusColor(
+                  budgetData?.status || ""
+                )}`}
+              >
+                {budgetData?.status || "N/A"}
+              </p>
+            </div>
+
+            {/* Expenses */}
+            <div className="flex flex-col space-y-2">
+              <Label className="text-sm font-medium text-gray-700">
+                Expenses:
+              </Label>
+              <div className="space-y-2">
+                {budget?.expenses?.map((expense, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center py-1 px-2 bg-gray-50 rounded"
+                  >
+                    <span className="text-sm text-gray-700">
+                      • {expense.expenseName}
+                    </span>
+                    <span className="text-sm font-medium text-gray-900">
+                      Rs. {expense.amount.toLocaleString()}
+                    </span>
+                  </div>
+                )) || (
+                  <p className="text-sm text-gray-500">No expenses recorded</p>
+                )}
+              </div>
+            </div>
+
+            {/* Total Amount */}
+            <div className="flex flex-col space-y-1">
+              <Label className="text-sm font-medium text-gray-700">
+                Total Amount:
+              </Label>
+              <p className="text-lg font-semibold text-gray-900">
+                Rs. {budget?.totalAmount?.toLocaleString() || "0"}
+              </p>
+            </div>
+
+            {/* Remarks */}
+            <div className="flex flex-col space-y-1">
+              <Label className="text-sm font-medium text-gray-700">
+                Remarks:
+              </Label>
+              <p className="text-sm text-gray-900">
+                {budgetData?.remarks || "No remarks"}
+              </p>
+            </div>
+
+            {/* Created By */}
+            <div className="flex flex-col space-y-1">
+              <Label className="text-sm font-medium text-gray-700">
+                Created By:
+              </Label>
+              <p className="text-sm text-gray-900">
+                {budget?.createdBy.userName || "N/A"}
+              </p>
+            </div>
+
+            {/* Reject Remarks Field */}
+            {showRejectField && (
+              <div className="flex flex-col space-y-2 p-3 bg-red-50 rounded-lg border border-red-200">
+                <Label className="text-sm font-medium text-red-700">
+                  Rejection Remarks:
+                </Label>
+                <Textarea
+                  placeholder="Please provide reason for rejection..."
+                  value={rejectRemarks}
+                  onChange={(e) => setRejectRemarks(e.target.value)}
+                  className="min-h-[80px] border-red-300 focus:border-red-500"
+                />
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+
+        <DialogFooter className="flex flex-col gap-2 pt-4">
           <Button
             variant="outline"
             onClick={handleCancel}
