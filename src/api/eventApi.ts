@@ -219,3 +219,46 @@ export const useApproveEvent = (
     },
   });
 };
+
+interface CalendarEvent {
+  _id: string;
+  eventName: string;
+  startDate: string;
+  endDate: string;
+  startTime: string;
+  proposedLocation: string;
+  clientName: string;
+}
+
+interface MonthlyEventsResponse {
+  message: string;
+  events: {
+    [date: string]: CalendarEvent[];
+  };
+}
+
+export const useGetAllEventByMonth = (
+  year: number,
+  month: number
+): UseQueryResult<MonthlyEventsResponse> => {
+  return useQuery({
+    queryKey: ["get_monthly_events", year, month],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      params.append("year", year.toString());
+      params.append("month", month.toString());
+
+      const response = await authFetch.get<MonthlyEventsResponse>(
+        `/events/monthly?${params.toString()}`
+      );
+
+      return response.data;
+    },
+    onSuccess: () => {
+      console.log("Monthly events retrieved successfully");
+    },
+    onError: (error) => {
+      console.error("Error fetching monthly events:", error);
+    },
+  });
+};

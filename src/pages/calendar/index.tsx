@@ -1,73 +1,155 @@
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  getDay,
+  addMonths,
+  subMonths,
+} from "date-fns";
+import { useGetAllEventByMonth } from "@/api/eventApi";
 
-function CalendarScreen() {
-  // Days of the week
-  const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-  
-  // Calendar grid data (5 weeks x 7 days)
-  const calendarDates = [
-    [30, 31, '01', '02', '03', '04', '05'],
-    ['06', '07', '08', '09', '10', '11', '12'],
-    ['13', '14', '15', '16', '17', '18', '19'],
-    ['20', '21', '22', '23', '24', '25', '26'],
-    ['27', '28', '29', '30', '31', '01', '02']
-  ];
+const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const monthNames = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+const currentYear = new Date().getFullYear();
+const yearRange = Array.from({ length: 20 }, (_, i) => currentYear - 10 + i); 
+
+const EventCalendar = () => {
+  const [currentDate, setCurrentDate] = useState(new Date(2025, 5)); 
+    
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth() + 1;
+
+  const { data, isLoading, isError } = useGetAllEventByMonth(year, month);
+
+  const daysInMonth = eachDayOfInterval({
+    start: startOfMonth(currentDate),
+    end: endOfMonth(currentDate),
+  });
+
+  const startOffset = getDay(startOfMonth(currentDate));
+
+  const handleNextMonth = () => setCurrentDate((prev) => addMonths(prev, 1));
+  const handlePrevMonth = () => setCurrentDate((prev) => subMonths(prev, 1));
+  const handleGoTo = (yearSelected: number, monthSelected: number) => {
+    setCurrentDate(new Date(yearSelected, monthSelected - 1));
+  };
+
+  const formatEventDate = (event: any) => {
+    if (event.startTime) {
+      const dateMatch = event.startTime.match(/(\d{4}-\d{2}-\d{2})/);
+      if (dateMatch) {
+        return dateMatch[1];
+      }
+    }
+    
+    return format(new Date(), "yyyy-MM-dd");
+  };
+
+  if (isLoading) return <div className="p-4">Loading events...</div>;
+  if (isError)
+    return <div className="p-4 text-red-500">Error loading events.</div>;
 
   return (
-    <div className="p-4 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Calendar</h1>
-          <p className="mt-2 text-gray-600">
-            View and manage your events here.
-          </p>
-        </div>
-      </div>
+    <div className="p-4 space-y-4  mx-auto">
+      <div className="flex justify-between items-center space-x-4 flex-wrap">
+        <Button onClick={handlePrevMonth}>Previous</Button>
 
-      {/* Calendar Grid */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        {/* Header Row - Days of Week */}
-        <div className="grid grid-cols-7 bg-gray-50 border-b border-gray-200">
-          {daysOfWeek.map((day, index) => (
-            <div 
-              key={index}
-              className="p-3 text-center text-sm font-medium text-gray-600 border-r border-gray-200 last:border-r-0"
-            >
-              {day}
-            </div>
+        <h2 className="text-xl font-semibold">
+          {format(currentDate, "MMMM yyyy")}
+        </h2>
+
+        <Button onClick={handleNextMonth}>Next</Button>
+      </div>
+      <div className="flex items-center space-x-2 flex-wrap">
+        <label htmlFor="month-select" className="font-medium">
+          Month:
+        </label>
+        <select
+          id="month-select"
+          value={currentDate.getMonth()}
+          onChange={(e) => handleGoTo(year, Number(e.target.value) + 1)}
+          className="border rounded px-2 py-1"
+        >
+          {monthNames.map((name, idx) => (
+            <option key={name} value={idx}>
+              {name}
+            </option>
           ))}
-        </div>
+        </select>
 
-        {/* Calendar Body */}
-        <div className="grid grid-cols-7">
-          {calendarDates.map((week, weekIndex) => 
-            week.map((date, dayIndex) => (
-              <div
-                key={`${weekIndex}-${dayIndex}`}
-                className="border-r border-b border-gray-200 last:border-r-0 bg-white hover:bg-gray-50 transition-colors duration-150 min-h-24 sm:min-h-32 md:min-h-40"
-              >
-                <div className="p-2 h-full">
-                  {/* Date Number */}
-                  <div className="text-sm font-medium text-gray-900 mb-1">
-                    {date}
-                  </div>
-                  
-                  {/* Event Space - This is where events would be displayed */}
-                  <div className="space-y-1">
-                    {/* Empty space for events */}
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+        <label htmlFor="year-select" className="font-medium">
+          Year:
+        </label>
+        <select
+          id="year-select"
+          value={year}
+          onChange={(e) => handleGoTo(Number(e.target.value), month)}
+          className="border rounded px-2 py-1"
+        >
+          {yearRange.map((yr) => (
+            <option key={yr} value={yr}>
+              {yr}
+            </option>
+          ))}
+        </select>
       </div>
+      <div className="grid grid-cols-7 gap-2 text-center font-medium">
+        {weekdays.map((day) => (
+          <div key={day}>{day}</div>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 gap-2">
+        {Array.from({ length: startOffset }).map((_, index) => (
+          <div key={`empty-${index}`} className="p-2" />
+        ))}
 
-      {/* Mobile Responsive Note */}
-      <div className="mt-4 text-xs text-gray-500 text-center sm:hidden">
-        Tap dates to view details
+        {daysInMonth.map((day) => {
+          const dateStr = format(day, "yyyy-MM-dd");
+          const dayEvents = data?.events?.[dateStr] || [];
+
+          return (
+            <div
+              key={dateStr}
+              className="border rounded-md p-2 min-h-[120px] flex flex-col gap-1"
+            >
+              <div className="text-sm font-semibold">{day.getDate()}</div>
+              {dayEvents.map((event) => (
+                <Card key={event._id} className="bg-blue-50 text-sm">
+                  <CardContent className="p-2">
+                    <p className="font-medium">{event.eventName}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {dateStr}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      @ {event.proposedLocation}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
-}
+};
 
-export default CalendarScreen;
+export default EventCalendar;
