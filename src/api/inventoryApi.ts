@@ -1,5 +1,10 @@
 import authFetch from "./authInterceptor";
-import { useMutation, useQuery, useQueryClient, UseQueryResult } from "react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  UseQueryResult,
+} from "react-query";
 
 export interface InventoryItemData {
   itemName: string;
@@ -20,13 +25,13 @@ export const useCreateInventoryMutation = (
   onError?: (message: string) => void
 ) => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (itemData: InventoryItemData) => {
       if (!itemData.remainingQuantity) {
         itemData.remainingQuantity = itemData.totalQuantity;
       }
-      
+
       const response = await authFetch.post("/inventory/create", itemData);
       return response.data;
     },
@@ -35,22 +40,27 @@ export const useCreateInventoryMutation = (
       if (onSuccess) onSuccess(data);
     },
     onError: (error) => {
-      const message = (error as any)?.response?.data?.message || "Failed to create inventory item";
+      const message =
+        (error as any)?.response?.data?.message ||
+        "Failed to create inventory item";
       if (onError) onError(message);
     },
   });
 };
 
-
 //getById
 export const useInventoryItem = (itemId: string | null) => {
-  return useQuery(["inventoryItem", itemId], async () => {
-    if (!itemId) return null;
-    const response = await authFetch.get(`/inventory/${itemId}`);
-    return response.data;
-  }, {
-    enabled: !!itemId, 
-  });
+  return useQuery(
+    ["inventoryItem", itemId],
+    async () => {
+      if (!itemId) return null;
+      const response = await authFetch.get(`/inventory/${itemId}`);
+      return response.data;
+    },
+    {
+      enabled: !!itemId,
+    }
+  );
 };
 
 export const useUpdateInventoryMutation = (
@@ -58,9 +68,15 @@ export const useUpdateInventoryMutation = (
   onError?: (message: string) => void
 ) => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: async ({ itemId, itemData }: { itemId: string, itemData: Partial<InventoryItemData> }) => {
+    mutationFn: async ({
+      itemId,
+      itemData,
+    }: {
+      itemId: string;
+      itemData: Partial<InventoryItemData>;
+    }) => {
       const response = await authFetch.put(`/inventory/${itemId}`, itemData);
       return response.data;
     },
@@ -70,19 +86,20 @@ export const useUpdateInventoryMutation = (
       if (onSuccess) onSuccess(data);
     },
     onError: (error) => {
-      const message = (error as any)?.response?.data?.message || "Failed to update inventory item";
+      const message =
+        (error as any)?.response?.data?.message ||
+        "Failed to update inventory item";
       if (onError) onError(message);
     },
   });
 };
-
 
 export const useDeleteInventoryMutation = (
   onSuccess?: () => void,
   onError?: (message: string) => void
 ) => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (itemId: string) => {
       const response = await authFetch.delete(`/inventory/${itemId}`);
@@ -93,7 +110,9 @@ export const useDeleteInventoryMutation = (
       if (onSuccess) onSuccess();
     },
     onError: (error) => {
-      const message = (error as any)?.response?.data?.message || "Failed to delete inventory item";
+      const message =
+        (error as any)?.response?.data?.message ||
+        "Failed to delete inventory item";
       if (onError) onError(message);
     },
   });
@@ -101,45 +120,44 @@ export const useDeleteInventoryMutation = (
 
 // InventoryItem interface
 export interface InventoryItem {
-    _id: string;
-    itemName: string;
-    itemDescription?: string;
-    category: string[];
-    totalQuantity: number;
-    remainingQuantity: number;
-    price: number;
-    condition: string[];
-    variations: string[];
-    images: string[];
-    isExternal: boolean;
-    assignedEvent: string[];
-    createdBy: string;
-    createdAt: string;
-    updatedAt: string;
-    __v: number;
-  }
-  
-  // Pagination metadata
-  export interface InventoryPagination {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  }
-  
-  // API response type
-  export interface InventoryResponse {
-    message: string;
-    inventoryItems: InventoryItem[];
-    pagination: InventoryPagination;
-  }
+  _id: string;
+  itemName: string;
+  itemDescription?: string;
+  category: string[];
+  totalQuantity: number;
+  remainingQuantity: number;
+  price: number;
+  condition: string[];
+  variations: string[];
+  images: string[];
+  isExternal: boolean;
+  assignedEvent: string[];
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
 
+// Pagination metadata
+export interface InventoryPagination {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
 
- export const useGetAllInventory = (
+// API response type
+export interface InventoryResponse {
+  message: string;
+  inventoryItems: InventoryItem[];
+  pagination: InventoryPagination;
+}
+
+export const useGetAllInventory = (
   page?: number,
   pageSize?: number,
   search?: string,
-  itemType?: string 
+  itemType?: string
 ): UseQueryResult<InventoryResponse> => {
   return useQuery({
     queryKey: ["get_all_inventory", page, pageSize, search, itemType],
@@ -164,23 +182,26 @@ export interface InventoryItem {
   });
 };
 
-  export interface InventoryOption{
-    itemId: string;
-    itemName: string;
-    remainingQuantity: number;
-  }
+export interface InventoryOption {
+  itemId: string;
+  itemName: string;
+  remainingQuantity: number;
+}
 
-  export interface InventoryOptionResponse {
-    message: string;
-    items: InventoryOption[];
-  }
-  
-  export const useGetInventoryOptions = (): UseQueryResult<InventoryOptionResponse> => {
+export interface InventoryOptionResponse {
+  message: string;
+  items: InventoryOption[];
+}
+
+export const useGetInventoryOptions =
+  (): UseQueryResult<InventoryOptionResponse> => {
     return useQuery({
       queryKey: ["inventory_options"],
       queryFn: async () => {
         try {
-          const response = await authFetch.get<InventoryOptionResponse>("/inventory/all-dropdown");
+          const response = await authFetch.get<InventoryOptionResponse>(
+            "/inventory/all-dropdown"
+          );
           return {
             message: response.data.message,
             items: response.data.items,
@@ -198,36 +219,76 @@ export interface InventoryItem {
     });
   };
 
-   export interface ReserveInventory{
-    itemId: string;
-    eventId: string;
-    date: string;
-    reservedQuantity: number;
-  }
+export interface ReserveInventory {
+  itemId: string;
+  eventId: string;
+  date: string;
+  reservedQuantity: number;
+}
 
- export interface ReserveInventoryResponse {
-    message: string;
-    items: ReserveInventory[];
-  }
+export interface ReserveInventoryResponse {
+  message: string;
+  items: ReserveInventory[];
+}
 
-  export const useReserveInventoryMutation = (
-    onSuccess?: (data: ReserveInventoryResponse) => void,
-    onError?: (message: string) => void
-  ) => {
-    const queryClient = useQueryClient();
-    
-    return useMutation({
-      mutationFn: async (reservationData: ReserveInventory) => {
-        const response = await authFetch.post("/inventory/reserve", reservationData);
+export const useReserveInventoryMutation = (
+  onSuccess?: (data: ReserveInventoryResponse) => void,
+  onError?: (message: string) => void
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (reservationData: ReserveInventory) => {
+      const response = await authFetch.post(
+        "/inventory/reserve",
+        reservationData
+      );
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries("get_all_inventory");
+      if (onSuccess) onSuccess(data);
+    },
+    onError: (error) => {
+      const message =
+        (error as any)?.response?.data?.message ||
+        "Failed to reserve inventory item";
+      if (onError) onError(message);
+    },
+  });
+};
+
+export interface InventoryReportItem {
+  _id: string;
+  itemName: string;
+  totalQuantity: number;
+  category: string;
+  isExternal: boolean;
+  condition: string;
+  price: number;
+  createdAt: string;
+}
+
+interface InventoryReportResponse {
+  message: string;
+  items: InventoryReportItem[];
+}
+
+export const useGetInventoryReport =
+  (): UseQueryResult<InventoryReportResponse> => {
+    return useQuery({
+      queryKey: ["get_inventory_report"],
+      queryFn: async () => {
+        const response = await authFetch.get<InventoryReportResponse>(
+          "/inventory/report"
+        );
         return response.data;
       },
-      onSuccess: (data) => {
-        queryClient.invalidateQueries("get_all_inventory");
-        if (onSuccess) onSuccess(data);
+      onSuccess: () => {
+        console.log("Inventory report data fetched successfully");
       },
       onError: (error) => {
-        const message = (error as any)?.response?.data?.message || "Failed to reserve inventory item";
-        if (onError) onError(message);
+        console.error("Error fetching inventory report data:", error);
       },
     });
-  }
+  };

@@ -177,10 +177,16 @@ export const useApproveBudget = (
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ isApproved, remarks }: { isApproved: boolean; remarks: string }) => {
+    mutationFn: async ({
+      isApproved,
+      remarks,
+    }: {
+      isApproved: boolean;
+      remarks: string;
+    }) => {
       const response = await authFetch.put(`/budget/status/${budgetId}`, {
         isApproved,
-        remarks
+        remarks,
       });
       return response.data;
     },
@@ -190,8 +196,50 @@ export const useApproveBudget = (
     },
     onError(error) {
       const message =
-        (error as any)?.response?.data?.message || "Budget status update failed";
+        (error as any)?.response?.data?.message ||
+        "Budget status update failed";
       if (onError) onError(message);
+    },
+  });
+};
+
+interface BudgetReport {
+  _id: string;
+  totalAmount: number;
+  createdAt: string;
+  eventId: {
+    _id: string;
+    eventName: string;
+  };
+  clientId: {
+    _id: string;
+    userName: string;
+  };
+  createdBy: {
+    _id: string;
+    userName: string;
+  };
+}
+
+interface BudgetReportResponse {
+  message: string;
+  budgets: BudgetReport[];
+}
+
+export const useGetBudgetReport = (): UseQueryResult<BudgetReportResponse> => {
+  return useQuery({
+    queryKey: ["get_budget_report"],
+    queryFn: async () => {
+      const response = await authFetch.get<BudgetReportResponse>(
+        "/budget/report"
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      console.log("Budget report data fetched successfully");
+    },
+    onError: (error) => {
+      console.error("Error fetching budget report data:", error);
     },
   });
 };

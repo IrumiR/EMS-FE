@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient, UseQueryResult } from "react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  UseQueryResult,
+} from "react-query";
 import authFetch from "./authInterceptor";
 
 export interface CreateEventData {
@@ -11,7 +16,13 @@ export interface CreateEventData {
   startTime?: string;
   endTime?: string;
   proposedLocation?: string;
-  status?: "Pending Approval" | "Approved" | "In Progress" | "Hold" | "Completed" | "Cancelled";
+  status?:
+    | "Pending Approval"
+    | "Approved"
+    | "In Progress"
+    | "Hold"
+    | "Completed"
+    | "Cancelled";
   clientId: string;
   quotationId?: string;
   feedbackId?: string;
@@ -37,10 +48,11 @@ export const useCreateEvent = (
     },
     onSuccess(data) {
       onSuccess("Event created successfully");
-       queryClient.invalidateQueries(["get_single_event"]);
+      queryClient.invalidateQueries(["get_single_event"]);
     },
     onError(error) {
-      const message = (error as any)?.response?.data?.message || "Event creation failed";
+      const message =
+        (error as any)?.response?.data?.message || "Event creation failed";
       onError(message);
     },
   });
@@ -55,7 +67,13 @@ export interface Event {
   startDate: string;
   endDate: string;
   proposedLocation?: string;
-  status?: "Pending Approval" | "Approved" | "In Progress" | "Hold" | "Completed" | "Cancelled";
+  status?:
+    | "Pending Approval"
+    | "Approved"
+    | "In Progress"
+    | "Hold"
+    | "Completed"
+    | "Cancelled";
   clientId: string;
   quotationId?: string;
   feedbackId?: string;
@@ -70,7 +88,7 @@ export interface Event {
   startTime?: string;
   endTime?: string;
   progress?: number;
-   createdAt: string;
+  createdAt: string;
   updatedAt: string;
   __v: number;
 }
@@ -103,8 +121,7 @@ export const useGetAllEvents = (
         const userId = localStorage.getItem("userId");
 
         // If role is client, use their _id as clientId
-        const effectiveClientId =
-          role === "client" ? userId : clientId;
+        const effectiveClientId = role === "client" ? userId : clientId;
 
         const params = new URLSearchParams();
         params.append("limit", String(pageSize ?? 10));
@@ -129,15 +146,18 @@ export const useGetAllEvents = (
   });
 };
 
-
 export const useGetEventById = (eventId: string | null) => {
-  return useQuery(["get_event_by_id", eventId], async () => {
-    if (!eventId) return null;
-    const response = await authFetch.get(`/events/${eventId}`);
-    return response.data;
-  }, {
-    enabled: !!eventId, 
-  });
+  return useQuery(
+    ["get_event_by_id", eventId],
+    async () => {
+      if (!eventId) return null;
+      const response = await authFetch.get(`/events/${eventId}`);
+      return response.data;
+    },
+    {
+      enabled: !!eventId,
+    }
+  );
 };
 
 export interface EventData {
@@ -148,7 +168,13 @@ export interface EventData {
   startDate: string;
   endDate: string;
   proposedLocation?: string;
-  status?: "Pending Approval" | "Approved" | "In Progress" | "Hold" | "Completed" | "Cancelled";
+  status?:
+    | "Pending Approval"
+    | "Approved"
+    | "In Progress"
+    | "Hold"
+    | "Completed"
+    | "Cancelled";
   clientId: string;
   quotationId?: string;
   feedbackId?: string;
@@ -169,23 +195,30 @@ export const useUpdateEvent = (
   onError: (message: string) => void
 ) => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: async ({ eventId, eventData }: { eventId: string, eventData: Partial<EventData> }) => {
+    mutationFn: async ({
+      eventId,
+      eventData,
+    }: {
+      eventId: string;
+      eventData: Partial<EventData>;
+    }) => {
       const response = await authFetch.put(`/events/${eventId}`, eventData);
       return response.data;
     },
     onSuccess: (data) => {
-       queryClient.invalidateQueries("get_all_events");
+      queryClient.invalidateQueries("get_all_events");
       queryClient.invalidateQueries(["event", data.event._id]);
       if (onSuccess) onSuccess(data);
     },
     onError(error) {
-      const message = (error as any)?.response?.data?.message || "Failed to update event";
+      const message =
+        (error as any)?.response?.data?.message || "Failed to update event";
       if (onError) onError(message);
     },
   });
-}
+};
 
 export interface EventApprove {
   status: string;
@@ -259,6 +292,43 @@ export const useGetAllEventByMonth = (
     },
     onError: (error) => {
       console.error("Error fetching monthly events:", error);
+    },
+  });
+};
+
+interface EventReport {
+  _id: string;
+  eventName: string;
+  eventType: string[];
+  startDate: string;
+  endDate: string;
+  proposedLocation: string;
+  createdAt: string;
+  clientId: {
+    _id: string;
+    userName: string;
+  };
+}
+
+interface EventReportResponse {
+  message: string;
+  events: EventReport[];
+}
+
+export const useGetEventReport = (): UseQueryResult<EventReportResponse> => {
+  return useQuery({
+    queryKey: ["get_event_report"],
+    queryFn: async () => {
+      const response = await authFetch.get<EventReportResponse>(
+        "/events/report"
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      console.log("Event report data fetched successfully");
+    },
+    onError: (error) => {
+      console.error("Error fetching event report data:", error);
     },
   });
 };

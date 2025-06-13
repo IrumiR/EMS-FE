@@ -1,11 +1,11 @@
 import { jwtDecode } from "jwt-decode";
 import authFetch from "./authInterceptor";
 import {
-    useMutation,
-    useQuery,
-    useQueryClient,
-    UseQueryResult,
-  } from "react-query";
+  useMutation,
+  useQuery,
+  useQueryClient,
+  UseQueryResult,
+} from "react-query";
 
 export interface LoginData {
   email: string;
@@ -13,11 +13,11 @@ export interface LoginData {
 }
 
 export interface DecodedToken {
-    role: string;
-    exp: number;
-    id:string;
-    userName: string;
-  }
+  role: string;
+  exp: number;
+  id: string;
+  userName: string;
+}
 
 export const useLoginMutation = (
   onSuccess: (role: string) => void,
@@ -63,19 +63,19 @@ export const useCreateClient = (
 ) => {
   return useMutation({
     mutationFn: async (clientData: CreateClientData) => {
-      const response = await authFetch.post("/auth/register", clientData); 
+      const response = await authFetch.post("/auth/register", clientData);
       return response.data;
     },
     onSuccess(data) {
       onSuccess("Client created successfully");
     },
     onError(error) {
-      const message = (error as any)?.response?.data?.message || "Client creation failed";
+      const message =
+        (error as any)?.response?.data?.message || "Client creation failed";
       onError(message);
     },
   });
 };
-
 
 export interface User {
   _id: string;
@@ -115,7 +115,9 @@ export const useGetAllUsers = (
     queryFn: async () => {
       try {
         const response = await authFetch.get<UserResponse>(
-          `/users/all?limit=${pageSize ?? 10}&page=${page ?? 1}${search ? `&search=${encodeURIComponent(search)}` : ""}`
+          `/users/all?limit=${pageSize ?? 10}&page=${page ?? 1}${
+            search ? `&search=${encodeURIComponent(search)}` : ""
+          }`
         );
         return response.data;
       } catch (error) {
@@ -130,7 +132,6 @@ export const useGetAllUsers = (
     },
   });
 };
-
 
 export interface UserUpdateData {
   userName?: string;
@@ -148,9 +149,15 @@ export const useUpdateUserMutation = (
   onError?: (message: string) => void
 ) => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: async ({ userId, userData }: { userId: string, userData: UserUpdateData }) => {
+    mutationFn: async ({
+      userId,
+      userData,
+    }: {
+      userId: string;
+      userData: UserUpdateData;
+    }) => {
       const response = await authFetch.put(`/users/${userId}`, userData);
       return response.data;
     },
@@ -161,22 +168,26 @@ export const useUpdateUserMutation = (
       if (onSuccess) onSuccess(data);
     },
     onError: (error) => {
-      const message = (error as any)?.response?.data?.message || "Failed to update user";
+      const message =
+        (error as any)?.response?.data?.message || "Failed to update user";
       if (onError) onError(message);
     },
   });
 };
 
 export const useGetUserById = (userId: string | null) => {
-  return useQuery(["user", userId], async () => {
-    if (!userId) return null;
-    const response = await authFetch.get(`/users/${userId}`);
-    return response.data;
-  }, {
-    enabled: !!userId, 
-  });
+  return useQuery(
+    ["user", userId],
+    async () => {
+      if (!userId) return null;
+      const response = await authFetch.get(`/users/${userId}`);
+      return response.data;
+    },
+    {
+      enabled: !!userId,
+    }
+  );
 };
-
 
 // Types for Client dropdown
 export interface ClientOption {
@@ -215,7 +226,6 @@ export const useGetClientOptions = (): UseQueryResult<ClientsResponse> => {
   });
 };
 
-
 // Types for Assignee dropdown
 export interface AssigneeOption {
   userId: string;
@@ -249,6 +259,36 @@ export const useGetAssigneeOptions = (): UseQueryResult<AssigneesResponse> => {
     },
     onError: (error) => {
       console.error("Assignee options fetch error:", error);
+    },
+  });
+};
+
+export interface UserReport {
+  _id: string;
+  userName: string;
+  email: string;
+  role: string;
+  contactNumber?: string;
+  createdAt: string;
+}
+
+interface UserReportResponse {
+  message: string;
+  users: UserReport[];
+}
+
+export const useGetUserReport = (): UseQueryResult<UserReportResponse> => {
+  return useQuery({
+    queryKey: ["get_user_report"],
+    queryFn: async () => {
+      const response = await authFetch.get<UserReportResponse>("/users/report");
+      return response.data;
+    },
+    onSuccess: () => {
+      console.log("User report data fetched successfully");
+    },
+    onError: (error) => {
+      console.error("Error fetching user report data:", error);
     },
   });
 };
