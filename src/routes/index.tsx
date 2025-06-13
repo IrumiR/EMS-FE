@@ -19,6 +19,7 @@ import TeamScreen from "@/pages/team";
 import ProtectedRoute from "./ProtectedRoutes";
 import Unauthorized from "@/pages/unauthorized";
 import ProfileScreen from "@/pages/profile";
+import ReportScreen from "@/pages/reports";
 
 const AppRoutes = () => {
   const role =
@@ -102,6 +103,14 @@ const AppRoutes = () => {
                   element={
                     <MainLayout role={role}>
                       <CalendarScreen />
+                    </MainLayout>
+                  }
+                />
+                <Route
+                  path="reports"
+                  element={
+                    <MainLayout role={role}>
+                      <ReportScreen />
                     </MainLayout>
                   }
                 />

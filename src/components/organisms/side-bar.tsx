@@ -11,6 +11,7 @@ import {
   HiChevronRight,
   HiChevronLeft,
 } from "react-icons/hi";
+ import { FileSliders } from 'lucide-react';
 import { FiUser } from "react-icons/fi";
 import Logo from "../../assets/svg/sidebar-logo.svg";
 import { JSX, useState } from "react";
@@ -44,6 +45,7 @@ const Sidebar = ({ role }: SidebarProps) => {
       { to: "/inventory", label: "INVENTORY", icon: <HiOutlineArchive size={20} /> },
       { to: "/budget", label: "BUDGET", icon: <HiOutlineCurrencyDollar size={20} /> },
       { to: "/calendar", label: "CALENDAR", icon: <CalendarClock size={20} /> },
+      { to: "/reports", label: "REPORTS", icon: <FileSliders size={20} /> },
       { to: "/team", label: "TEAM", icon: <HiOutlineUsers size={20} /> },
       { to: "/profile", label: "PROFILE", icon: <HiOutlineCog size={20} /> },
     ],
