@@ -29,11 +29,11 @@ const monthNames = [
 ];
 
 const currentYear = new Date().getFullYear();
-const yearRange = Array.from({ length: 20 }, (_, i) => currentYear - 10 + i); 
+const yearRange = Array.from({ length: 20 }, (_, i) => currentYear - 10 + i);
 
 const EventCalendar = () => {
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 5)); 
-    
+  const [currentDate, setCurrentDate] = useState(new Date(2025, 5));
+
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth() + 1;
 
@@ -52,15 +52,22 @@ const EventCalendar = () => {
     setCurrentDate(new Date(yearSelected, monthSelected - 1));
   };
 
-  const formatEventDate = (event: any) => {
-    if (event.startTime) {
-      const dateMatch = event.startTime.match(/(\d{4}-\d{2}-\d{2})/);
-      if (dateMatch) {
-        return dateMatch[1];
+  const formatTime = (time: string) => {
+    try {
+      // If ISO string
+      const parsed = new Date(time);
+      if (!isNaN(parsed.getTime())) {
+        return format(parsed, "hh:mm a");
       }
+
+      // If plain HH:mm:ss
+      const [hours, minutes] = time.split(":");
+      const date = new Date();
+      date.setHours(Number(hours), Number(minutes));
+      return format(date, "hh:mm a");
+    } catch {
+      return time;
     }
-    
-    return format(new Date(), "yyyy-MM-dd");
   };
 
   if (isLoading) return <div className="p-4">Loading events...</div>;
@@ -68,16 +75,15 @@ const EventCalendar = () => {
     return <div className="p-4 text-red-500">Error loading events.</div>;
 
   return (
-    <div className="p-4 space-y-4  mx-auto">
+    <div className="p-4 space-y-4 mx-auto">
       <div className="flex justify-between items-center space-x-4 flex-wrap">
         <Button onClick={handlePrevMonth}>Previous</Button>
-
         <h2 className="text-xl font-semibold">
           {format(currentDate, "MMMM yyyy")}
         </h2>
-
         <Button onClick={handleNextMonth}>Next</Button>
       </div>
+
       <div className="flex items-center space-x-2 flex-wrap">
         <label htmlFor="month-select" className="font-medium">
           Month:
@@ -111,11 +117,13 @@ const EventCalendar = () => {
           ))}
         </select>
       </div>
+
       <div className="grid grid-cols-7 gap-2 text-center font-medium">
         {weekdays.map((day) => (
           <div key={day}>{day}</div>
         ))}
       </div>
+
       <div className="grid grid-cols-7 gap-2">
         {Array.from({ length: startOffset }).map((_, index) => (
           <div key={`empty-${index}`} className="p-2" />
@@ -136,7 +144,7 @@ const EventCalendar = () => {
                   <CardContent className="p-2">
                     <p className="font-medium">{event.eventName}</p>
                     <p className="text-xs text-muted-foreground">
-                      {dateStr}
+                      {formatTime(event.startTime)}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       @ {event.proposedLocation}
