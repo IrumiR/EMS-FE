@@ -110,10 +110,12 @@ export const useGetAllEvents = (
   page?: number,
   pageSize?: number,
   search?: string,
-  clientId?: string
+  clientId?: string,
+  status?: string,
+  eventType?: string
 ): UseQueryResult<EventResponse> => {
   return useQuery({
-    queryKey: ["get_all_events", page, pageSize, search, clientId],
+    queryKey: ["get_all_events", page, pageSize, search, clientId, status, eventType],
     queryFn: async () => {
       try {
         // Retrieve user from localStorage
@@ -128,6 +130,8 @@ export const useGetAllEvents = (
         params.append("page", String(page ?? 1));
         if (search) params.append("search", search);
         if (effectiveClientId) params.append("clientId", effectiveClientId);
+        if (status) params.append("status", status);
+        if (eventType) params.append("eventType", eventType);
 
         const response = await authFetch.get<EventResponse>(
           `/events/all?${params.toString()}`

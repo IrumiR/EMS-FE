@@ -38,6 +38,7 @@ function EventsScreen() {
 
   const data = useGetAllEvents(currentPage, rowsPerPage, searchTerm);
   const eventsData = data?.data?.events || [];
+  const pagination = data?.data?.pagination;
   const userType = localStorage.getItem("role");
 
   const getEventImage = (eventType: any) => {
@@ -77,9 +78,13 @@ function EventsScreen() {
       }));
       setEvents(formattedEvents);
       setFilteredEvents(formattedEvents);
+    } else {
+      setEvents([]);
+      setFilteredEvents([]);
     }
   }, [eventsData]);
 
+  // Apply client-side filtering only (not pagination)
   useEffect(() => {
     let results = events;
 
@@ -94,16 +99,21 @@ function EventsScreen() {
     }
 
     setFilteredEvents(results);
-    setCurrentPage(1);
-  }, [ statusFilter, eventTypeFilter, events]);
 
-  const totalPages = Math.ceil(filteredEvents.length / rowsPerPage);
-  const paginatedEvents = filteredEvents.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  );
+    // Reset to page 1 when filters change
+    if (
+      statusFilter !== "All Statuses" ||
+      eventTypeFilter !== "All Event Types"
+    ) {
+      setCurrentPage(1);
+    }
+  }, [statusFilter, eventTypeFilter, events]);
 
-   const handlePageChange = (newPage: number) => {
+  // Use server-side pagination data
+  const totalPages = pagination?.totalPages || 1;
+  const totalEvents = pagination?.total || 0;
+
+  const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
     }
@@ -114,12 +124,12 @@ function EventsScreen() {
   ) => {
     const newRowsPerPage = Number(event.target.value);
     setRowsPerPage(newRowsPerPage);
-    setCurrentPage(1); 
+    setCurrentPage(1); // Reset to first page when changing page size
   };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page when searching
   };
 
   // Status options
@@ -155,11 +165,12 @@ function EventsScreen() {
             Manage and track your events here.
           </p>
         </div>
-  
-  <div>
-     {(userType === "admin" || userType === "manager") && <AddEventDialog />}
-  </div>
-      
+
+        <div>
+          {(userType === "admin" || userType === "manager") && (
+            <AddEventDialog />
+          )}
+        </div>
       </div>
 
       <div className="mt-4 flex items-center justify-between">
@@ -215,33 +226,35 @@ function EventsScreen() {
       </div>
 
       <div className="mt-4 bg-white rounded-lg border border-gray-200 p-8">
-        {paginatedEvents && paginatedEvents.length > 0 ? (
+        {filteredEvents && filteredEvents.length > 0 ? (
           <div className="flex flex-wrap items-start justify-start">
-            <EventCardGrid events={paginatedEvents} />
+            <EventCardGrid events={filteredEvents} />
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-16">
-            <p className="text-gray-500 text-lg">No events found.</p>
+            <p className="text-gray-500 text-lg">
+              {data?.isLoading ? "Loading events..." : "No events found."}
+            </p>
           </div>
         )}
 
         {/* Pagination Controls */}
-        {filteredEvents.length > 0 && (
+        {totalEvents > 0 && (
           <div className="flex items-center justify-between mt-8">
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
+                disabled={currentPage === 1 || data?.isLoading}
                 className="px-3 py-1 bg-gray-200 text-gray-700 rounded disabled:opacity-50"
               >
                 Previous
               </button>
               <span className="text-sm text-gray-700">
-                Page {currentPage} of {totalPages || 1}
+                Page {currentPage} of {totalPages}
               </span>
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages || totalPages === 0}
+                disabled={currentPage === totalPages || data?.isLoading}
                 className="px-3 py-1 bg-gray-200 text-gray-700 rounded disabled:opacity-50"
               >
                 Next
@@ -253,7 +266,8 @@ function EventsScreen() {
               <select
                 value={rowsPerPage}
                 onChange={handleRowsPerPageChange}
-                className="px-2 py-1 border border-gray-300 rounded"
+                disabled={data?.isLoading}
+                className="px-2 py-1 border border-gray-300 rounded disabled:opacity-50"
               >
                 {[5, 10, 15, 20].map((option) => (
                   <option key={option} value={option}>
