@@ -2,6 +2,7 @@ import { ChevronDown, Download, Package } from "lucide-react";
 import { useState } from "react";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 import { useGetInventoryReport } from "@/api/inventoryApi";
 
 export default function InventoryReportCard() {
@@ -40,16 +41,58 @@ export default function InventoryReportCard() {
     doc.save("inventory-items-report.pdf");
   };
 
+  const generateInventoryReportExcel = (items: any[]) => {
+    // Prepare data for Excel
+    const excelData = items.map((item, index) => ({
+      '#': index + 1,
+      'Item Name': item.itemName,
+      'Category': Array.isArray(item.category) ? item.category.join(", ") : (item.category || "-"),
+      'Quantity': item.totalQuantity,
+      'Condition': Array.isArray(item.condition) ? item.condition.join(", ") : (item.condition || "-"),
+      'Type': item.isExternal ? "External" : "Internal",
+      'Price (Rs.)': item.price,
+      'Created Date': new Date(item.createdAt).toLocaleDateString(),
+    }));
+
+    // Create a new workbook
+    const workbook = XLSX.utils.book_new();
+    
+    // Convert data to worksheet
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    
+    // Set column widths for better formatting
+    const columnWidths = [
+      { wch: 5 },  // #
+      { wch: 25 }, // Item Name
+      { wch: 15 }, // Category
+      { wch: 10 }, // Quantity
+      { wch: 12 }, // Condition
+      { wch: 10 }, // Type
+      { wch: 15 }, // Price
+      { wch: 15 }, // Created Date
+    ];
+    worksheet['!cols'] = columnWidths;
+
+    // Add the worksheet to workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Inventory Report");
+    
+    // Generate and download the file
+    XLSX.writeFile(workbook, "inventory-items-report.xlsx");
+  };
+
   const handleFormatSelect = (format: string) => {
     setOpenDropdown(false);
-    if (format === "PDF") {
-      if (!inventoryReport || !inventoryReport.items?.length) {
-        alert("No inventory report data available");
-        return;
-      }
-      generateInventoryReportPDF(inventoryReport.items);
+    
+    if (!inventoryReport || !inventoryReport.items?.length) {
+      alert("No inventory report data available");
+      return;
     }
-    // Future: Add Excel export
+
+    if (format === "PDF") {
+      generateInventoryReportPDF(inventoryReport.items);
+    } else if (format === "Excel") {
+      generateInventoryReportExcel(inventoryReport.items);
+    }
   };
 
   return (

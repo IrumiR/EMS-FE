@@ -38,6 +38,7 @@ function EventsScreen() {
 
   const data = useGetAllEvents(currentPage, rowsPerPage, searchTerm);
   const eventsData = data?.data?.events || [];
+  const userType = localStorage.getItem("role");
 
   const getEventImage = (eventType: any) => {
     let eventTypeKey: keyof typeof eventTypeImages = "others";
@@ -154,10 +155,11 @@ function EventsScreen() {
             Manage and track your events here.
           </p>
         </div>
-
-        <div>
-          <AddEventDialog />
-        </div>
+  
+  <div>
+     {(userType === "admin" || userType === "manager") && <AddEventDialog />}
+  </div>
+      
       </div>
 
       <div className="mt-4 flex items-center justify-between">

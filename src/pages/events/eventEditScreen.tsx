@@ -30,8 +30,8 @@ function EventEditScreen() {
   );
 
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
+   const userType = localStorage.getItem("role");
 
-  console.log(data, "data");
 
   // Filter tasks based on status (client-side filtering for status only)
   useEffect(() => {
@@ -86,7 +86,7 @@ function EventEditScreen() {
         </div>
 
         <div>
-          <AddTaskDialog />
+          {(userType !== "client") && <AddTaskDialog />}
         </div>
       </div>
 

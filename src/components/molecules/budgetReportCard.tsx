@@ -2,6 +2,7 @@ import { ChevronDown, DollarSign, Download } from "lucide-react";
 import { useState } from "react";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 import { useGetBudgetReport } from "@/api/budgetApi";
 
 export default function BudgetReportCard() {
@@ -38,16 +39,54 @@ export default function BudgetReportCard() {
     doc.save("budgets-report.pdf");
   };
 
+  const generateBudgetReportExcel = (budgets: any[]) => {
+    // Prepare data for Excel
+    const excelData = budgets.map((budget, index) => ({
+      '#': index + 1,
+      'Event Name': budget.eventId?.eventName || "-",
+      'Client': budget.clientId?.userName || "-",
+      'Created By': budget.createdBy?.userName || "-",
+      'Total Amount (Rs.)': budget.totalAmount,
+      'Created Date': new Date(budget.createdAt).toLocaleDateString(),
+    }));
+
+    // Create a new workbook
+    const workbook = XLSX.utils.book_new();
+    
+    // Convert data to worksheet
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    
+    // Set column widths for better formatting
+    const columnWidths = [
+      { wch: 5 },  // #
+      { wch: 25 }, // Event Name
+      { wch: 20 }, // Client
+      { wch: 20 }, // Created By
+      { wch: 18 }, // Total Amount
+      { wch: 15 }, // Created Date
+    ];
+    worksheet['!cols'] = columnWidths;
+
+    // Add the worksheet to workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Budgets Report");
+    
+    // Generate and download the file
+    XLSX.writeFile(workbook, "budgets-report.xlsx");
+  };
+
   const handleFormatSelect = (format: string) => {
     setOpenDropdown(false);
-    if (format === "PDF") {
-      if (!budgetReport || !budgetReport.budgets?.length) {
-        alert("No budget report data available");
-        return;
-      }
-      generateBudgetReportPDF(budgetReport.budgets);
+    
+    if (!budgetReport || !budgetReport.budgets?.length) {
+      alert("No budget report data available");
+      return;
     }
-    // Future: Add Excel export
+
+    if (format === "PDF") {
+      generateBudgetReportPDF(budgetReport.budgets);
+    } else if (format === "Excel") {
+      generateBudgetReportExcel(budgetReport.budgets);
+    }
   };
 
   return (

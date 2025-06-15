@@ -2,6 +2,7 @@ import { ChevronDown, Download, Users } from "lucide-react";
 import { useState } from "react";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 import { useGetUserReport } from "@/api/authApi";
 
 export default function UserReportCard() {
@@ -38,16 +39,54 @@ export default function UserReportCard() {
     doc.save("users-report.pdf");
   };
 
+  const generateUserReportExcel = (users: any[]) => {
+    // Prepare data for Excel
+    const excelData = users.map((user, index) => ({
+      '#': index + 1,
+      'User Name': user.userName,
+      'Email': user.email,
+      'Role': user.role,
+      'Contact Number': user.contactNumber || "-",
+      'Created Date': new Date(user.createdAt).toLocaleDateString(),
+    }));
+
+    // Create a new workbook
+    const workbook = XLSX.utils.book_new();
+    
+    // Convert data to worksheet
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    
+    // Set column widths for better formatting
+    const columnWidths = [
+      { wch: 5 },  // #
+      { wch: 20 }, // User Name
+      { wch: 30 }, // Email
+      { wch: 15 }, // Role
+      { wch: 18 }, // Contact Number
+      { wch: 15 }, // Created Date
+    ];
+    worksheet['!cols'] = columnWidths;
+
+    // Add the worksheet to workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Users Report");
+    
+    // Generate and download the file
+    XLSX.writeFile(workbook, "users-report.xlsx");
+  };
+
   const handleFormatSelect = (format: string) => {
     setOpenDropdown(false);
-    if (format === "PDF") {
-      if (!userReport || !userReport.users?.length) {
-        alert("No user report data available");
-        return;
-      }
-      generateUserReportPDF(userReport.users);
+    
+    if (!userReport || !userReport.users?.length) {
+      alert("No user report data available");
+      return;
     }
-    // Future: Add Excel export
+
+    if (format === "PDF") {
+      generateUserReportPDF(userReport.users);
+    } else if (format === "Excel") {
+      generateUserReportExcel(userReport.users);
+    }
   };
 
   return (

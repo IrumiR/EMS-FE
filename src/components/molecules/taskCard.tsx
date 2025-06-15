@@ -40,6 +40,8 @@ export default function TaskCard({ task }: { task: Task }) {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isCommentDialogOpen, setIsCommentDialogOpen] = useState(false);
 
+  const userType = localStorage.getItem("role");
+
   const getPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {
       case "high":
@@ -144,6 +146,7 @@ export default function TaskCard({ task }: { task: Task }) {
         </p>
 
         {/* Sub Task Dialog & Due Date */}
+       
         <div className="flex items-center justify-between mb-3">
           <SubTaskDialog taskId={task.id} taskName={task.taskName} />
           <div className="flex items-center gap-2">
@@ -220,20 +223,6 @@ export default function TaskCard({ task }: { task: Task }) {
               <TooltipTrigger asChild>
                 <button
                   className="p-1 hover:bg-gray-100 rounded transition-colors"
-                  onClick={() => setIsEditDialogOpen(true)}
-                >
-                  <Pencil className="w-4 h-4 text-gray-500" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Edit Task</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  className="p-1 hover:bg-gray-100 rounded transition-colors"
                   onClick={() => setIsViewDialogOpen(true)}
                 >
                   <Eye className="w-4 h-4 text-gray-500" />
@@ -241,6 +230,22 @@ export default function TaskCard({ task }: { task: Task }) {
               </TooltipTrigger>
               <TooltipContent>
                 <p>View Task</p>
+              </TooltipContent>
+            </Tooltip>
+
+              {(userType !== "client") && (
+                <>
+                  <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  className="p-1 hover:bg-gray-100 rounded transition-colors"
+                  onClick={() => setIsEditDialogOpen(true)}
+                >
+                  <Pencil className="w-4 h-4 text-gray-500" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Edit Task</p>
               </TooltipContent>
             </Tooltip>
 
@@ -268,6 +273,10 @@ export default function TaskCard({ task }: { task: Task }) {
                 <p>Update Priority</p>
               </TooltipContent>
             </Tooltip>
+            </>
+              )}
+
+            
           </div>
         </TooltipProvider>
       </CardFooter>

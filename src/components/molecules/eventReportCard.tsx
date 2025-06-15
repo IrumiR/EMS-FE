@@ -3,6 +3,7 @@ import { Calendar, Download, ChevronDown } from 'lucide-react';
 import { useGetEventReport } from '@/api/eventApi';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 export default function EventReportCard() {
   const [openDropdown, setOpenDropdown] = useState<boolean>(false);
@@ -39,16 +40,56 @@ export default function EventReportCard() {
     doc.save("events-report.pdf");
   };
 
+  const generateEventReportExcel = (events: any[]) => {
+    // Prepare data for Excel
+    const excelData = events.map((event, index) => ({
+      '#': index + 1,
+      'Event Name': event.eventName,
+      'Event Type': event.eventType?.join(", ") || "-",
+      'Start Date': new Date(event.startDate).toLocaleDateString(),
+      'End Date': new Date(event.endDate).toLocaleDateString(),
+      'Location': event.proposedLocation || "-",
+      'Client': event.clientId?.userName || "-",
+    }));
+
+    // Create a new workbook
+    const workbook = XLSX.utils.book_new();
+    
+    // Convert data to worksheet
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    
+    // Set column widths for better formatting
+    const columnWidths = [
+      { wch: 5 },  // #
+      { wch: 25 }, // Event Name
+      { wch: 20 }, // Event Type
+      { wch: 12 }, // Start Date
+      { wch: 12 }, // End Date
+      { wch: 20 }, // Location
+      { wch: 15 }, // Client
+    ];
+    worksheet['!cols'] = columnWidths;
+
+    // Add the worksheet to workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Events Report");
+    
+    // Generate and download the file
+    XLSX.writeFile(workbook, "events-report.xlsx");
+  };
+
   const handleFormatSelect = (format: string) => {
     setOpenDropdown(false);
-    if (format === "PDF") {
-      if (!eventReport || !eventReport.events?.length) {
-        alert("No event report data available");
-        return;
-      }
-      generateEventReportPDF(eventReport.events);
+    
+    if (!eventReport || !eventReport.events?.length) {
+      alert("No event report data available");
+      return;
     }
-    // Future: Add Excel export
+
+    if (format === "PDF") {
+      generateEventReportPDF(eventReport.events);
+    } else if (format === "Excel") {
+      generateEventReportExcel(eventReport.events);
+    }
   };
 
   return (
