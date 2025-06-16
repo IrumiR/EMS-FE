@@ -3,12 +3,25 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { FaRegBell } from "react-icons/fa";
 import UserLogo from "../../assets/svg/user-icon.svg";
 import { HiLogout } from "react-icons/hi";
+import { useEffect, useState } from "react";
 
 const Topbar = () => {
   const location = useLocation();
   const pathSegments = location.pathname.split("/").filter(Boolean);
-
   const navigate = useNavigate();
+
+  // State to store user info
+  const [userInfo, setUserInfo] = useState({
+    userName: '',
+    role: ''
+  });
+
+  // Get user info from localStorage on component mount
+  useEffect(() => {
+    const userName = localStorage.getItem('userName') || 'User';
+    const role = localStorage.getItem('role') || 'Guest';
+    setUserInfo({ userName, role });
+  }, []);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -34,13 +47,24 @@ const Topbar = () => {
         })}
       </nav>
 
-      <div className="text-sm text-gray-700 gap-4 flex">
+      <div className="text-sm text-gray-700 gap-4 flex items-center">
         <Popover>
           <PopoverTrigger className="w-10 h-10 rounded-full border flex items-center justify-center hover:bg-gray-100 transition duration-200 hover:cursor-pointer">
             <FaRegBell className="w-5 h-5" />
           </PopoverTrigger>
           <PopoverContent>Place content for the popover here.</PopoverContent>
         </Popover>
+        
+        {/* User Info Section */}
+        <div className="flex flex-col items-end text-right">
+          <span className="font-semibold text-gray-800 text-sm">
+            {userInfo.userName}
+          </span>
+          <span className="text-xs text-gray-500 capitalize">
+            {userInfo.role}
+          </span>
+        </div>
+
         <Popover>
           <PopoverTrigger className="w-10 h-10 hover:cursor-pointer">
             <img
