@@ -118,7 +118,40 @@ export const useGetAllTasksByEventId = (
         if (search) params.append("search", search);
 
         const response = await authFetch.get<TaskResponse>(
-          `/tasks/all/${eventId}?${params.toString()}`
+          `/tasks/all-by-event/${eventId}?${params.toString()}`
+        );
+        return response.data;
+      } catch (error) {
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      console.log("Tasks retrieved successfully");
+    },
+    onError: (error) => {
+      console.error("Fetch error:", error);
+    },
+  });
+};
+
+export const useGetAllTasksByUserId = (
+  userId: string,
+  page?: number,
+  pageSize?: number,
+  search?: string
+): UseQueryResult<TaskResponse> => {
+  return useQuery({
+    queryKey: ["get_all_by_user_tasks", userId, page, pageSize, search],
+    queryFn: async () => {
+      try {
+        const params = new URLSearchParams();
+        if (page !== undefined) params.append("page", page.toString());
+        if (pageSize !== undefined)
+          params.append("limit", pageSize.toString());
+        if (search) params.append("search", search);
+
+        const response = await authFetch.get<TaskResponse>(
+          `/tasks/all/${userId}?${params.toString()}`
         );
         return response.data;
       } catch (error) {

@@ -37,7 +37,25 @@ const EventCalendar = () => {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth() + 1;
 
-  const { data, isLoading, isError } = useGetAllEventByMonth(year, month);
+  const userId = localStorage.getItem("userId") || "";
+  const role = localStorage.getItem("role");
+
+  let queryUserId = "";
+  let queryClientId = "";
+
+  if (role === "client") {
+    queryClientId = userId;
+  } else if (role !== "admin") {
+    queryUserId = userId;
+  }
+
+  // Only admin: both IDs will be empty
+  const { data, isLoading, isError } = useGetAllEventByMonth(
+    year,
+    month,
+    queryUserId,
+    queryClientId
+  );
 
   const daysInMonth = eachDayOfInterval({
     start: startOfMonth(currentDate),

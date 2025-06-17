@@ -113,6 +113,7 @@ const Sidebar = ({ role }: SidebarProps) => {
         label: "MY EVENTS",
         icon: <HiOutlineCalendar size={20} />,
       },
+      { to: "/calendar", label: "CALENDAR", icon: <CalendarClock size={20} /> },
       { to: "/profile", label: "PROFILE", icon: <FiUser size={20} /> },
     ],
     "team-member": [

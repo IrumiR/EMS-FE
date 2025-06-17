@@ -10,18 +10,20 @@ import {
 import { Input } from "@/components/ui/input";
 import { ChevronDown } from "lucide-react";
 import { HiSearch } from "react-icons/hi";
-import { useGetAllTasksByEventId } from "@/api/taskApi";
+import { useGetAllTasksByUserId } from "@/api/taskApi";
 import { useState } from "react";
 
 function TasksScreen() {
-  const eventId = ""; 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All Statuses");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const { data, isLoading } = useGetAllTasksByEventId(
-    eventId,
+  const role = localStorage.getItem("role");
+  const userId = role === "admin" ? "" : localStorage.getItem("userId") || ""; // always a string
+
+  const { data, isLoading } = useGetAllTasksByUserId(
+    userId,
     currentPage,
     rowsPerPage,
     searchTerm

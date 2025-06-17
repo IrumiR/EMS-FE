@@ -4,6 +4,7 @@ import UserStats from '@/components/molecules/userStats';
 import TaskStats from '@/components/molecules/taskStats';
 import InventoryStats from '@/components/molecules/inventoryStats';
 import BudgetStats from '@/components/molecules/budgetStats';
+import UpcomingEventsCard from '@/components/molecules/upcomingEventsCard';
 
 function DashboardScreen() {
   return (
@@ -47,7 +48,13 @@ function DashboardScreen() {
           <BudgetStats />
         </TabsContent>
       </Tabs>
+
+      <div className="mt-10">
+        <UpcomingEventsCard />
+      </div>
     </div>
+
+      
   );
 }
 

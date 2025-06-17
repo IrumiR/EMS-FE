@@ -276,14 +276,18 @@ interface MonthlyEventsResponse {
 
 export const useGetAllEventByMonth = (
   year: number,
-  month: number
+  month: number,
+  userId?: string,
+  clientId?: string
 ): UseQueryResult<MonthlyEventsResponse> => {
   return useQuery({
-    queryKey: ["get_monthly_events", year, month],
+    queryKey: ["get_monthly_events", year, month, userId, clientId],
     queryFn: async () => {
       const params = new URLSearchParams();
       params.append("year", year.toString());
       params.append("month", month.toString());
+      if (userId) params.append("userId", userId);
+      if (clientId) params.append("clientId", clientId);
 
       const response = await authFetch.get<MonthlyEventsResponse>(
         `/events/monthly?${params.toString()}`
