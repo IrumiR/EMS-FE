@@ -1,9 +1,7 @@
+import { useMemo } from "react";
+import { useGetTaskCountsByStatus } from "@/api/dashboardApi";
+import { ClipboardList, Play, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-    ClipboardList,
-    Play,
-    CheckCircle,
-} from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
 type StatCardProps = {
@@ -53,34 +51,78 @@ const StatCard = ({
   );
 };
 
-
-
 function TaskStats() {
-    return(
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <StatCard
-              title="Open Tasks"
-              value="0"
-              icon={ClipboardList}
-              description="Tasks ready to start"
-              color="blue"
-            />
-            <StatCard
-              title="In Progress"
-              value="0"
-              icon={Play}
-              description="Tasks currently being worked on"
-              color="orange"
-            />
-            <StatCard
-              title="Completed Tasks"
-              value="0"
-              icon={CheckCircle}
-              description="Successfully finished tasks"
-              color="green"
-            />
-          </div>
-    )
-};
+  const role = localStorage.getItem("role");
+  const userId =
+    role === "team-member" || role === "manager"
+      ? localStorage.getItem("userId") || ""
+      : "";
+
+  const { data, isLoading, error } = useGetTaskCountsByStatus(userId);
+
+  const counts = useMemo(() => {
+    const initial = {
+      "To Do": 0,
+      "In Progress": 0,
+      Completed: 0,
+    };
+    if (!data?.data) return initial;
+
+    for (const { status, count } of data.data) {
+      if (status === "To Do") initial["To Do"] = count;
+      else if (status === "In Progress") initial["In Progress"] = count;
+      else if (status === "Completed") initial["Completed"] = count;
+    }
+    return initial;
+  }, [data]);
+
+  if (role === "admin" || role === "client") {
+    return (
+      <div className="text-sm text-gray-500">
+        Task statistics are not available for admins or clients.
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="text-sm text-gray-500">Loading task statistics...</div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-red-500 font-medium">
+        Failed to load task statistics.
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <StatCard
+        title="Open Tasks"
+        value={counts["To Do"]}
+        icon={ClipboardList}
+        description="Tasks ready to start"
+        color="blue"
+      />
+      <StatCard
+        title="In Progress"
+        value={counts["In Progress"]}
+        icon={Play}
+        description="Tasks currently being worked on"
+        color="orange"
+      />
+      <StatCard
+        title="Completed Tasks"
+        value={counts["Completed"]}
+        icon={CheckCircle}
+        description="Successfully finished tasks"
+        color="green"
+      />
+    </div>
+  );
+}
 
 export default TaskStats;

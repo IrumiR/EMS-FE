@@ -1,10 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-    Users,
-    User,
-    UserCheck,
-} from "lucide-react";
+import { Users, User, UserCheck } from "lucide-react";
 import { LucideIcon } from "lucide-react";
+import { useGetUserCountByRole } from "@/api/dashboardApi";
 
 type StatCardProps = {
   title: string;
@@ -53,33 +50,90 @@ const StatCard = ({
   );
 };
 
-
 function UserStats() {
-    return(
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  const { data, isLoading, error } = useGetUserCountByRole();
+  const roleCounts = data?.data ?? [];
+
+  const getCountByRole = (role: string) => {
+    return roleCounts.find((item) => item.role === role)?.count || 0;
+  };
+
+  const totalUsers = roleCounts.reduce((sum, item) => sum + item.count, 0);
+  const clientCount = getCountByRole("client");
+  const teamMemberCount = getCountByRole("team-member");
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {[...Array(3)].map((_, index) => (
+          <Card key={index} className="relative overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+              <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse"></div>
+            </CardHeader>
+            <CardContent>
+              <div className="h-8 bg-gray-200 rounded animate-pulse w-12 mb-2"></div>
+              <div className="h-3 bg-gray-200 rounded animate-pulse w-24"></div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <StatCard
+          title="Total Users"
+          value="Error"
+          icon={Users}
+          description="Failed to load data"
+          color="red"
+        />
+        <StatCard
+          title="Total Clients"
+          value="Error"
+          icon={User}
+          description="Failed to load data"
+          color="red"
+        />
+        <StatCard
+          title="Team Members"
+          value="Error"
+          icon={UserCheck}
+          description="Failed to load data"
+          color="red"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <StatCard
         title="Total Users"
-        value="0"
+        value={totalUsers}
         icon={Users}
         description="All registered users"
         color="blue"
       />
       <StatCard
         title="Total Clients"
-        value="0"
+        value={clientCount}
         icon={User}
         description="External clients"
         color="purple"
       />
       <StatCard
         title="Team Members"
-        value="0"
+        value={teamMemberCount}
         icon={UserCheck}
         description="Internal team members"
         color="indigo"
       />
     </div>
-    )
-};
+  );
+}
 
 export default UserStats;

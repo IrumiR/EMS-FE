@@ -1,0 +1,76 @@
+import { useEffect, useRef } from "react";
+import * as echarts from "echarts";
+import { useGetUserCountByRole } from "@/api/dashboardApi";
+
+function UserRole() {
+  const chartRef = useRef(null);
+  const { data, isLoading, error } = useGetUserCountByRole();
+
+  useEffect(() => {
+    if (!chartRef.current || !data?.data?.length) return;
+
+    const chartInstance = echarts.init(chartRef.current);
+
+    const option = {
+      title: {
+        text: "Users by Role",
+        left: "center",
+      },
+      tooltip: {
+        trigger: "item",
+      },
+      legend: {
+        orient: "vertical",
+        left: "left",
+      },
+      series: [
+        {
+          name: "Users",
+          type: "pie",
+          radius: ["50%", "70%"], // Doughnut style
+          avoidLabelOverlap: false,
+          itemStyle: {
+            borderRadius: 10, // Rounded corners
+            borderColor: "#fff",
+            borderWidth: 2,
+          },
+          label: {
+            show: false,
+            position: "center",
+          },
+          emphasis: {
+            label: {
+              show: true,
+              fontSize: 16,
+              fontWeight: "bold",
+            },
+          },
+          labelLine: {
+            show: false,
+          },
+          data: data.data.map(({ role, count }) => ({
+            value: count,
+            name: role,
+          })),
+        },
+      ],
+    };
+
+    chartInstance.setOption(option);
+
+    return () => {
+      chartInstance.dispose();
+    };
+  }, [data]);
+
+  if (isLoading) return <div>Loading chart...</div>;
+  if (error) return <div>Error loading user role data</div>;
+
+  return (
+    <div className="w-full h-96 border bg-white rounded-lg pt-4">
+      <div ref={chartRef} style={{ width: "100%", height: "100%" }} />
+    </div>
+  );
+}
+
+export default UserRole;

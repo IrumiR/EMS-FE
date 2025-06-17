@@ -1,11 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Calendar,
-  Clock,
-  CheckCircle,
-  Pause,
-} from "lucide-react";
+import { Calendar, Clock, CheckCircle, Pause } from "lucide-react";
 import { LucideIcon } from "lucide-react";
+import { useGetEventCountByStatus } from "@/api/dashboardApi";
 
 type StatCardProps = {
   title: string;
@@ -55,32 +51,100 @@ const StatCard = ({
 };
 
 function EventStats() {
+  const { data, isLoading, error } = useGetEventCountByStatus();
+  const eventCounts = data?.data ?? [];
+
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[...Array(4)].map((_, index) => (
+          <Card key={index} className="relative overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+              <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse"></div>
+            </CardHeader>
+            <CardContent>
+              <div className="h-8 bg-gray-200 rounded animate-pulse w-12 mb-2"></div>
+              <div className="h-3 bg-gray-200 rounded animate-pulse w-24"></div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          title="Total Events"
+          value="Error"
+          icon={Calendar}
+          description="Failed to load data"
+          color="red"
+        />
+        <StatCard
+          title="Active Events"
+          value="Error"
+          icon={Clock}
+          description="Failed to load data"
+          color="red"
+        />
+        <StatCard
+          title="Pending Events"
+          value="Error"
+          icon={Pause}
+          description="Failed to load data"
+          color="red"
+        />
+        <StatCard
+          title="Completed Events"
+          value="Error"
+          icon={CheckCircle}
+          description="Failed to load data"
+          color="red"
+        />
+      </div>
+    );
+  }
+
+  const getCountByStatus = (status: string) => {
+  return eventCounts.find((item) => item.status === status)?.count || 0;
+};
+
+  const activeEvents = getCountByStatus("In Progress");
+  const pendingEvents = getCountByStatus("Pending Approval");
+  const completedEvents = getCountByStatus("Completed");
+
+ const totalEvents = eventCounts.reduce((sum, item) => sum + item.count, 0);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard
         title="Total Events"
-        value="0"
+        value={totalEvents}
         icon={Calendar}
         description="All events in the system"
         color="blue"
       />
       <StatCard
         title="Active Events"
-        value="0"
+        value={activeEvents}
         icon={Clock}
         description="Currently running events"
         color="orange"
       />
       <StatCard
         title="Pending Events"
-        value="0"
+        value={pendingEvents}
         icon={Pause}
         description="Events awaiting approval"
         color="yellow"
       />
       <StatCard
         title="Completed Events"
-        value="0"
+        value={completedEvents}
         icon={CheckCircle}
         description="Successfully finished events"
         color="green"

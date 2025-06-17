@@ -1,10 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-    DollarSign,
-    CheckSquare,
-    XCircle,
-} from "lucide-react";
+import { DollarSign, CheckSquare, XCircle } from "lucide-react";
 import { LucideIcon } from "lucide-react";
+import { useGetBudgetCountsByStatus } from "@/api/dashboardApi";
 
 type StatCardProps = {
   title: string;
@@ -53,34 +50,84 @@ const StatCard = ({
   );
 };
 
+function BudgetStats() {
+  const { data, isLoading, error } = useGetBudgetCountsByStatus();
 
-function BudgetStats(){
-  
-    return(
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <StatCard
-              title="Pending Budget"
-              value="$0"
-              icon={DollarSign}
-              description="Awaiting approval"
-              color="yellow"
-            />
-            <StatCard
-              title="Approved Budget"
-              value="$0"
-              icon={CheckSquare}
-              description="Approved and allocated"
-              color="green"
-            />
-            <StatCard
-              title="Rejected Budget"
-              value="$0"
-              icon={XCircle}
-              description="Rejected requests"
-              color="red"
-            />
-          </div>
-    )
-};
+  const getCount = (status: string) =>
+    data?.data.find((item) => item.status === status)?.count ?? 0;
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {[...Array(3)].map((_, i) => (
+          <Card key={i}>
+            <CardHeader className="flex flex-row justify-between pb-2">
+              <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse"></div>
+            </CardHeader>
+            <CardContent>
+              <div className="h-6 w-12 bg-gray-200 rounded animate-pulse mb-2"></div>
+              <div className="h-3 w-24 bg-gray-200 rounded animate-pulse"></div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <StatCard
+          title="Pending Budget"
+          value="Error"
+          icon={DollarSign}
+          description="Awaiting approval"
+          color="yellow"
+        />
+        <StatCard
+          title="Approved Budget"
+          value="Error"
+          icon={CheckSquare}
+          description="Approved and allocated"
+          color="green"
+        />
+        <StatCard
+          title="Rejected Budget"
+          value="Error"
+          icon={XCircle}
+          description="Rejected requests"
+          color="red"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <StatCard
+        title="Pending Budget"
+        value={getCount("Pending")}
+        icon={DollarSign}
+        description="Awaiting approval"
+        color="yellow"
+      />
+      <StatCard
+        title="Approved Budget"
+        value={getCount("Approved")}
+        icon={CheckSquare}
+        description="Approved and allocated"
+        color="green"
+      />
+      <StatCard
+        title="Rejected Budget"
+        value={getCount("Rejected")}
+        icon={XCircle}
+        description="Rejected requests"
+        color="red"
+      />
+    </div>
+  );
+}
 
 export default BudgetStats;

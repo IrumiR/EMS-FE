@@ -1,10 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-    Package,
-    Building,
-    ExternalLink,
-} from "lucide-react";
+import { Package, Building, ExternalLink } from "lucide-react";
 import { LucideIcon } from "lucide-react";
+import { useGetInventoryItemCount } from "@/api/dashboardApi"; 
 
 type StatCardProps = {
   title: string;
@@ -53,33 +50,87 @@ const StatCard = ({
   );
 };
 
-
 function InventoryStats() {
-    return(
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <StatCard
-              title="Total Items"
-              value="0"
-              icon={Package}
-              description="All inventory items"
-              color="blue"
-            />
-            <StatCard
-              title="Internal Items"
-              value="0"
-              icon={Building}
-              description="Company-owned items"
-              color="indigo"
-            />
-            <StatCard
-              title="External Items"
-              value="0"
-              icon={ExternalLink}
-              description="Rented or borrowed items"
-              color="purple"
-            />
-          </div>
-    )
-};
+  const { data, isLoading, error } = useGetInventoryItemCount();
+
+  const counts = data?.data ?? {
+    totalCount: 0,
+    internalCount: 0,
+    externalCount: 0,
+  };
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {[...Array(3)].map((_, index) => (
+          <Card key={index} className="relative overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+              <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse"></div>
+            </CardHeader>
+            <CardContent>
+              <div className="h-8 bg-gray-200 rounded animate-pulse w-12 mb-2"></div>
+              <div className="h-3 bg-gray-200 rounded animate-pulse w-24"></div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <StatCard
+          title="Total Items"
+          value="Error"
+          icon={Package}
+          description="Failed to load data"
+          color="red"
+        />
+        <StatCard
+          title="Internal Items"
+          value="Error"
+          icon={Building}
+          description="Failed to load data"
+          color="red"
+        />
+        <StatCard
+          title="External Items"
+          value="Error"
+          icon={ExternalLink}
+          description="Failed to load data"
+          color="red"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <StatCard
+        title="Total Items"
+        value={counts.totalCount}
+        icon={Package}
+        description="All inventory items"
+        color="blue"
+      />
+      <StatCard
+        title="Internal Items"
+        value={counts.internalCount}
+        icon={Building}
+        description="Company-owned items"
+        color="indigo"
+      />
+      <StatCard
+        title="External Items"
+        value={counts.externalCount}
+        icon={ExternalLink}
+        description="Rented or borrowed items"
+        color="purple"
+      />
+    </div>
+  );
+}
 
 export default InventoryStats;
