@@ -1,10 +1,10 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import EventStats from '@/components/molecules/eventStats';
-import UserStats from '@/components/molecules/userStats';
-import TaskStats from '@/components/molecules/taskStats';
-import InventoryStats from '@/components/molecules/inventoryStats';
-import BudgetStats from '@/components/molecules/budgetStats';
-import UpcomingEventsCard from '@/components/molecules/upcomingEventsCard';
+import EventStats from '@/pages/dashboard/eventStats';
+import UserStats from '@/pages/dashboard/userStats';
+import TaskStats from '@/pages/dashboard/taskStats';
+import InventoryStats from '@/pages/dashboard/inventoryStats';
+import BudgetStats from '@/pages/dashboard/budgetStats';
+import UpcomingEventsCard from '@/pages/dashboard/upcomingEventsCard';
 
 function DashboardScreen() {
   return (
