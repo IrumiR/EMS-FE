@@ -67,7 +67,18 @@ const UpcomingEventsCard = () => {
       </CardHeader>
       <CardContent className="space-y-3">
         {isLoading ? (
-          <p className="text-sm text-gray-500">Loading events...</p>
+          <div className="w-full">
+            <Card className="relative overflow-hidden">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div className="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+                <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 bg-gray-200 rounded animate-pulse w-12 mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded animate-pulse w-24"></div>
+              </CardContent>
+            </Card>
+          </div>
         ) : isError ? (
           <p className="text-sm text-red-500">Failed to load events</p>
         ) : events.length === 0 ? (
@@ -117,7 +128,7 @@ const UpcomingEventsCard = () => {
                         Progress
                       </span>
                       <span className="text-sm font-semibold text-gray-900">
-                        {event.progress || 0}%
+                        {event.progress.toFixed(0)}%
                       </span>
                     </div>
                     <Progress

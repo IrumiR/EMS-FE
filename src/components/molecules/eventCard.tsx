@@ -99,9 +99,7 @@ function EventCard({
           </Badge>
         </div>
         <div className="absolute top-2 right-2">
-          <Badge
-            className={`text-xs text-white ${getStatusColor(status)}`}
-          >
+          <Badge className={`text-xs text-white ${getStatusColor(status)}`}>
             {status}
           </Badge>
         </div>
@@ -112,8 +110,9 @@ function EventCard({
         <div className="flex items-center text-xs text-gray-500">
           <Calendar className="h-3 w-3 mr-1" />
           <span>
-            {date}
-            {startTime && ` — ${startTime}`}
+            <span>
+              {date} {' '} @<span>{startTime.slice(0, 5)}</span>
+            </span>
           </span>
         </div>
 
@@ -173,7 +172,7 @@ function EventCard({
               />
             )}
 
-             {status !== "Pending Approval" && (
+          {status !== "Pending Approval" && (
             <div className="mt-4">
               <StatusSelect eventId={id} status={status} />
             </div>

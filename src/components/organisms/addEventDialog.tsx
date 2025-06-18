@@ -21,6 +21,7 @@ import { DateLocationStep } from "../molecules/dateLocationStep";
 import { TasksAssigneesStep } from "../molecules/tasksStep";
 import { CreateEventData, useCreateEvent } from "@/api/eventApi";
 import toast from "react-hot-toast";
+import { format } from "date-fns";
 
 export function AddEventDialog() {
 
@@ -92,6 +93,8 @@ export function AddEventDialog() {
 
   const handleSubmit = () => {
       console.log("Selected Inventory Items Before Submit:", selectedItems);
+      const formattedStartTime = startTime ? format(startTime, "HH:mm:ss") : "";
+      const formattedEndTime = endTime ? format(endTime, "HH:mm:ss") : "";
     const payload: CreateEventData = {
       eventName,
       eventType: [
@@ -102,8 +105,8 @@ export function AddEventDialog() {
       eventDescription: description,
       startDate: startDate ? startDate.toISOString() : "",
       endDate: endDate ? endDate.toISOString() : "",
-      startTime: startTime ? startTime.toISOString() : "",
-      endTime: endTime ? endTime.toISOString() : "",
+      startTime: formattedStartTime,
+      endTime: formattedEndTime,
       proposedLocation: location,
       status: "Pending Approval",
       clientId: selectedClientId,

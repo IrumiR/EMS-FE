@@ -73,12 +73,7 @@ function EventsScreen() {
         date: event.startDate
           ? new Date(event.startDate).toLocaleDateString()
           : "",
-        startTime: event.startTime
-          ? new Date(event.startTime).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-          : "",
+        startTime: event.startTime ?? "",
         title: event.eventName || "",
         proposedLocation: event.proposedLocation || "",
         progress: event.progress || 0,

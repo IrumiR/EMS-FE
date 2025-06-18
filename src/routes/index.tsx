@@ -27,7 +27,7 @@ const AppRoutes = () => {
       | "admin"
       | "client"
       | "manager"
-      | "team-member") || "guest";
+      | "team-member");
 
   return (
     <Router>
@@ -45,81 +45,102 @@ const AppRoutes = () => {
                 <Route
                   path="dashboard"
                   element={
-                    <MainLayout role={role}>
-                      <DashboardScreen />
-                    </MainLayout>
+                    <ProtectedRoute allowedRoles={["admin", "manager", "team-member", "client"]}>
+                      <MainLayout role={role}>
+                        <DashboardScreen />
+                      </MainLayout>
+                    </ProtectedRoute>
                   }
                 />
                 <Route
                   path="events"
                   element={
-                    <MainLayout role={role}>
-                      <EventsScreen />
-                    </MainLayout>
+                    <ProtectedRoute allowedRoles={["admin", "manager", "team-member", "client"]}>
+                      <MainLayout role={role}>
+                        <EventsScreen />
+                      </MainLayout>
+                    </ProtectedRoute>
                   }
                 />
                 <Route
                   path="events/:eventId/edit"
                   element={
+                    <ProtectedRoute allowedRoles={["admin", "manager", "team-member", "client"]}>
                     <MainLayout role={role}>
                       <EventEditScreen />
                     </MainLayout>
+                    </ProtectedRoute>
                   }
                 />
                 <Route
                   path="tasks"
                   element={
-                    <MainLayout role={role}>
-                      <TasksScreen />
-                    </MainLayout>
+                    <ProtectedRoute allowedRoles={["admin", "manager", "team-member"]}>
+                      <MainLayout role={role}>
+                        <TasksScreen />
+                      </MainLayout>
+                    </ProtectedRoute>
                   }
                 />
                 <Route
                   path="inventory"
                   element={
-                    <MainLayout role={role}>
-                      <InventoryScreen />
-                    </MainLayout>
+                    <ProtectedRoute allowedRoles={["admin", "manager", "team-member"]}>
+                      <MainLayout role={role}>
+                        <InventoryScreen />
+                      </MainLayout>
+                    </ProtectedRoute>
                   }
                 />
                 <Route
                   path="team"
                   element={
-                    <MainLayout role={role}>
-                      <TeamScreen />
-                    </MainLayout>
+                    <ProtectedRoute allowedRoles={["admin", "manager", "team-member"]}>
+                      <MainLayout role={role}>
+                        <TeamScreen />
+                      </MainLayout>
+                    </ProtectedRoute>
                   }
                 />
                 <Route
                   path="budget"
                   element={
-                    <MainLayout role={role}>
-                      <BudgetScreen />
-                    </MainLayout>
+                    <ProtectedRoute allowedRoles={["admin", "manager", "client"]}>
+                      <MainLayout role={role}>
+                        <BudgetScreen />
+                      </MainLayout>
+                    </ProtectedRoute>
                   }
                 />
                 <Route
                   path="calendar"
                   element={
-                    <MainLayout role={role}>
-                      <CalendarScreen />
-                    </MainLayout>
+                    <ProtectedRoute allowedRoles={["admin", "manager", "team-member", "client"]}>
+                      <MainLayout role={role}>
+                        <CalendarScreen />
+                      </MainLayout>
+                    </ProtectedRoute>
                   }
                 />
                 <Route
                   path="reports"
                   element={
-                    <MainLayout role={role}>
-                      <ReportScreen />
-                    </MainLayout>
+                    <ProtectedRoute allowedRoles={["admin", "manager"]}>
+                      <MainLayout role={role}>
+                        <ReportScreen />
+                      </MainLayout>
+                    </ProtectedRoute>
                   }
                 />
+
                 <Route
                   path="profile"
                   element={
-                    <MainLayout role={role}>
-                      <ProfileScreen />
-                    </MainLayout>
+                    <ProtectedRoute allowedRoles={["admin", "manager", "team-member", "client"]}>
+                      <MainLayout role={role}>
+                        <ProfileScreen />
+                      </MainLayout>
+                    </ProtectedRoute>
                   }
                 />
               </Routes>
