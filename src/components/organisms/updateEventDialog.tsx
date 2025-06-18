@@ -18,16 +18,10 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "primereact/calendar";
-import { useGetEventById, useUpdateEvent } from "@/api/eventApi";
-import * as Yup from "yup";
-import { useFormik } from "formik";
-import { useEffect} from "react";
 import { Clock, Loader2 } from "lucide-react";
 import DatePickerComponent from "../atoms/datePicker";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { format } from "date-fns";
-import { toast } from "react-hot-toast";
-import { useGetClientOptions } from "@/api/authApi";
+import { useUpdateEventDialog } from "@/hooks/useUpdateEventDialog";
 
 interface UpdateEventDialogProps {
   title: string;
@@ -63,137 +57,40 @@ export default function UpdateEventDialog({
   selectedClientId,
   setSelectedClientId,
 }: UpdateEventDialogProps) {
-const { data, isLoading, isError } = useGetEventById(open ? eventId : null);
-const { data: clientsData, isLoading: clientsLoading } = useGetClientOptions();
-
-const onSuccess = () => {
-  onOpenChange(false);
-  toast.success("Event updated successfully!", {
-    id: "success-toast",
-    position: "top-center",
-    duration: 3000,
+  const {
+    formik,
+    localStartTime,
+    localEndTime,
+    handleStartTimeChange,
+    handleEndTimeChange,
+    eventTypes,
+    statuses,
+    clientsData,
+    clientsLoading,
+    isUpdating,
+    data,
+  } = useUpdateEventDialog({
+    eventId,
+    open,
+    onOpenChange,
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate,
+    startTime,
+    setStartTime,
+    endTime,
+    setEndTime,
+    selectedClientId,
+    setSelectedClientId,
   });
-};
-
-  const onError = (message: string) => {
-    formik.setSubmitting(false);
-    toast.error(message, {
-      id: "error-toast",
-      position: "top-center",
-      duration: 4000,
-    });
-  };
-
-
-  const { mutate: updateEvent, isLoading: isUpdating } = useUpdateEvent(
-    onSuccess,
-    onError
-  );
-
-  const validationSchema = Yup.object({
-    eventName: Yup.string().required("Event name is required"),
-    eventType: Yup.string().required("Event type is required"),
-    status: Yup.string().required("Status is required"),
-    eventDescription: Yup.string(),
-    location: Yup.string().required("Location is required"),
-    client: Yup.string().required("Client is required"),
-  });
-
-  const formik = useFormik({
-    initialValues: {
-      eventName: "",
-      eventType: "",
-      status: "",
-      eventDescription: "",
-      location: "",
-      client: "",
-      quotation: "",
-    },
-    validationSchema,
-    onSubmit: (values) => {
-      const formattedStartDate = startDate
-        ? format(startDate, "yyyy-MM-dd")
-        : "";
-      const formattedEndDate = endDate ? format(endDate, "yyyy-MM-dd") : "";
-      const formattedStartTime = startTime ? format(startTime, "HH:mm:ss") : "";
-      const formattedEndTime = endTime ? format(endTime, "HH:mm:ss") : "";
-      const statusMap: Record<string, "Pending Approval" | "Approved" | "In Progress" | "Hold" | "Completed" | "Cancelled"> = {
-        "pending approval": "Pending Approval",
-        "approved": "Approved",
-        "in progress": "In Progress",
-        "hold": "Hold",
-        "completed": "Completed",
-        "cancelled": "Cancelled",
-      };
-
-      updateEvent(
-        {
-          eventId,
-          eventData: {
-            ...values,
-            eventType: values.eventType ? [values.eventType] : [],
-            status: statusMap[values.status] ?? undefined,
-            startDate: formattedStartDate,
-            endDate: formattedEndDate,
-            startTime: formattedStartTime,
-            endTime: formattedEndTime,
-            clientId: selectedClientId,
-            eventDescription: values.eventDescription || "",
-            proposedLocation: values.location || "",
-          },
-        },
-        {
-       
-        }
-      );
-    },
-  });
-
- 
- useEffect(() => {
-  if (data?.event) {
-    const event = data.event;
-    formik.setValues({
-      eventName: event.eventName || "",
-      eventType: Array.isArray(event.eventType) ? event.eventType[0] : "",
-      status: event.status ? event.status.toLowerCase() : "",
-      eventDescription: event.eventDescription || "",
-      location: event.proposedLocation || "", 
-      client: event?.clientId?.userName || "",
-      quotation: event.quotation || "",
-    });
-    setStartDate(event.startDate ? new Date(event.startDate) : undefined);
-    setEndDate(event.endDate ? new Date(event.endDate) : undefined);
-    setStartTime(event.startTime ? new Date(`1970-01-01T${event.startTime}`) : undefined);
-    setEndTime(event.endTime ? new Date(`1970-01-01T${event.endTime}`) : undefined);
-    setSelectedClientId(event?.clientId?._id || "");
-    
-  }
-}, [data, setStartDate, setEndDate, setStartTime, setEndTime]);
-
-  const eventTypes = [
-    "wedding",
-    "birthday",
-    "concert",
-    "conference",
-    "sports",
-    "charity",
-    "corporate",
-    "others",
-  ];
-
-  const statuses = [
-    "pending approval",
-    "approved",
-    "in progress",
-    "hold",
-    "completed",
-    "cancelled",
-  ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[100vh]">
+      <DialogContent
+        className="max-w-md max-h-[100vh]"
+        key={`update-event-${eventId}-${open}`}
+      >
         <ScrollArea className="max-h-[80vh] pr-4">
           <DialogHeader>
             <DialogTitle>Update Event</DialogTitle>
@@ -201,7 +98,9 @@ const onSuccess = () => {
               Edit information for event: {title}
             </DialogDescription>
           </DialogHeader>
+
           <form onSubmit={formik.handleSubmit} className="space-y-4 py-4">
+            {/* Event Title */}
             <div>
               <Label
                 htmlFor="eventName"
@@ -222,13 +121,14 @@ const onSuccess = () => {
                     : ""
                 }
               />
-              {formik.touched.eventName && formik.errors.eventName ? (
+              {formik.touched.eventName && formik.errors.eventName && (
                 <p className="text-red-500 text-xs mt-1">
                   {formik.errors.eventName}
                 </p>
-              ) : null}
+              )}
             </div>
 
+            {/* Event Type and Status */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="w-full">
                 <Label
@@ -255,11 +155,11 @@ const onSuccess = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                {formik.touched.eventType && formik.errors.eventType ? (
+                {formik.touched.eventType && formik.errors.eventType && (
                   <p className="text-red-500 text-xs mt-1">
                     {formik.errors.eventType}
                   </p>
-                ) : null}
+                )}
               </div>
 
               <div className="w-full">
@@ -287,14 +187,15 @@ const onSuccess = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                {formik.touched.status && formik.errors.status ? (
+                {formik.touched.status && formik.errors.status && (
                   <p className="text-red-500 text-xs mt-1">
                     {formik.errors.status}
                   </p>
-                ) : null}
+                )}
               </div>
             </div>
 
+            {/* Description */}
             <div>
               <Label
                 htmlFor="description"
@@ -312,6 +213,7 @@ const onSuccess = () => {
               />
             </div>
 
+            {/* Location */}
             <div>
               <Label
                 htmlFor="location"
@@ -332,13 +234,14 @@ const onSuccess = () => {
                     : ""
                 }
               />
-              {formik.touched.location && formik.errors.location ? (
+              {formik.touched.location && formik.errors.location && (
                 <p className="text-red-500 text-xs mt-1">
                   {formik.errors.location}
                 </p>
-              ) : null}
+              )}
             </div>
 
+            {/* Start and End Dates */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="w-full">
                 <Label
@@ -380,6 +283,7 @@ const onSuccess = () => {
               </div>
             </div>
 
+            {/* Start and End Times */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="w-full">
                 <Label
@@ -391,9 +295,10 @@ const onSuccess = () => {
                 <div className="flex items-center border rounded-md px-3 py-2 w-full">
                   <Clock className="h-4 w-4 mr-2 text-gray-500" />
                   <Calendar
+                    key={`start-time-${eventId}-${open}-${data?.event?.updatedAt}`}
                     id="start-time"
-                    value={startTime ?? null}
-                    onChange={(e) => setStartTime(e.value ?? undefined)}
+                    value={localStartTime}
+                    onChange={handleStartTimeChange}
                     timeOnly
                     hourFormat="12"
                     className="w-full border-none p-0"
@@ -413,9 +318,10 @@ const onSuccess = () => {
                 <div className="flex items-center border rounded-md px-3 py-2 w-full">
                   <Clock className="h-4 w-4 mr-2 text-gray-500" />
                   <Calendar
+                    key={`end-time-${eventId}-${open}-${data?.event?.updatedAt}`}
                     id="end-time"
-                    value={endTime ?? null}
-                    onChange={(e) => setEndTime(e.value ?? undefined)}
+                    value={localEndTime}
+                    onChange={handleEndTimeChange}
                     timeOnly
                     hourFormat="12"
                     className="w-full border-none p-0"
@@ -427,63 +333,47 @@ const onSuccess = () => {
               </div>
             </div>
 
+            {/* Client Selection */}
             <div>
-        <Label htmlFor="client" className="text-sm font-medium block mb-1">
-          Client
-        </Label>
-       <Select
+              <Label
+                htmlFor="client"
+                className="text-sm font-medium block mb-1"
+              >
+                Client
+              </Label>
+              <Select
                 value={selectedClientId}
                 onValueChange={setSelectedClientId}
               >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select client" />
-          </SelectTrigger>
-          <SelectContent>
-            {clientsLoading ? (
-              <SelectItem value="loading" disabled>
-                <div className="flex items-center">
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Loading clients...
-                </div>
-              </SelectItem>
-            ) : clientsData?.clients?.length ? (
-              clientsData.clients.map((client) => (
-                <SelectItem key={client.userId} value={client.userId}>
-                  {client.userName}
-                </SelectItem>
-              ))
-            ) : (
-              <SelectItem value="no-clients" disabled>
-                No clients available
-              </SelectItem>
-            )}
-          </SelectContent>
-        </Select>
-      </div>
-
-            <div>
-              <Label
-                htmlFor="quotation"
-                className="text-sm font-medium block mb-2"
-              >
-                Quotation
-              </Label>
-              <Input
-                id="quotation"
-                name="quotation"
-                type="file"
-                className="w-full"
-                onChange={(event) => {
-                  const file = event.currentTarget.files?.[0];
-                  if (file) {
-                    formik.setFieldValue("quotation", file);
-                  }
-                }}
-              />
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select client" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clientsLoading ? (
+                    <SelectItem value="loading" disabled>
+                      <div className="flex items-center">
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Loading clients...
+                      </div>
+                    </SelectItem>
+                  ) : clientsData?.clients?.length ? (
+                    clientsData.clients.map((client) => (
+                      <SelectItem key={client.userId} value={client.userId}>
+                        {client.userName}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="no-clients" disabled>
+                      No clients available
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
             </div>
           </form>
         </ScrollArea>
-        <DialogFooter className="">
+
+        <DialogFooter>
           <Button
             type="button"
             onClick={() => formik.handleSubmit()}

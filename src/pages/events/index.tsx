@@ -29,14 +29,21 @@ function EventsScreen() {
 
   const [events, setEvents] = useState<Event[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
-  const [statusFilter, setStatusFilter] = useState("All Statuses");
-  const [eventTypeFilter, setEventTypeFilter] = useState("All Event Types");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [eventTypeFilter, setEventTypeFilter] = useState("");
 
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const data = useGetAllEvents(currentPage, rowsPerPage, searchTerm);
+  const data = useGetAllEvents(
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    "",
+    statusFilter,
+    eventTypeFilter
+  );
   const eventsData = data?.data?.events || [];
   const pagination = data?.data?.pagination;
   const userType = localStorage.getItem("role");
@@ -84,31 +91,6 @@ function EventsScreen() {
     }
   }, [eventsData]);
 
-  // Apply client-side filtering only (not pagination)
-  useEffect(() => {
-    let results = events;
-
-    if (statusFilter !== "All Statuses") {
-      results = results.filter((event) => event.status.includes(statusFilter));
-    }
-
-    if (eventTypeFilter !== "All Event Types") {
-      results = results.filter((event) =>
-        event.category.includes(eventTypeFilter)
-      );
-    }
-
-    setFilteredEvents(results);
-
-    // Reset to page 1 when filters change
-    if (
-      statusFilter !== "All Statuses" ||
-      eventTypeFilter !== "All Event Types"
-    ) {
-      setCurrentPage(1);
-    }
-  }, [statusFilter, eventTypeFilter, events]);
-
   // Use server-side pagination data
   const totalPages = pagination?.totalPages || 1;
   const totalEvents = pagination?.total || 0;
@@ -134,7 +116,7 @@ function EventsScreen() {
 
   // Status options
   const statusOptions = [
-    "All Statuses",
+    "",
     "Pending Approval",
     "Approved",
     "In Progress",
@@ -145,7 +127,7 @@ function EventsScreen() {
 
   // Event type options
   const eventTypeOptions = [
-    "All Event Types",
+    "",
     "wedding",
     "birthday",
     "concert",
