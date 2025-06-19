@@ -59,9 +59,6 @@ function EventCard({
   const userType = localStorage.getItem("role");
   const defaultImage = eventTypeImages.others;
 
-  const handleView = () => {
-    navigate(`/events/${id}`);
-  };
 
   const [selectedClientId, setSelectedClientId] = useState("");
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -73,13 +70,6 @@ function EventCard({
 
   const handleEdit = () => {
     navigate(`/events/${id}/edit`);
-  };
-
-  const handleApprove = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onApprove) {
-      onApprove(id);
-    }
   };
 
   return (

@@ -1,10 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit } from "lucide-react";
+import { Edit, Download } from "lucide-react";
 import ViewMore from "./viewMore";
 import { useState } from "react";
 import { EditBudgetDialog } from "../organisms/editBudgetDialog";
 import { Budget } from "../types";
+import { SingleBudgetReport } from "@/pages/budget/singleBudgetReport";
 
 interface BudgetCardProps {
   budgets?: Budget[];
@@ -14,6 +15,8 @@ const BudgetCard = ({ budgets = [] }: BudgetCardProps) => {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedBudgetId, setSelectedBudgetId] = useState<string | null>("");
+
+  const userType = localStorage.getItem("role");
 
   // Function to get status from isApproved field - same logic as view dialog
   const getStatusFromBudget = (isApproved: boolean | null | undefined): string => {
@@ -47,6 +50,14 @@ const BudgetCard = ({ budgets = [] }: BudgetCardProps) => {
       setSelectedBudgetId(null);
     }, 300);
   };
+
+  const handleDownload = (budget: Budget) => {
+    try {
+      SingleBudgetReport(budget);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    }
+  };
  
   return (
     <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -62,7 +73,9 @@ const BudgetCard = ({ budgets = [] }: BudgetCardProps) => {
               {/* Status Header */}
               <div className="flex items-center justify-end mb-3">
                 <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(budgetStatus)}`}
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                    budgetStatus
+                  )}`}
                 >
                   {budgetStatus}
                 </span>
@@ -114,15 +127,28 @@ const BudgetCard = ({ budgets = [] }: BudgetCardProps) => {
               </div>
             </CardContent>
 
-            <button
-              className="absolute bottom-2 right-2 p-2 rounded-full hover:bg-blue-100 transition-colors duration-200"
-              onClick={() => {
-                setSelectedBudgetId(budget._id.toString());
-                setIsEditDialogOpen(true);
-              }}
-            >
-              <Edit className="w-4 h-4 text-blue-600" />
-            </button>
+            <div className="absolute bottom-2 right-2 flex gap-1">
+              {(budgetStatus === "Approved" || budgetStatus === "Rejected") && (
+                <button
+                  className="p-2 rounded-full hover:bg-green-100 transition-colors duration-200"
+                  onClick={() => handleDownload(budget)}
+                  title="Download Budget"
+                >
+                  <Download className="w-4 h-4 text-green-600" />
+                </button>
+              )}
+              {(userType === "admin" || userType === "manager") && (
+                <button
+                  className="p-2 rounded-full hover:bg-blue-100 transition-colors duration-200"
+                  onClick={() => {
+                    setSelectedBudgetId(budget._id.toString());
+                    setIsEditDialogOpen(true);
+                  }}
+                >
+                  <Edit className="w-4 h-4 text-blue-600" />
+                </button>
+              )}
+            </div>
           </Card>
         );
       })}

@@ -38,6 +38,8 @@ export default function BudgetViewDialog({
   const [remarks, setRemarks] = useState("");
   const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
 
+  const userType = localStorage.getItem("role");
+
   // Initialize the mutation hook
   const budgetMutation = useApproveBudget(
     budget?._id || "",
@@ -289,6 +291,9 @@ export default function BudgetViewDialog({
               >
                 Cancel
               </Button>
+
+          {userType === "client" && (
+            <>
               <Button
                 variant="destructive"
                 onClick={handleReject}
@@ -314,6 +319,8 @@ export default function BudgetViewDialog({
                     : "Approve"
                 }
               </Button>
+            </>
+          )}
             </>
           ) : (
             <Button

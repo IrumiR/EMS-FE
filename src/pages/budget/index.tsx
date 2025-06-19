@@ -24,11 +24,24 @@ type BudgetType = {
   expenses?: { expenseName?: string; amount?: number }[];
 };
 
+const userId = localStorage.getItem("userId") || "";
+const role = localStorage.getItem("role") || "";
+
+let queryUserId = "";
+let queryClientId = "";
+
+if(role === "client") {
+  queryClientId = userId;
+} else if (role !== "admin") {
+  queryUserId = userId;
+}
+
 // Fetch budgets using the API hook
 const { data, isLoading, error } = useGetAllBudgets(
   currentPage,
   rowsPerPage,
-  searchTerm
+  searchTerm,
+  queryClientId
 );
 
 const totalBudgets = data?.pagination?.total || 0;
@@ -74,7 +87,7 @@ const budgets: Budget[] = (data?.budgets || []).map((budget: any) => ({
         </div>
 
         <div>
-          <AddBudgetDialog />
+          {(role === "admin" || role === "manager") && <AddBudgetDialog />}
         </div>
       </div>
 
