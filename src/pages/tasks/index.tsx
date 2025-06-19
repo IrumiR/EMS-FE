@@ -19,25 +19,17 @@ function TasksScreen() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const role = localStorage.getItem("role");
-  const userId = role === "admin" ? "" : localStorage.getItem("userId") || ""; // always a string
-
+  
   const { data, isLoading } = useGetAllTasksByUserId(
-    userId,
     currentPage,
     rowsPerPage,
-    searchTerm
+    searchTerm,
+    selectedStatus === "All Statuses" ? undefined : selectedStatus
   );
 
   const tasks = data?.tasks || [];
   const totalTasks = data?.pagination.total || 0;
   const totalPages = Math.ceil(totalTasks / rowsPerPage);
-
-  // Filter tasks by status (client-side, if needed)
-  const filteredTasks =
-    selectedStatus === "All Statuses"
-      ? tasks
-      : tasks.filter((task) => task.status === selectedStatus);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -121,8 +113,8 @@ function TasksScreen() {
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         {isLoading ? (
           <p>Loading tasks...</p>
-        ) : filteredTasks.length > 0 ? (
-          filteredTasks.map((task) => (
+        ) : tasks.length > 0 ? (
+          tasks.map((task) => (
             <TaskCard
               key={task._id}
               task={{

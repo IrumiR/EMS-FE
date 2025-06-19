@@ -26,54 +26,40 @@ function EventEditScreen() {
     eventId ?? "",
     currentPage,
     rowsPerPage,
-    searchTerm
+    searchTerm,
+    selectedStatus === "All Statuses" ? undefined : selectedStatus
   );
 
-  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
    const userType = localStorage.getItem("role");
 
 
-  // Filter tasks based on status (client-side filtering for status only)
-  useEffect(() => {
-    if (data?.tasks) {
-      let filtered = [...data.tasks];
+   const tasks = data?.tasks || [];
+   const totalTasks = data?.pagination.total || 0;
+   const totalPages = Math.ceil(totalTasks / rowsPerPage);
 
-      // Filter by status
-      if (selectedStatus !== "All Statuses") {
-        filtered = filtered.filter((task) => task.status === selectedStatus);
-      }
+   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+     setSearchTerm(event.target.value);
+     setCurrentPage(1);
+   };
 
-      setFilteredTasks(filtered);
-    }
-  }, [data?.tasks, selectedStatus]);
+   const handleStatusChange = (status: string) => {
+     setSelectedStatus(status);
+     setCurrentPage(1);
+   };
 
-  // Use backend pagination data
-  const totalPages = data?.pagination?.totalPages || 1;
-  const paginatedTasks = filteredTasks; // Use filtered tasks directly, no frontend slicing needed
+   const handlePageChange = (newPage: number) => {
+     if (newPage >= 1 && newPage <= totalPages) {
+       setCurrentPage(newPage);
+     }
+   };
 
-  const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage);
-    }
-  };
-
-  const handleRowsPerPageChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const newRowsPerPage = Number(event.target.value);
-    setRowsPerPage(newRowsPerPage);
-    setCurrentPage(1); 
-  };
-
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-    setCurrentPage(1);
-  };
-
-  const handleStatusChange = (status: string) => {
-    setSelectedStatus(status);
-    setCurrentPage(1); // Reset to first page when changing status
-  };
+   const handleRowsPerPageChange = (
+     event: React.ChangeEvent<HTMLSelectElement>
+   ) => {
+     const newRowsPerPage = Number(event.target.value);
+     setRowsPerPage(newRowsPerPage);
+     setCurrentPage(1); // Reset to first page when changing page size
+   };
 
   return (
     <div>
@@ -140,8 +126,8 @@ function EventEditScreen() {
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         {isLoading ? (
           <p>Loading tasks...</p>
-        ) : paginatedTasks.length > 0 ? (
-          paginatedTasks.map((task) => (
+        ) : tasks.length > 0 ? (
+          tasks.map((task) => (
             <TaskCard
               key={task._id}
               task={{

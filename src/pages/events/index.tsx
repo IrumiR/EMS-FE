@@ -10,7 +10,7 @@ import {
 import { Funnel, ChevronDown } from "lucide-react";
 import { AddEventDialog } from "@/components/organisms/addEventDialog";
 import EventCardGrid from "@/components/molecules/eventCard";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useGetAllEvents } from "@/api/eventApi";
 import { eventTypeImages } from "@/components/molecules/eventDetailsStep";
 
@@ -28,22 +28,25 @@ function EventsScreen() {
   }
 
   const [events, setEvents] = useState<Event[]>([]);
-  const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [statusFilter, setStatusFilter] = useState("");
   const [eventTypeFilter, setEventTypeFilter] = useState("");
-
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(100);
+
+  // Determine if we need to fetch all events (when filters are active)
+  const hasActiveFilters = statusFilter !== "" || eventTypeFilter !== "";
+
+  // Use different pagination logic based on whether filters are active
+  const fetchCurrentPage = hasActiveFilters ? 1 : currentPage;
+  const fetchRowsPerPage = hasActiveFilters ? 100 : rowsPerPage; 
 
   const data = useGetAllEvents(
-    currentPage,
-    rowsPerPage,
-    searchTerm,
-    "",
-    statusFilter,
-    eventTypeFilter
+    fetchCurrentPage,
+    fetchRowsPerPage,
+    searchTerm
   );
+
   const eventsData = data?.data?.events || [];
   const pagination = data?.data?.pagination;
   const userType = localStorage.getItem("role");
@@ -79,16 +82,64 @@ function EventsScreen() {
         progress: event.progress || 0,
       }));
       setEvents(formattedEvents);
-      setFilteredEvents(formattedEvents);
-    } else {
+    } else if (!data?.isLoading) {
+      // Only clear events if not loading to prevent flickering
       setEvents([]);
-      setFilteredEvents([]);
     }
-  }, [eventsData]);
+  }, [eventsData, data?.isLoading]);
 
-  // Use server-side pagination data
-  const totalPages = pagination?.totalPages || 1;
-  const totalEvents = pagination?.total || 0;
+  // Extract stable values from pagination to avoid infinite loops
+  const paginationTotal = pagination?.total || 0;
+  const paginationTotalPages = pagination?.totalPages || 1;
+
+  // Client-side filtering and pagination
+  const { filteredEvents, totalFilteredEvents, totalPages } = useMemo(() => {
+    let filtered = [...events];
+
+    if (statusFilter) {
+      filtered = filtered.filter((event) =>
+        event.status.toLowerCase().includes(statusFilter.toLowerCase())
+      );
+    }
+
+    if (eventTypeFilter) {
+      filtered = filtered.filter((event) =>
+        event.category.toLowerCase().includes(eventTypeFilter.toLowerCase())
+      );
+    }
+
+    const totalFiltered = filtered.length;
+
+    if (hasActiveFilters) {
+      const startIndex = (currentPage - 1) * rowsPerPage;
+      const endIndex = startIndex + rowsPerPage;
+      filtered = filtered.slice(startIndex, endIndex);
+
+      const calculatedTotalPages = Math.ceil(totalFiltered / rowsPerPage);
+
+      return {
+        filteredEvents: filtered,
+        totalFilteredEvents: totalFiltered,
+        totalPages: calculatedTotalPages,
+      };
+    }
+
+    // If no filters, use server-side pagination data
+    return {
+      filteredEvents: filtered,
+      totalFilteredEvents: paginationTotal,
+      totalPages: paginationTotalPages,
+    };
+  }, [
+    events,
+    statusFilter,
+    eventTypeFilter,
+    currentPage,
+    rowsPerPage,
+    hasActiveFilters,
+    paginationTotal,
+    paginationTotalPages,
+  ]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -101,15 +152,24 @@ function EventsScreen() {
   ) => {
     const newRowsPerPage = Number(event.target.value);
     setRowsPerPage(newRowsPerPage);
-    setCurrentPage(1); // Reset to first page when changing page size
+    setCurrentPage(1); 
   };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
-    setCurrentPage(1); // Reset to first page when searching
+    setCurrentPage(1); 
   };
 
-  // Status options
+  const handleStatusFilterChange = (status: string) => {
+    setStatusFilter(status);
+    setCurrentPage(1); 
+  };
+
+  const handleEventTypeFilterChange = (eventType: string) => {
+    setEventTypeFilter(eventType);
+    setCurrentPage(1); 
+  };
+
   const statusOptions = [
     "",
     "Pending Approval",
@@ -120,7 +180,6 @@ function EventsScreen() {
     "Canceled",
   ];
 
-  // Event type options
   const eventTypeOptions = [
     "",
     "wedding",
@@ -165,7 +224,7 @@ function EventsScreen() {
             <DropdownMenuTrigger>
               <Button variant="outline" className="bg-transparent">
                 <Funnel className="mr-2 h-4 w-4" />
-                {statusFilter}
+                {statusFilter || "All Status"}
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -173,9 +232,9 @@ function EventsScreen() {
               {statusOptions.map((status) => (
                 <DropdownMenuItem
                   key={status}
-                  onClick={() => setStatusFilter(status)}
+                  onClick={() => handleStatusFilterChange(status)}
                 >
-                  {status}
+                  {status || "All Status"}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -184,7 +243,7 @@ function EventsScreen() {
           <DropdownMenu>
             <DropdownMenuTrigger>
               <Button variant="outline" className="bg-transparent">
-                {eventTypeFilter}
+                {eventTypeFilter || "All Types"}
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -192,9 +251,9 @@ function EventsScreen() {
               {eventTypeOptions.map((type) => (
                 <DropdownMenuItem
                   key={type}
-                  onClick={() => setEventTypeFilter(type)}
+                  onClick={() => handleEventTypeFilterChange(type)}
                 >
-                  {type}
+                  {type || "All Types"}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -216,7 +275,7 @@ function EventsScreen() {
         )}
 
         {/* Pagination Controls */}
-        {totalEvents > 0 && (
+        {totalFilteredEvents > 0 && (
           <div className="flex items-center justify-between mt-8">
             <div className="flex items-center space-x-2">
               <button
@@ -239,6 +298,9 @@ function EventsScreen() {
             </div>
 
             <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-700">
+                Showing {filteredEvents.length} of {totalFilteredEvents} events
+              </span>
               <span className="text-sm text-gray-700">Events per page:</span>
               <select
                 value={rowsPerPage}

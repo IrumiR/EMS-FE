@@ -105,17 +105,18 @@ export const useGetAllTasksByEventId = (
   eventId: string,
   page?: number,
   pageSize?: number,
-  search?: string
+  search?: string,
+  status?: string
 ): UseQueryResult<TaskResponse> => {
   return useQuery({
-    queryKey: ["get_all_by_event_tasks", eventId, page, pageSize, search],
+    queryKey: ["get_all_by_event_tasks", eventId, page, pageSize, search, status],
     queryFn: async () => {
       try {
         const params = new URLSearchParams();
         if (page !== undefined) params.append("page", page.toString());
-        if (pageSize !== undefined)
-          params.append("limit", pageSize.toString());
+        if (pageSize !== undefined) params.append("limit", pageSize.toString());
         if (search) params.append("search", search);
+        if (status) params.append("status", status);
 
         const response = await authFetch.get<TaskResponse>(
           `/tasks/all-by-event/${eventId}?${params.toString()}`
@@ -135,29 +136,39 @@ export const useGetAllTasksByEventId = (
 };
 
 export const useGetAllTasksByUserId = (
-  userId: string,
   page?: number,
   pageSize?: number,
-  search?: string
+  search?: string,
+  status?: string
 ): UseQueryResult<TaskResponse> => {
   return useQuery({
-    queryKey: ["get_all_by_user_tasks", userId, page, pageSize, search],
-    queryFn: async () => {
-      try {
-        const params = new URLSearchParams();
-        if (page !== undefined) params.append("page", page.toString());
-        if (pageSize !== undefined)
-          params.append("limit", pageSize.toString());
-        if (search) params.append("search", search);
+    queryKey: ["get_all_by_user_tasks", page, pageSize, search, status],
 
-        const response = await authFetch.get<TaskResponse>(
-          `/tasks/all/${userId}?${params.toString()}`
-        );
+    queryFn: async () => {
+      const userType = localStorage.getItem("role");
+      const userId = localStorage.getItem("userId");
+
+      const params = new URLSearchParams();
+      if (page !== undefined) params.append("page", page.toString());
+      if (pageSize !== undefined) params.append("limit", pageSize.toString());
+      if (search) params.append("search", search);
+      if (status) params.append("status", status);
+
+      // Include userId as a query param if not admin
+      if (userType !== "admin" && userId) {
+        params.append("userId", userId);
+      }
+
+      const endpoint = `/tasks/all?${params.toString()}`;
+
+      try {
+        const response = await authFetch.get<TaskResponse>(endpoint);
         return response.data;
       } catch (error) {
         throw error;
       }
     },
+
     onSuccess: () => {
       console.log("Tasks retrieved successfully");
     },
@@ -167,31 +178,7 @@ export const useGetAllTasksByUserId = (
   });
 };
 
-export const useGetAllTasks = (
-  page?: number,
-  pageSize?: number,
-  search?: string
-): UseQueryResult<TaskResponse> => {
-  return useQuery({
-    queryKey: ["get_all_tasks", page, pageSize, search],
-    queryFn: async () => {
-      try {
-        const response = await authFetch.get<TaskResponse>(
-          `/tasks/all?limit=${pageSize ?? 10}&page=${page ?? 1}${search ? `&search=${encodeURIComponent(search)}` : ""}`
-        );
-        return response.data;
-      } catch (error) {
-        throw error;
-      }
-    },
-    onSuccess: () => {
-      console.log("Tasks retrieved successfully");
-    },
-    onError: (error) => {
-      console.error("Fetch error:", error);
-    },
-  });
-};
+
 
 export const useGetTaskById = (
   taskId: string | null,

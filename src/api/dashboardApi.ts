@@ -14,23 +14,36 @@ interface EventStatusCountsResponse {
   data: EventStatusCount[];
 }
 
-export const useGetEventCountByStatus = (): UseQueryResult<EventStatusCountsResponse> => {
-  return useQuery({
-    queryKey: ["get_event_status_counts"],
-    queryFn: async () => {
-      const response = await authFetch.get<EventStatusCountsResponse>(
-        "/events/events-count-by-status"
-      );
-      return response.data;
-    },
-    onSuccess: () => {
-      console.log("Event status counts retrieved successfully");
-    },
-    onError: (error) => {
-      console.error("Error fetching event status counts:", error);
-    },
-  });
-};
+export const useGetEventCountByStatus =
+  (): UseQueryResult<EventStatusCountsResponse> => {
+    const userType = localStorage.getItem("role");
+    const userId = localStorage.getItem("userId");
+
+    // Build endpoint conditionally
+    const endpoint =
+      userType === "client"
+        ? `/events/events-count-by-status?clientId=${userId}`
+        : `/events/events-count-by-status`;
+
+    return useQuery({
+      queryKey: [
+        "get_event_status_counts",
+        userType === "client" ? userId : null,
+      ],
+      queryFn: async () => {
+        const response = await authFetch.get<EventStatusCountsResponse>(
+          endpoint
+        );
+        return response.data;
+      },
+      onSuccess: () => {
+        console.log("Event status counts retrieved successfully");
+      },
+      onError: (error) => {
+        console.error("Error fetching event status counts:", error);
+      },
+    });
+  };
 
 interface UserRoleCount {
   role: string;
@@ -166,21 +179,35 @@ interface BudgetStatusCountsResponse {
   data: BudgetStatusCount[];
 }
 
-export const useGetBudgetCountsByStatus = (): UseQueryResult<BudgetStatusCountsResponse> => {
-  return useQuery({
-    queryKey: ["get_budget_status_counts"],
-    queryFn: async () => {
-      const response = await authFetch.get<BudgetStatusCountsResponse>("/budget/counts-by-status");
-      return response.data;
-    },
-    onSuccess: () => {
-      console.log("Budget status counts retrieved successfully");
-    },
-    onError: (error) => {
-      console.error("Error fetching budget status counts:", error);
-    },
-  });
-};
+export const useGetBudgetCountsByStatus =
+  (): UseQueryResult<BudgetStatusCountsResponse> => {
+    const userType = localStorage.getItem("role");
+    const userId = localStorage.getItem("userId");
+
+    const endpoint =
+      userType === "client"
+        ? `/budget/counts-by-status?clientId=${userId}`
+        : `/budget/counts-by-status`;
+
+    return useQuery({
+      queryKey: [
+        "get_budget_status_counts",
+        userType === "client" ? userId : null,
+      ],
+      queryFn: async () => {
+        const response = await authFetch.get<BudgetStatusCountsResponse>(
+          endpoint
+        );
+        return response.data;
+      },
+      onSuccess: () => {
+        console.log("Budget status counts retrieved successfully");
+      },
+      onError: (error) => {
+        console.error("Error fetching budget status counts:", error);
+      },
+    });
+  };
 
 interface MonthlyEventCount {
   year: number;

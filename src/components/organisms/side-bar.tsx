@@ -123,9 +123,19 @@ const Sidebar = ({ role }: SidebarProps) => {
     ],
     "team-member": [
       {
+        to: "/events",
+        label: "EVENTS",
+        icon: <HiOutlineCalendar size={20} />,
+      },
+      {
         to: "/tasks",
         label: "MY TASKS",
         icon: <HiOutlineClipboardList size={20} />,
+      },
+      {
+        to: "/inventory",
+        label: "INVENTORY",
+        icon: <HiOutlineArchive size={20} />,
       },
       { to: "/calendar", label: "CALENDAR", icon: <CalendarClock size={20} /> },
       { to: "/profile", label: "PROFILE", icon: <FiUser size={20} /> },
