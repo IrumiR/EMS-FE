@@ -160,7 +160,15 @@ export function AddEventDialog() {
   };
 
   return (
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+    <Dialog
+      open={isDialogOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          resetForm();
+        }
+        setIsDialogOpen(open);
+      }}
+    >
       <DialogTrigger className="flex gap-1 bg-green-600 py-2 pl-2 sm:pr-2 pr-2 items-center rounded-md text-white max-h-[38px] text-xsxl">
         <div className="flex items-center gap-1">
           <Plus strokeWidth={1.4} />
@@ -250,7 +258,9 @@ export function AddEventDialog() {
           <Button
             variant="outline"
             className="text-gray-600"
-            onClick={activeStep !== "details" ? handlePreviousStep : handleCancel}
+            onClick={
+              activeStep !== "details" ? handlePreviousStep : handleCancel
+            }
           >
             {activeStep !== "details" ? "Back" : "Cancel"}
           </Button>

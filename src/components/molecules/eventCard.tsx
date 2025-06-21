@@ -143,14 +143,16 @@ function EventCard({
                 <Eye className="h-4 w-4 text-green-600 hover:text-green-700 hover:bg-green-50" />
               </Button>
 
-              <Button
-                onClick={() => setIsEditDialogOpen(true)}
-                variant="ghost"
-                size="sm"
-                className="p-1 h-8 w-8"
-              >
-                <Pencil className="h-4 w-4 text-green-600 hover:text-green-700 hover:bg-green-50" />
-              </Button>
+              {(userType === "admin" || userType === "manager") && (
+                <Button
+                  onClick={() => setIsEditDialogOpen(true)}
+                  variant="ghost"
+                  size="sm"
+                  className="p-1 h-8 w-8"
+                >
+                  <Pencil className="h-4 w-4 text-green-600 hover:text-green-700 hover:bg-green-50" />
+                </Button>
+              )}
             </div>
           </div>
           {status === "Pending Approval" &&
@@ -162,11 +164,12 @@ function EventCard({
               />
             )}
 
-          {status !== "Pending Approval" && (
-            <div className="mt-4">
-              <StatusSelect eventId={id} status={status} />
-            </div>
-          )}
+          {status !== "Pending Approval" &&
+            (userType === "admin" || userType === "manager") && (
+              <div className="mt-4">
+                <StatusSelect eventId={id} status={status} />
+              </div>
+            )}
 
           <ViewEventDialog
             open={isViewDialogOpen}

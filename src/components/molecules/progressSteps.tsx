@@ -52,7 +52,7 @@ export function ProgressSteps({ activeStep }: ProgressStepsProps) {
               : "text-gray-500"
           }`}
         >
-          Tasks and assignees
+          Assignees and items
         </span>
       </div>
     </div>

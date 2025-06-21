@@ -76,6 +76,7 @@ export function DateLocationStep({
             placeholderText="Pick a date"
             minDate={startDate || undefined} // 👈 restrict to after startDate
             disabled={!startDate}
+            useMinDate={true}
           />
         </div>
       </div>

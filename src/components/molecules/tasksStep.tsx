@@ -1,8 +1,4 @@
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import InputField from "../atoms/inputField";
-import { Plus, Trash2} from "lucide-react";
 import { MultiSelect, MultiSelectChangeEvent } from "primereact/multiselect";
 import { useGetAssigneeOptions,  } from "@/api/authApi";
 import { Assignee, InventoryItem, StepProps } from "../types/addEventTypes";
@@ -25,10 +21,6 @@ interface TasksAssigneesStepProps extends StepProps {
 }
 
 export function TasksAssigneesStep({
-  taskInput,
-  setTaskInput,
-  tasks,
-  setTasks,
   selectedAssignees,
   setSelectedAssignees,
   selectedItems,
@@ -49,29 +41,7 @@ export function TasksAssigneesStep({
     }))
   : [];
 console.log("Mapped Inventory Items for MultiSelect:", inventoryItems);
-
-  const addTask = () => {
-    if (taskInput.trim()) {
-      const newTask: Task = {
-        id: Date.now().toString(),
-        name: taskInput.trim(),
-      };
-      setTasks([...tasks, newTask]);
-      setTaskInput("");
-    }
-  };
   
-
-  const removeTask = (taskId: string) => {
-    setTasks(tasks.filter((task) => task.id !== taskId));
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addTask();
-    }
-  };
 
   const assigneeItemTemplate = (option: Assignee) => {
     return (
@@ -91,15 +61,6 @@ console.log("Mapped Inventory Items for MultiSelect:", inventoryItems);
 
   return (
     <div className="space-y-4">
-      <div>
-        <Label
-          htmlFor="quotation"
-          className="text-sm font-medium block mb-1"
-        >
-          Quotation
-        </Label>
-        <Input id="quotation" type="file" className="w-full" />
-      </div>
 
       <div>
         <Label
@@ -133,54 +94,6 @@ console.log("Mapped Inventory Items for MultiSelect:", inventoryItems);
             panelClassName="prime-panel"
           />
         </div>
-      </div>
-
-      <div>
-        <Label
-          htmlFor="tasks"
-          className="text-sm font-medium block mb-1"
-        >
-          Tasks
-        </Label>
-        <div className="flex items-center gap-2">
-          <InputField
-            id="tasks"
-            value={taskInput}
-            onChange={(e) => setTaskInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Add a task"
-            className="w-full"
-          />
-          <Button
-            type="button"
-            onClick={addTask}
-            className="bg-green-600 hover:bg-green-700 h-10 w-10 p-0"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {tasks.length > 0 && (
-          <div className="mt-2 space-y-2">
-            {tasks.map((task) => (
-              <div
-                key={task.id}
-                className="flex items-center justify-between bg-gray-50 p-2 rounded-md"
-              >
-                <span>{task.name}</span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeTask(task.id)}
-                  className="h-8 w-8 p-0 hover:bg-gray-200"
-                >
-                  <Trash2 className="h-4 w-4 text-red-500" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       <div>
