@@ -48,7 +48,7 @@ export const useCreateEvent = (
     },
     onSuccess(data) {
       onSuccess("Event created successfully");
-      queryClient.invalidateQueries(["get_single_event"]);
+      queryClient.invalidateQueries(["get_all_events"]);
     },
     onError(error) {
       const message =

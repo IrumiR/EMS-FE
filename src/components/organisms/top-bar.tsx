@@ -4,11 +4,13 @@ import { FaRegBell } from "react-icons/fa";
 import UserLogo from "../../assets/svg/user-icon.svg";
 import { HiLogout } from "react-icons/hi";
 import { useEffect, useState } from "react";
+import NotificationList from "./notificationList";
 
 const Topbar = () => {
   const location = useLocation();
   const pathSegments = location.pathname.split("/").filter(Boolean);
   const navigate = useNavigate();
+
 
   // State to store user info
   const [userInfo, setUserInfo] = useState({
@@ -52,9 +54,11 @@ const Topbar = () => {
           <PopoverTrigger className="w-10 h-10 rounded-full border flex items-center justify-center hover:bg-gray-100 transition duration-200 hover:cursor-pointer">
             <FaRegBell className="w-5 h-5" />
           </PopoverTrigger>
-          <PopoverContent>Place content for the popover here.</PopoverContent>
+          <PopoverContent>
+            <NotificationList  />
+          </PopoverContent>
         </Popover>
-        
+
         {/* User Info Section */}
         <div className="flex flex-col items-end text-right">
           <span className="font-semibold text-gray-800 text-sm">
@@ -74,10 +78,8 @@ const Topbar = () => {
             />
           </PopoverTrigger>
           <PopoverContent className="w-48">
-            <button 
-             onClick={handleLogout}
-            className="flex items-center gap-6">
-              <HiLogout className="w-5 h-5" /> 
+            <button onClick={handleLogout} className="flex items-center gap-6">
+              <HiLogout className="w-5 h-5" />
               <span>Logout</span>
             </button>
           </PopoverContent>

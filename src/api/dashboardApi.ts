@@ -236,3 +236,40 @@ export const useGetMonthlyEventCounts = (): UseQueryResult<MonthlyEventCountsRes
   });
 };
 
+interface UpcomingTask {
+  taskName: string;
+  eventName: string;
+  startDate: string;
+  endDate: string;
+  priority: string;
+  status: string;
+}
+
+interface UpcomingTasksResponse {
+  message: string;
+  tasks: UpcomingTask[];
+}
+
+export const useGetUpcomingTasks =
+  (): UseQueryResult<UpcomingTasksResponse> => {
+    const clientId = localStorage.getItem("userId") || "";
+
+    return useQuery({
+      queryKey: ["get_upcoming_tasks", clientId],
+      queryFn: async () => {
+        const response = await authFetch.get<UpcomingTasksResponse>(
+          `/tasks/upcoming-tasks/${clientId}`
+        );
+        return response.data;
+      },
+      enabled: !!clientId,
+      onSuccess: () => {
+        console.log("Upcoming tasks retrieved successfully");
+      },
+      onError: (error) => {
+        console.error("Error fetching upcoming tasks:", error);
+      },
+    });
+  };
+
+

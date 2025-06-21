@@ -5,6 +5,7 @@ import TaskStats from "@/pages/dashboard/taskStats";
 import InventoryStats from "@/pages/dashboard/inventoryStats";
 import BudgetStats from "@/pages/dashboard/budgetStats";
 import UpcomingEventsCard from "@/pages/dashboard/upcomingEventsCard";
+import UpcomingTasksCard from "./upcomingTasksCard";
 import EventCountByMonth from "./eventCountByMonth";
 import UserRole from "./userRole";
 import EventStatus from "./eventStatus";
@@ -79,9 +80,17 @@ function DashboardScreen() {
         </TabsContent>
       </Tabs>
 
-      <div className="mt-10">
-        <UpcomingEventsCard />
-      </div>
+      {userType !== "client" && (
+        <div className="mt-10">
+          <UpcomingEventsCard />
+        </div>
+      )}
+
+      {userType == "client" && (
+        <div className="mt-10">
+          <UpcomingTasksCard />
+        </div>
+      )}
 
       <div className="mt-10">
         <EventCountByMonth />
