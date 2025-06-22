@@ -11,7 +11,7 @@ import { HiSearch } from "react-icons/hi";
 import TableComponent from "@/components/molecules/table";
 import AddItemDialog from "@/components/organisms/addItemDialog";
 import { useGetAllInventory } from "@/api/inventoryApi";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { ViewItemDialog } from "@/components/organisms/viewItemDialog";
 import { EditItemDialog } from "@/components/organisms/editItemDialog";
 import { ReserveItemDialog } from "@/components/organisms/reserveItemDialog";
@@ -42,7 +42,8 @@ function InventoryScreen() {
     currentPage,
     rowsPerPage,
     searchTerm,
-    selectedItemType !== "All" ? selectedItemType.toLowerCase() : undefined
+    selectedItemType !== "All" ? selectedItemType.toLowerCase() : undefined,
+    selectedCategory !== "All Categories" ? selectedCategory : undefined
   );
 
   const inventoryItems = data?.inventoryItems || [];
@@ -50,24 +51,8 @@ function InventoryScreen() {
 
   console.log("Inventory data", data?.inventoryItems);
 
-  // Filter items by category on the frontend
-  const filteredItems = useMemo(() => {
-    if (selectedCategory === "All Categories") {
-      return inventoryItems;
-    }
-    
-    return inventoryItems.filter((item) => {
-      const itemCategories = Array.isArray(item.category) 
-        ? item.category 
-        : [item.category];
-      
-      return itemCategories.some(category => 
-        category?.toLowerCase() === selectedCategory.toLowerCase()
-      );
-    });
-  }, [inventoryItems, selectedCategory]);
 
-  const formattedItems = filteredItems.map((item) => ({
+  const formattedItems = inventoryItems.map((item) => ({
     ...item,
     // Format arrays to display as comma-separated strings
     category: Array.isArray(item.category)
@@ -76,14 +61,18 @@ function InventoryScreen() {
     condition: Array.isArray(item.condition)
       ? item.condition.join(", ")
       : item.condition,
-     itemType: (
-    <Badge 
-      variant={item.isExternal ? "destructive" : "default"}
-      className={item.isExternal ? "bg-red-100 text-red-800 hover:bg-red-200" : "bg-green-100 text-green-800 hover:bg-green-200"}
-    >
-      {item.isExternal ? "External" : "Internal"}
-    </Badge>
-  ),
+    itemType: (
+      <Badge
+        variant={item.isExternal ? "destructive" : "default"}
+        className={
+          item.isExternal
+            ? "bg-red-100 text-red-800 hover:bg-red-200"
+            : "bg-green-100 text-green-800 hover:bg-green-200"
+        }
+      >
+        {item.isExternal ? "External" : "Internal"}
+      </Badge>
+    ),
   }));
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,7 +82,7 @@ function InventoryScreen() {
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
-    setCurrentPage(1);
+    setCurrentPage(1); 
   };
 
   const handlePageChange = (newPage: number) => {

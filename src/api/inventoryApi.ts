@@ -157,16 +157,18 @@ export const useGetAllInventory = (
   page?: number,
   pageSize?: number,
   search?: string,
-  itemType?: string
+  itemType?: string,
+  category?: string
 ): UseQueryResult<InventoryResponse> => {
   return useQuery({
-    queryKey: ["get_all_inventory", page, pageSize, search, itemType],
+    queryKey: ["get_all_inventory", page, pageSize, search, itemType, category],
     queryFn: async () => {
       try {
         const response = await authFetch.get<InventoryResponse>(
-          `/inventory/all?limit=${pageSize ?? 10}&page=${page ?? 1}${
-            search ? `&search=${encodeURIComponent(search)}` : ""
-          }${itemType ? `&itemType=${itemType}` : ""}` // ✅ itemType added here
+          `/inventory/all?limit=${pageSize ?? 10}&page=${page ?? 1}` +
+          (search ? `&search=${encodeURIComponent(search)}` : "") +
+          (itemType ? `&itemType=${itemType}` : "") +
+          (category ? `&category=${category}` : "")
         );
         return response.data;
       } catch (error) {

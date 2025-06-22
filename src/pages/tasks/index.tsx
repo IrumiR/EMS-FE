@@ -95,7 +95,6 @@ function TasksScreen() {
                 "To Do",
                 "In Progress",
                 "Completed",
-                "Over Due",
                 "Cancelled",
               ].map((status) => (
                 <DropdownMenuItem
