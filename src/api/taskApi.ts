@@ -357,3 +357,20 @@ export const useApproveTaskPriority = (
     },
   });
 };
+
+export const useDeleteTask = (onSuccess: () => void, onError: () => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (taskId: string) => {
+      const response = await authFetch.delete(`/tasks/${taskId}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries("get_all_by_user_tasks");
+      onSuccess();
+    },
+    onError: () => {
+      onError();
+    },
+  });
+};

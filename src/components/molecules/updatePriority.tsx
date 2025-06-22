@@ -42,7 +42,7 @@ export default function TaskPrioritySelect({ taskId, priority }: PrioritySelectP
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button className="p-0 bg-transparent border-none hover:bg-transparent focus:outline-none">
+        <button className="p-1 bg-transparent border-none hover:bg-gray-100 focus:outline-none">
           <SquareChevronUp className="w-4 h-4 text-gray-500 cursor-pointer" />
         </button>
       </PopoverTrigger>

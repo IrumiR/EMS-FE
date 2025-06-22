@@ -11,6 +11,7 @@ import {
   MessageCircle,
   ArrowUp,
   MoveDown,
+  Trash2,
 } from "lucide-react";
 import { useState } from "react";
 import { EditTaskDialog } from "../organisms/editTaskDialog";
@@ -19,6 +20,7 @@ import { SubTaskDialog } from "../organisms/subTaskDialog";
 import CommentDialog from "../organisms/commentDialog";
 import TaskStatusSelect from "./updateTaskStatus";
 import TaskPrioritySelect from "./updatePriority";
+import { DeleteTaskDialog } from "./deleteTaskDialog";
 
 interface Task {
   id: string;
@@ -39,6 +41,7 @@ export default function TaskCard({ task }: { task: Task }) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isCommentDialogOpen, setIsCommentDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const userType = localStorage.getItem("role");
 
@@ -146,7 +149,7 @@ export default function TaskCard({ task }: { task: Task }) {
         </p>
 
         {/* Sub Task Dialog & Due Date */}
-       
+
         <div className="flex items-center justify-between mb-3">
           <SubTaskDialog taskId={task.id} taskName={task.taskName} />
           <div className="flex items-center gap-2">
@@ -202,6 +205,12 @@ export default function TaskCard({ task }: { task: Task }) {
         taskName={task.taskName}
       />
 
+      <DeleteTaskDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        taskId={task.id}
+      />
+
       <CardFooter className="px-2 py-0 border-t border-gray-100">
         <TooltipProvider>
           <div className="flex items-center gap-3 w-full">
@@ -233,50 +242,64 @@ export default function TaskCard({ task }: { task: Task }) {
               </TooltipContent>
             </Tooltip>
 
-              {(userType !== "client") && (
-                <>
-                  <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  className="p-1 hover:bg-gray-100 rounded transition-colors"
-                  onClick={() => setIsEditDialogOpen(true)}
-                >
-                  <Pencil className="w-4 h-4 text-gray-500" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Edit Task</p>
-              </TooltipContent>
-            </Tooltip>
+            {userType !== "client" && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    className="p-1 hover:bg-red-100 rounded transition-colors"
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                  >
+                    <Trash2 className="w-4 h-4 text-red-500" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Delete Task</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div>
-                  <TaskStatusSelect taskId={task.id} status={task.status} />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Update Status</p>
-              </TooltipContent>
-            </Tooltip>
+            {userType !== "client" && (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      className="p-1 hover:bg-gray-100 rounded transition-colors"
+                      onClick={() => setIsEditDialogOpen(true)}
+                    >
+                      <Pencil className="w-4 h-4 text-gray-500" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Edit Task</p>
+                  </TooltipContent>
+                </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div>
-                  <TaskPrioritySelect
-                    taskId={task.id}
-                    priority={task.priority}
-                  />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Update Priority</p>
-              </TooltipContent>
-            </Tooltip>
-            </>
-              )}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <TaskStatusSelect taskId={task.id} status={task.status} />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Update Status</p>
+                  </TooltipContent>
+                </Tooltip>
 
-            
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <TaskPrioritySelect
+                        taskId={task.id}
+                        priority={task.priority}
+                      />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Update Priority</p>
+                  </TooltipContent>
+                </Tooltip>
+              </>
+            )}
           </div>
         </TooltipProvider>
       </CardFooter>

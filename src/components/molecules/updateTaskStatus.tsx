@@ -61,7 +61,7 @@ export default function TaskStatusSelect({ taskId, status }: StatusSelectProps) 
         <Button
           variant="ghost"
           size="sm"
-          className="w-fit h-fit border-none bg-transparent p-1 shadow-none hover:bg-gray-100 focus:ring-0 focus:ring-offset-0 rounded transition-colors"
+          className="w-fit h-6 border-none bg-transparent p-1 shadow-none hover:bg-gray-100 focus:ring-0 focus:ring-offset-0 rounded transition-colors"
           disabled={isLoading}
         >
           {isLoading ? (
