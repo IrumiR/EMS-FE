@@ -6,7 +6,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { ChevronDown, Eye, FilePenLine, CalendarCheck } from "lucide-react";
+import {
+  ChevronDown,
+  Eye,
+  FilePenLine,
+  CalendarCheck,
+  Trash2,
+} from "lucide-react";
 import { HiSearch } from "react-icons/hi";
 import TableComponent from "@/components/molecules/table";
 import AddItemDialog from "@/components/organisms/addItemDialog";
@@ -15,6 +21,7 @@ import { useState } from "react";
 import { ViewItemDialog } from "@/components/organisms/viewItemDialog";
 import { EditItemDialog } from "@/components/organisms/editItemDialog";
 import { ReserveItemDialog } from "@/components/organisms/reserveItemDialog";
+import { DeleteItemDialog } from "@/components/organisms/deleteItemDialog";
 import { Badge } from "@/components/ui/badge";
 
 function InventoryScreen() {
@@ -27,6 +34,7 @@ function InventoryScreen() {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [reserveDialogOpen, setReserveDialogOpen] = useState(false);
+  const [deleteItemDialogOpen, setDeleteItemDialogOpen] = useState(false);
   const [reserveItemId, setReserveItemId] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<any>(null);
 
@@ -50,7 +58,6 @@ function InventoryScreen() {
   const totalPages = data?.pagination?.totalPages || 1;
 
   console.log("Inventory data", data?.inventoryItems);
-
 
   const formattedItems = inventoryItems.map((item) => ({
     ...item,
@@ -82,7 +89,7 @@ function InventoryScreen() {
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
-    setCurrentPage(1); 
+    setCurrentPage(1);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -158,14 +165,10 @@ function InventoryScreen() {
               >
                 All Categories
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleCategoryChange("Audio")}
-              >
+              <DropdownMenuItem onClick={() => handleCategoryChange("Audio")}>
                 Audio
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleCategoryChange("Staging")}
-              >
+              <DropdownMenuItem onClick={() => handleCategoryChange("Staging")}>
                 Staging
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -220,6 +223,17 @@ function InventoryScreen() {
                 >
                   <CalendarCheck className="h-4 w-4 text-purple-600" />
                 </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="p-1 hover:bg-gray-100"
+                  onClick={() => {
+                    setSelectedItem(row._id);
+                    setDeleteItemDialogOpen(true);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 text-red-600" />
+                </Button>
               </div>
             )}
           />
@@ -247,6 +261,14 @@ function InventoryScreen() {
           open={reserveDialogOpen}
           onOpenChange={setReserveDialogOpen}
           itemId={reserveItemId ?? ""}
+        />
+      </div>
+
+      <div>
+        <DeleteItemDialog
+          open={deleteItemDialogOpen}
+          onOpenChange={setDeleteItemDialogOpen}
+          itemId={selectedItem}
         />
       </div>
 

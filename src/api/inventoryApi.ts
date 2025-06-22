@@ -106,7 +106,7 @@ export const useDeleteInventoryMutation = (
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries("inventoryItems");
+      queryClient.invalidateQueries("get_all_inventory");
       if (onSuccess) onSuccess();
     },
     onError: (error) => {
