@@ -1,4 +1,4 @@
-import { Calendar, MapPin, Eye, Pencil, ListTodo } from "lucide-react";
+import { Calendar, MapPin, Eye, Pencil, ListTodo, Trash2 } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import ApproveEventDialog from "./approveEvent";
 import ViewEventDialog from "./viewEvent";
 import UpdateEventDialog from "../organisms/updateEventDialog";
+import { DeleteEventDialog } from "../organisms/deleteEventDialog";
 import { useState } from "react";
 import StatusSelect from "./updateEventStatus";
 
@@ -63,6 +64,7 @@ function EventCard({
   const [selectedClientId, setSelectedClientId] = useState("");
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [deleteEventDialogOpen, setDeleteEventDialogOpen] = useState(false);
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [startTimeState, setStartTime] = useState<Date | undefined>(undefined);
@@ -101,7 +103,7 @@ function EventCard({
           <Calendar className="h-3 w-3 mr-1" />
           <span>
             <span>
-              {date} {' '} @<span>{startTime.slice(0, 5)}</span>
+              {date} @<span>{startTime.slice(0, 5)}</span>
             </span>
           </span>
         </div>
@@ -153,6 +155,17 @@ function EventCard({
                   <Pencil className="h-4 w-4 text-green-600 hover:text-green-700 hover:bg-green-50" />
                 </Button>
               )}
+
+              {(userType === "admin" || userType === "manager") && (
+                <Button
+                  onClick={() => setDeleteEventDialogOpen(true)}
+                  variant="ghost"
+                  size="sm"
+                  className="p-1 h-8 w-8"
+                >
+                  <Trash2 className="h-4 w-4 text-red-600 hover:text-red-700 hover:bg-red-50" />
+                </Button>
+              )}
             </div>
           </div>
           {status === "Pending Approval" &&
@@ -193,6 +206,12 @@ function EventCard({
             setEndTime={setEndTime}
             selectedClientId={selectedClientId}
             setSelectedClientId={setSelectedClientId}
+          />
+
+          <DeleteEventDialog
+            open={deleteEventDialogOpen}
+            onOpenChange={setDeleteEventDialogOpen}
+            eventId={id}
           />
         </div>
       </CardFooter>

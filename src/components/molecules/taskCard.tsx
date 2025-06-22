@@ -20,7 +20,7 @@ import { SubTaskDialog } from "../organisms/subTaskDialog";
 import CommentDialog from "../organisms/commentDialog";
 import TaskStatusSelect from "./updateTaskStatus";
 import TaskPrioritySelect from "./updatePriority";
-import { DeleteTaskDialog } from "./deleteTaskDialog";
+import { DeleteTaskDialog } from "../organisms/deleteTaskDialog";
 
 interface Task {
   id: string;

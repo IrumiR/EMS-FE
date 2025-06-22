@@ -340,3 +340,20 @@ export const useGetEventReport = (): UseQueryResult<EventReportResponse> => {
     },
   });
 };
+
+export const useDeleteEvent = (onSuccess: () => void, onError: () => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (eventId: string) => {
+      const response = await authFetch.delete(`/events/${eventId}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries("get_all_events");
+      if (onSuccess) onSuccess();
+    },
+    onError: () => {
+      if (onError) onError();
+    },
+  });
+};
