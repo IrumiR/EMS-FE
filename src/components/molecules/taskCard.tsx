@@ -160,7 +160,7 @@ export default function TaskCard({ task }: { task: Task }) {
         </div>
 
         {/* Overdue Message */}
-        {isTaskOverdue() && (
+        {isTaskOverdue() && task.status === "In Progress" && (
           <div className="mb-3">
             <span className="px-2 py-1 rounded-full text-sm text-red-500 bg-red-50 font-medium">
               This task is overdue

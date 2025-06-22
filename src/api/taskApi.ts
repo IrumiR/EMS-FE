@@ -314,8 +314,7 @@ export const useApproveTask = (
       return response.data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries("get_all_tasks");
-      queryClient.invalidateQueries("get_all_by_event_tasks");
+      queryClient.invalidateQueries("get_all_by_user_tasks");
       if (onSuccess) onSuccess(data);
     },
     onError(error) {
@@ -348,8 +347,7 @@ export const useApproveTaskPriority = (
       return response.data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries("get_all_tasks");
-      queryClient.invalidateQueries("get_all_by_event_tasks");
+      queryClient.invalidateQueries("get_all_by_user_tasks");
       if (onSuccess) onSuccess(data);
     },
     onError(error) {
