@@ -6,14 +6,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { ChevronDown, Eye, FilePenLine } from "lucide-react";
+import { ChevronDown, Eye, FilePenLine, Repeat } from "lucide-react";
 import { HiSearch } from "react-icons/hi";
 import TableComponent from "@/components/molecules/table";
 import { AddUserDialog } from "@/components/organisms/addUserDialog";
 import { EditUserDialog } from "@/components/organisms/editUserDialog";
 import { ViewUserDialog } from "@/components/organisms/viewUserDialog";
+import { DeactivateUserDialog } from "@/components/organisms/deactivateUserDialog";
 import { useGetAllUsers } from "@/api/authApi";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 function TeamScreen() {
   const columns = [
@@ -28,7 +29,12 @@ function TeamScreen() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const data = useGetAllUsers(currentPage, rowsPerPage, searchTerm);
+  const data = useGetAllUsers(
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    selectedRole !== "All Roles" ? selectedRole.toLowerCase() : undefined
+  );
 
   const users = data?.data?.users || [];
   console.log("Users data", data.data?.users);
@@ -54,23 +60,15 @@ function TeamScreen() {
     setCurrentPage(1); // Reset to first page when changing page size
   };
 
+  const handleRoleChange = (role: string) => {
+    setSelectedRole(role);
+    setCurrentPage(1); 
+  };
+
   const formattedUsers = users.map((user) => ({
     ...user,
     role: Array.isArray(user.role) ? user.role.join(", ") : user.role,
   }));
-
-  const filteredUsers = useMemo(() => {
-    return formattedUsers.filter((user) => {
-
-      // Role filter
-      const matchesRole =
-        selectedRole === "All Roles" ||
-        (user.role &&
-          user.role.toLowerCase().includes(selectedRole.toLowerCase()));
-
-      return matchesRole;
-    });
-  }, [formattedUsers, selectedRole]);
 
   const roles = ["All Roles", "Admin", "Manager", "Team-Member", "Client"];
 
@@ -109,7 +107,7 @@ function TeamScreen() {
               {roles.map((role) => (
                 <DropdownMenuItem
                   key={role}
-                  onClick={() => setSelectedRole(role)}
+                  onClick={() => handleRoleChange(role)}
                 >
                   {role}
                 </DropdownMenuItem>
@@ -122,7 +120,7 @@ function TeamScreen() {
       <div className="overflow-x-auto mt-6">
         <TableComponent
           columns={columns}
-          data={filteredUsers}
+          data={formattedUsers}
           actions={(row) => (
             <div className="flex items-center space-x-2">
               <ViewUserDialog
@@ -149,12 +147,30 @@ function TeamScreen() {
                   </Button>
                 }
               />
+              <DeactivateUserDialog
+                userId={row._id}
+                isActive={row.isActive}
+                trigger={
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="p-1 hover:bg-gray-100"
+                    title={row.isActive ? "Deactivate User" : "Activate User"}
+                  >
+                    <Repeat
+                      className={`h-4 w-4 ${
+                        row.isActive ? "text-red-600" : "text-green-600"
+                      }`}
+                    />
+                  </Button>
+                }
+              />
             </div>
           )}
         />
       </div>
 
-        <div className="flex items-center justify-between mt-8">
+      <div className="flex items-center justify-between mt-8">
         <div className="flex items-center space-x-2">
           <button
             onClick={() => handlePageChange(currentPage - 1)}
@@ -176,13 +192,12 @@ function TeamScreen() {
         </div>
 
         <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-700">Tasks per page:</span>
+          <span className="text-sm text-gray-700">Users per page:</span>
           <select
             value={rowsPerPage}
             onChange={handleRowsPerPageChange}
             className="px-2 py-1 border border-gray-300 rounded"
           >
-            {/* Updated options to include backend-compatible values */}
             {[5, 10, 15, 20, 25].map((option) => (
               <option key={option} value={option}>
                 {option}

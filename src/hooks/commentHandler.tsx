@@ -17,8 +17,8 @@ export interface CommentMessage {
   isReply?: boolean;
   images?: string[];
   parentId?: string;
-  originalCommentId?: string; 
-  originalReplyId?: string;   
+  originalCommentId?: string;
+  originalReplyId?: string;
 }
 
 export const useCommentData = (taskId: string, isOpen: boolean) => {
@@ -74,11 +74,21 @@ export const useCommentData = (taskId: string, isOpen: boolean) => {
         sender: comment.createdBy.userName,
         avatar: "/api/placeholder/40/40",
         content: comment.commentText,
-        timestamp: comment.createdAt 
-          ? new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: comment.createdAt
+          ? new Date(comment.createdAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
         isReply: false,
-        originalCommentId: comment._id
+        originalCommentId: comment._id,
+        images:
+          comment.images?.map(
+            (img) => `data:${img.contentType};base64,${img.data}`
+          ) || [],
       };
       messages.push(mainMessage);
 
@@ -86,16 +96,26 @@ export const useCommentData = (taskId: string, isOpen: boolean) => {
         comment.replies.forEach((reply) => {
           const replyMessage: CommentMessage = {
             id: reply._id || `temp-reply-${Date.now()}`,
-           sender: reply.createdBy.userName || 'Unknown',
+            sender: reply.createdBy.userName || "Unknown",
             avatar: "/api/placeholder/40/40",
             content: reply.commentText,
-            timestamp: reply.createdAt 
-              ? new Date(reply.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-              : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            timestamp: reply.createdAt
+              ? new Date(reply.createdAt).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : new Date().toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
             isReply: true,
             parentId: mainMessage.id,
             originalCommentId: comment._id,
-            originalReplyId: reply._id
+            originalReplyId: reply._id,
+            images:
+              reply.images?.map(
+                (img) => `data:${img.contentType};base64,${img.data}`
+              ) || [],
           };
           messages.push(replyMessage);
         });
@@ -125,24 +145,25 @@ export const useCommentData = (taskId: string, isOpen: boolean) => {
     if (!content.trim() && files.length === 0) return;
 
     try {
-      // Get current user info
-     const currentUser = localStorage.getItem(`userId`) || 'current-user-id';
-    const userName = localStorage.getItem(`userName`) || 'You';
-      
-      const commentData: Comment = {
+      const currentUser = localStorage.getItem(`userId`) || "current-user-id";
+      const userName = localStorage.getItem(`userName`) || "You";
+
+      const commentData: Comment & { files?: File[] } = {
         taskId,
         commentText: content,
-       createdBy: {
+        createdBy: {
           _id: currentUser,
-          userName: userName
-        }
+          userName,
+        },
+        files,
       };
 
       await createCommentMutation.mutateAsync(commentData);
     } catch (error) {
-      console.error('Error creating comment:', error);
+      console.error("Error creating comment:", error);
     }
   };
+  
 
   const handleSendReply = async (content: string, parentMessageId: string, files: File[] = []) => {
     if (!content.trim() && files.length === 0) return;
@@ -162,7 +183,8 @@ export const useCommentData = (taskId: string, isOpen: boolean) => {
       await addReplyMutation.mutateAsync({
         commentId: originalCommentId,
         replyText: content,
-        createdBy: currentUser
+        createdBy: currentUser,
+        files,
       });
 
       setReplyingTo(null);

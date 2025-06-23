@@ -30,15 +30,18 @@ const TableComponent: React.FC<TableComponentProps> = ({
               </th>
             ))}
             {actions && (
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
             )}
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="divide-y divide-gray-200">
           {data.map((row, idx) => (
-            <tr key={idx}>
+            <tr
+              key={idx}
+              className={row.isActive === false ? "bg-red-50" : "bg-white"}
+            >
               {columns.map((col) => (
                 <td
                   key={col.key}

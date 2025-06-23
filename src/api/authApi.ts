@@ -17,6 +17,7 @@ export interface DecodedToken {
   exp: number;
   id: string;
   userName: string;
+  profileImage: string;
 }
 
 export const useLoginMutation = (
@@ -38,6 +39,7 @@ export const useLoginMutation = (
       localStorage.setItem("token", token);
       localStorage.setItem("userName", decoded.userName);
       localStorage.setItem("userId", decoded.id);
+      localStorage.setItem("profileImage", decoded.profileImage || "");
       onSuccess(decoded.role);
     },
     onError(error) {
@@ -108,16 +110,17 @@ export interface UserResponse {
 export const useGetAllUsers = (
   page?: number,
   pageSize?: number,
-  search?: string
+  search?: string,
+  role?: string
 ): UseQueryResult<UserResponse> => {
   return useQuery({
-    queryKey: ["get_all_users", page, pageSize, search],
+    queryKey: ["get_all_users", page, pageSize, search, role],
     queryFn: async () => {
       try {
         const response = await authFetch.get<UserResponse>(
           `/users/all?limit=${pageSize ?? 10}&page=${page ?? 1}${
             search ? `&search=${encodeURIComponent(search)}` : ""
-          }`
+          }${role ? `&role=${role}` : ""}`
         );
         return response.data;
       } catch (error) {
@@ -292,3 +295,39 @@ export const useGetUserReport = (): UseQueryResult<UserReportResponse> => {
     },
   });
 };
+
+export const useDeactivateUser = (
+  onSuccess?: (message: string) => void,
+  onError?: (message: string) => void
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      isActive,
+    }: {
+      userId: string;
+      isActive: boolean;
+    }) => {
+      const response = await authFetch.put(`/users/deactivate/${userId}`, {
+        isActive,
+      });
+      return response.data;
+    },
+    onSuccess: (data, variables) => {
+      const message = variables.isActive
+        ? "User activated successfully"
+        : "User deactivated successfully";
+      queryClient.invalidateQueries("get_all_users");
+      onSuccess?.(message);
+    },
+    onError: (error) => {
+      const message =
+        (error as any)?.response?.data?.message ||
+        "Failed to update user status";
+      onError?.(message);
+    },
+  });
+};
+

@@ -10,6 +10,7 @@ const Topbar = () => {
   const location = useLocation();
   const pathSegments = location.pathname.split("/").filter(Boolean);
   const navigate = useNavigate();
+  const profileImage = localStorage.getItem("profileImage") || "";
 
 
   // State to store user info
@@ -55,7 +56,7 @@ const Topbar = () => {
             <FaRegBell className="w-5 h-5" />
           </PopoverTrigger>
           <PopoverContent>
-            <NotificationList  />
+            <NotificationList />
           </PopoverContent>
         </Popover>
 
@@ -72,9 +73,9 @@ const Topbar = () => {
         <Popover>
           <PopoverTrigger className="w-10 h-10 hover:cursor-pointer">
             <img
-              src={UserLogo}
-              alt="User Logo"
-              className="w-full h-full rounded-full"
+              src={`/profile-avatar/${profileImage || "01"}.png`}
+              alt="Selected Profile"
+              className=" rounded-full border-2 border-teal-500 shadow bg-teal-200"
             />
           </PopoverTrigger>
           <PopoverContent className="w-48">
