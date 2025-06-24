@@ -90,7 +90,6 @@ const Sidebar = ({ role }: SidebarProps) => {
       { to: "/calendar", label: "CALENDAR", icon: <CalendarClock size={20} /> },
       { to: "/reports", label: "REPORTS", icon: <FileSliders size={20} /> },
       { to: "/team", label: "TEAM", icon: <HiOutlineUsers size={20} /> },
-      { to: "/profile", label: "PROFILE", icon: <HiOutlineCog size={20} /> },
     ],
     manager: [
       { to: "/events", label: "EVENTS", icon: <HiOutlineCalendar size={20} /> },
@@ -105,7 +104,6 @@ const Sidebar = ({ role }: SidebarProps) => {
         icon: <HiOutlineArchive size={20} />,
       },
       { to: "/calendar", label: "CALENDAR", icon: <CalendarClock size={20} /> },
-      { to: "/profile", label: "PROFILE", icon: <FiUser size={20} /> },
     ],
     client: [
       {
@@ -119,7 +117,6 @@ const Sidebar = ({ role }: SidebarProps) => {
         icon: <HiOutlineCurrencyDollar size={20} />,
       },
       { to: "/calendar", label: "CALENDAR", icon: <CalendarClock size={20} /> },
-      { to: "/profile", label: "PROFILE", icon: <FiUser size={20} /> },
     ],
     "team-member": [
       {
@@ -138,7 +135,6 @@ const Sidebar = ({ role }: SidebarProps) => {
         icon: <HiOutlineArchive size={20} />,
       },
       { to: "/calendar", label: "CALENDAR", icon: <CalendarClock size={20} /> },
-      { to: "/profile", label: "PROFILE", icon: <FiUser size={20} /> },
     ],
   };
 

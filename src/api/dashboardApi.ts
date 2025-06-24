@@ -273,3 +273,35 @@ export const useGetUpcomingTasks =
   };
 
 
+  interface TaskStatusCount {
+    status: string;
+    count: number;
+  }
+
+  interface TaskStatusCountResponse {
+    message: string;
+    data: TaskStatusCount[];
+  }
+
+  export const useGetTaskStatusCount = (): UseQueryResult<TaskStatusCountResponse> => {
+    const clientId = localStorage.getItem("userId") || "";
+
+    return useQuery({
+      queryKey: ["get_status_counts", clientId],
+      queryFn: async () => {
+        const response = await authFetch.get<TaskStatusCountResponse>(
+          `/tasks/status-counts/${clientId}`
+        );
+        return response.data;
+      },
+      enabled: !!clientId,
+      onSuccess: () => {
+        console.log("Upcoming tasks retrieved successfully");
+      },
+      onError: (error) => {
+        console.error("Error fetching upcoming tasks:", error);
+      },
+    });
+  };  
+
+

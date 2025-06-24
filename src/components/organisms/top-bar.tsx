@@ -1,10 +1,11 @@
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { FaRegBell } from "react-icons/fa";
-import UserLogo from "../../assets/svg/user-icon.svg";
 import { HiLogout } from "react-icons/hi";
 import { useEffect, useState } from "react";
 import NotificationList from "./notificationList";
+import { Settings } from "lucide-react";
+import { Button } from "../ui/button";
 
 const Topbar = () => {
   const location = useLocation();
@@ -30,6 +31,10 @@ const Topbar = () => {
     localStorage.clear();
     navigate("/login");
   }
+
+  const handleProfile = () => {
+    navigate("/profile");
+  };
 
   return (
     <header className="h-20 bg-white shadow-xs px-6 flex items-center justify-between z-50">
@@ -78,11 +83,21 @@ const Topbar = () => {
               className=" rounded-full border-2 border-teal-500 shadow bg-teal-200"
             />
           </PopoverTrigger>
-          <PopoverContent className="w-48">
-            <button onClick={handleLogout} className="flex items-center gap-6">
-              <HiLogout className="w-5 h-5" />
+          <PopoverContent className="w-32 flex flex-col gap-2 p-0 mr-6">
+            <Button
+              onClick={handleLogout}
+              className="flex items-center gap-6 bg-white text-black hover:bg-teal-50 shadow-none"
+            >
+              <HiLogout className="w-5 h-5 text-black" />
               <span>Logout</span>
-            </button>
+            </Button>
+            <Button
+              onClick={handleProfile}
+              className="flex items-center gap-6 bg-white text-black hover:bg-teal-50"
+            >
+              <Settings className="w-5 h-5 text-black" />
+              <span>Profile</span>
+            </Button>
           </PopoverContent>
         </Popover>
       </div>

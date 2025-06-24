@@ -9,6 +9,7 @@ import UpcomingTasksCard from "./upcomingTasksCard";
 import EventCountByMonth from "./eventCountByMonth";
 import UserRole from "./userRole";
 import EventStatus from "./eventStatus";
+import TaskStatusCount from "./taskStatusCountCard";
 
 function DashboardScreen() {
   const userType = localStorage.getItem("role");
@@ -91,13 +92,25 @@ function DashboardScreen() {
           <UpcomingTasksCard />
         </div>
       )}
-
-      <div className="mt-10">
-        <EventCountByMonth />
-      </div>
+      {userType !== "client" && (
+        <div className="mt-10">
+          <EventCountByMonth />
+        </div>
+      )}
 
       <div className="mt-10 grid grid-cols-2 gap-6">
-        <UserRole />
+        {userType == "admin" && (
+          <div className="">
+            <UserRole />
+          </div>
+        )}
+
+        {userType == "client" && (
+          <div className="">
+            <TaskStatusCount />
+          </div>
+        )}
+
         <EventStatus />
       </div>
     </div>
