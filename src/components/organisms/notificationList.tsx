@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { useGetNotification } from "@/api/notificationApi"; 
 
 const formatDate = (isoString: string) => {
   const date = new Date(isoString);
@@ -10,9 +9,15 @@ const formatDate = (isoString: string) => {
   });
 };
 
-const NotificationList = () => {
-  const { data, isLoading, isError } = useGetNotification();
-
+const NotificationList = ({
+  notifications,
+  isLoading,
+  isError,
+}: {
+  notifications: any[];
+  isLoading: boolean;
+  isError: boolean;
+}) => {
   if (isLoading) {
     return (
       <div className="text-sm text-gray-500 p-4">Loading notifications...</div>
@@ -27,9 +32,7 @@ const NotificationList = () => {
     );
   }
 
-  const notifications = data?.notifications || [];
-
-  if (notifications.length === 0) {
+  if (!notifications || notifications.length === 0) {
     return (
       <div className="text-sm text-gray-500 p-4">No new notifications</div>
     );
