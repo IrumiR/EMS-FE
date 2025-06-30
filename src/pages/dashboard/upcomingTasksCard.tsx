@@ -1,19 +1,33 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
   CheckSquare,
   Clock,
   AlertTriangle,
   CheckCircle,
   XCircle,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
+import { useState } from "react";
 import { useGetUpcomingTasks } from "@/api/dashboardApi";
 
-
 const UpcomingTasksCard = () => {
-
   const { data, isLoading, isError } = useGetUpcomingTasks();
   const tasks = data?.tasks || [];
+  const [openTasks, setOpenTasks] = useState<Record<number, boolean>>({});
+
+  const toggleTask = (index: any) => {
+    setOpenTasks((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+  };
 
   const getStatusVariant = (status: string) => {
     switch (status?.toLowerCase()) {
@@ -135,24 +149,39 @@ const UpcomingTasksCard = () => {
           tasks.map((task, index) => (
             <Card
               key={index}
-              className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+              className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-2"
             >
-              <CardContent className="p-4">
+              <CardContent className="p-2">
                 <div className="space-y-3">
                   {/* Task Name and Priority */}
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <h3 className="font-semibold text-lg text-gray-900 line-clamp-2">
                       {task.taskName || "Task Name"}
                     </h3>
-                    <Badge
-                      className={`${getPriorityColor(
-                        task.priority
-                      )} shrink-0 w-fit flex items-center gap-1`}
-                    >
-                      {getPriorityIcon(task.priority)}
-                      {task.priority || "Medium"}
-                    </Badge>
+
+                    <div className="flex gap-3">
+                      <Badge
+                        className={`${getPriorityColor(
+                          task.priority
+                        )} shrink-0 w-fit flex items-center gap-1`}
+                      >
+                        {getPriorityIcon(task.priority)}
+                        {task.priority || "Medium"}
+                      </Badge>
+
+                      <Badge
+                        variant={getStatusVariant(task.status)}
+                        className={`${getStatusColor(
+                          task.status
+                        )} shrink-0 w-fit flex items-center gap-1`}
+                      >
+                        {getStatusIcon(task.status)}
+                        {task.status || "To Do"}
+                      </Badge>
+                    </div>
                   </div>
+
+                  {/* Status */}
 
                   {/* Event Name */}
                   <div className="text-sm text-gray-600">
@@ -168,18 +197,47 @@ const UpcomingTasksCard = () => {
                     </span>
                   </div>
 
-                  {/* Status */}
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant={getStatusVariant(task.status)}
-                      className={`${getStatusColor(
-                        task.status
-                      )} shrink-0 w-fit flex items-center gap-1`}
+                  {/* Subtasks Section */}
+                  {task.subTasks && task.subTasks.length > 0 && (
+                    <Collapsible
+                      open={openTasks[index]}
+                      onOpenChange={() => toggleTask(index)}
                     >
-                      {getStatusIcon(task.status)}
-                      {task.status || "To Do"}
-                    </Badge>
-                  </div>
+                      <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+                        {openTasks[index] ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                        <span>{task.subTasks.length} Subtasks</span>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="mt-3">
+                        <div className="space-y-2 pl-6 border-l-2 border-gray-200">
+                          {task.subTasks.map((subTask, subIndex) => (
+                            <div
+                              key={subTask._id || subIndex}
+                              className="flex items-center justify-between p-2 bg-gray-50 rounded-md"
+                            >
+                              <div className="flex items-center gap-2">
+                                {getStatusIcon(subTask.status)}
+                                <span className="text-sm text-gray-700">
+                                  {subTask.subTaskName}
+                                </span>
+                              </div>
+                              <Badge
+                                variant={getStatusVariant(subTask.status)}
+                                className={`${getStatusColor(
+                                  subTask.status
+                                )} text-xs`}
+                              >
+                                {subTask.status || "To Do"}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  )}
                 </div>
               </CardContent>
             </Card>

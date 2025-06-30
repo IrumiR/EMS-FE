@@ -73,6 +73,7 @@ export const createComment = (
     onSuccess(data) {
       onSuccess("Comment added successfully");
       queryClient.invalidateQueries(["get_all_comments_by_task_id"]);
+      queryClient.invalidateQueries(["user_notifications"]);
     },
     onError(error) {
       const message = (error as any)?.response?.data?.message || "Failed to add a comment";
@@ -123,6 +124,7 @@ export const addReplyToComment = (
     onSuccess(data) {
       onSuccess("Reply added successfully");
       queryClient.invalidateQueries(["get_all_comments_by_task_id"]);
+      queryClient.invalidateQueries(["user_notifications"]);
     },
 
     onError(error) {

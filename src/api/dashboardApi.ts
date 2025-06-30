@@ -236,6 +236,12 @@ export const useGetMonthlyEventCounts = (): UseQueryResult<MonthlyEventCountsRes
   });
 };
 
+interface SubTask {
+  _id: string;
+  subTaskName: string;
+  status: string; 
+}
+
 interface UpcomingTask {
   taskName: string;
   eventName: string;
@@ -243,7 +249,9 @@ interface UpcomingTask {
   endDate: string;
   priority: string;
   status: string;
+  subTasks: SubTask[];
 }
+
 
 interface UpcomingTasksResponse {
   message: string;

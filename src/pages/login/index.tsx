@@ -15,6 +15,7 @@ import * as Yup from "yup";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLoginMutation } from "@/api/authApi";
+import toast from "react-hot-toast";
 
 function Login() {
   const navigate = useNavigate();
@@ -22,11 +23,12 @@ function Login() {
 
   const loginMutation = useLoginMutation(
     (role) => {
-      // Redirect based on role or default
       navigate("/dashboard");
+      toast.success("Login successful!");
     },
     (message) => {
       setErrorMsg(message);
+      toast.error(message);
     }
   );
 

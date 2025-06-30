@@ -83,7 +83,7 @@ const BudgetCard = ({ budgets = [] }: BudgetCardProps) => {
 
               {/* Event Name */}
               <h3 className="text-base font-semibold text-blue-600 mb-2 leading-tight">
-                {budget.eventId.eventName}
+                {budget.eventId?.eventName}
               </h3>
 
               {/* Total Amount */}
