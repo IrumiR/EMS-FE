@@ -52,7 +52,6 @@ const validationSchema = Yup.object({
 
 export function AddBudgetDialog() {
   const [isOpen, setIsOpen] = useState(false);
-  const eventList = useGetAllEventsDropdown();
   const { data: clientsData, isLoading: clientsLoading } = useGetClientOptions();
 
   // Create budget mutation
@@ -92,6 +91,8 @@ export function AddBudgetDialog() {
       createBudgetMutation.mutate(budgetData);
     },
   });
+
+  const eventList = useGetAllEventsDropdown(formik.values.selectedClientId);
 
   const calculateTotal = () => {
     const total = formik.values.expenses.reduce((sum, expense) => {
@@ -175,7 +176,10 @@ export function AddBudgetDialog() {
               <Label htmlFor="client">Client</Label>
               <Select
                 value={formik.values.selectedClientId}
-                onValueChange={(value) => formik.setFieldValue("selectedClientId", value)}
+                onValueChange={(value) => {
+                  formik.setFieldValue("selectedClientId", value);
+                  formik.setFieldValue("selectedEventId", "");
+                }}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select Client" />
@@ -201,9 +205,12 @@ export function AddBudgetDialog() {
                   )}
                 </SelectContent>
               </Select>
-              {formik.touched.selectedClientId && formik.errors.selectedClientId && (
-                <span className="text-red-500 text-sm">{formik.errors.selectedClientId}</span>
-              )}
+              {formik.touched.selectedClientId &&
+                formik.errors.selectedClientId && (
+                  <span className="text-red-500 text-sm">
+                    {formik.errors.selectedClientId}
+                  </span>
+                )}
             </div>
 
             {/* Event Dropdown */}
@@ -211,7 +218,10 @@ export function AddBudgetDialog() {
               <Label htmlFor="event">Event</Label>
               <Select
                 value={formik.values.selectedEventId}
-                onValueChange={(value) => formik.setFieldValue("selectedEventId", value)}
+                onValueChange={(value) =>
+                  formik.setFieldValue("selectedEventId", value)
+                }
+                disabled={!formik.values.selectedClientId}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select Event" />
@@ -230,9 +240,13 @@ export function AddBudgetDialog() {
                   )}
                 </SelectContent>
               </Select>
-              {formik.touched.selectedEventId && formik.errors.selectedEventId && (
-                <span className="text-red-500 text-sm">{formik.errors.selectedEventId}</span>
-              )}
+
+              {formik.touched.selectedEventId &&
+                formik.errors.selectedEventId && (
+                  <span className="text-red-500 text-sm">
+                    {formik.errors.selectedEventId}
+                  </span>
+                )}
             </div>
 
             {/* Expenses Section */}
@@ -275,22 +289,28 @@ export function AddBudgetDialog() {
                     </Button>
                   </div>
                   {/* Expense validation errors */}
-                  {formik.touched.expenses?.[index] && formik.errors.expenses?.[index] && (
-                    <div className="text-red-500 text-sm mt-1">
-                      {typeof formik.errors.expenses[index] === 'object' ? (
-                        <>
-                          {(formik.errors.expenses[index] as any)?.expense && (
-                            <div>{(formik.errors.expenses[index] as any).expense}</div>
-                          )}
-                          {(formik.errors.expenses[index] as any)?.value && (
-                            <div>{(formik.errors.expenses[index] as any).value}</div>
-                          )}
-                        </>
-                      ) : (
-                        <div>{formik.errors.expenses[index]}</div>
-                      )}
-                    </div>
-                  )}
+                  {formik.touched.expenses?.[index] &&
+                    formik.errors.expenses?.[index] && (
+                      <div className="text-red-500 text-sm mt-1">
+                        {typeof formik.errors.expenses[index] === "object" ? (
+                          <>
+                            {(formik.errors.expenses[index] as any)
+                              ?.expense && (
+                              <div>
+                                {(formik.errors.expenses[index] as any).expense}
+                              </div>
+                            )}
+                            {(formik.errors.expenses[index] as any)?.value && (
+                              <div>
+                                {(formik.errors.expenses[index] as any).value}
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <div>{formik.errors.expenses[index]}</div>
+                        )}
+                      </div>
+                    )}
                 </div>
               ))}
 
@@ -319,7 +339,9 @@ export function AddBudgetDialog() {
                 className="w-full"
               />
               {formik.touched.totalAmount && formik.errors.totalAmount && (
-                <span className="text-red-500 text-sm">{formik.errors.totalAmount}</span>
+                <span className="text-red-500 text-sm">
+                  {formik.errors.totalAmount}
+                </span>
               )}
             </div>
           </div>

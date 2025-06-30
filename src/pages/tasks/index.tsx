@@ -10,21 +10,28 @@ import {
 import { Input } from "@/components/ui/input";
 import { ChevronDown } from "lucide-react";
 import { HiSearch } from "react-icons/hi";
-import { useGetAllTasksByUserId } from "@/api/taskApi";
+import { useGetAllEventsDropdown, useGetAllTasksByUserId } from "@/api/taskApi";
 import { useState } from "react";
 
 function TasksScreen() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All Statuses");
+  const [selectedEventName, setSelectedEventName] = useState("All Events");
+  const [selectedEventId, setSelectedEventId] = useState<string | undefined>(
+    undefined
+  );
+
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+   const eventList = useGetAllEventsDropdown();
+   console.log(eventList);
 
-  
   const { data, isLoading } = useGetAllTasksByUserId(
     currentPage,
     rowsPerPage,
     searchTerm,
-    selectedStatus === "All Statuses" ? undefined : selectedStatus
+    selectedStatus === "All Statuses" ? undefined : selectedStatus,
+    selectedEventId
   );
 
   const tasks = data?.tasks || [];
@@ -41,6 +48,13 @@ function TasksScreen() {
     setCurrentPage(1);
   };
 
+  const handleEventChange = (eventId: string | undefined, eventName: string) => {
+    setSelectedEventId(eventId); 
+    setSelectedEventName(eventName);
+    setCurrentPage(1);
+  };
+  
+
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
@@ -52,7 +66,7 @@ function TasksScreen() {
   ) => {
     const newRowsPerPage = Number(event.target.value);
     setRowsPerPage(newRowsPerPage);
-    setCurrentPage(1); // Reset to first page when changing page size
+    setCurrentPage(1); 
   };
 
   return (
@@ -107,43 +121,77 @@ function TasksScreen() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
+        <div>
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <Button variant="outline" className="bg-transparent">
+                {selectedEventName}
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem
+                onClick={() => handleEventChange(undefined, "All Events")}
+              >
+                All Events
+              </DropdownMenuItem>
+              {eventList.data?.events?.map(
+                (event: { _id: string; eventName: string }) => (
+                  <DropdownMenuItem
+                    key={event._id}
+                    onClick={() =>
+                      handleEventChange(event._id, event.eventName)
+                    }
+                  >
+                    {event.eventName}
+                  </DropdownMenuItem>
+                )
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-        {isLoading ? (
-          <p>Loading tasks...</p>
-        ) : tasks.length > 0 ? (
-          tasks.map((task) => (
-            <TaskCard
-              key={task._id}
-              task={{
-                id: task._id,
-                taskName: task.taskName,
-                taskDescription: task.taskDescription ?? "",
-                status: task.status ?? "",
-                startDate: task.startDate,
-                endDate: task.endDate,
-                priority: task.priority || "",
-                subTasks: Array.isArray(task.subTasks)
-                  ? task.subTasks.map((subTask: any) => ({
-                      name: subTask.subTaskName ?? "",
-                    }))
-                  : [],
-                eventId: task.eventId ?? "",
-                assignees: (task.assignees ?? []).map((a) => ({
-                  assigneeId: a.assigneeId ?? "",
-                })),
-              }}
-            />
-          ))
-        ) : (
-          <p className="text-gray-500 col-span-full text-center">
-            {searchTerm || selectedStatus !== "All Statuses"
-              ? "No tasks match your current filters."
-              : "No tasks found for this event."}
-          </p>
-        )}
-      </div>
+      {isLoading ? (
+        <div className="flex items-center justify-center p-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      ) : (
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+          {tasks.length > 0 ? (
+            tasks.map((task) => (
+              <TaskCard
+                key={task._id}
+                task={{
+                  id: task._id,
+                  taskName: task.taskName,
+                  taskDescription: task.taskDescription ?? "",
+                  status: task.status ?? "",
+                  startDate: task.startDate,
+                  endDate: task.endDate,
+                  priority: task.priority || "",
+                  subTasks: Array.isArray(task.subTasks)
+                    ? task.subTasks.map((subTask: any) => ({
+                        name: subTask.subTaskName ?? "",
+                      }))
+                    : [],
+                  eventId: task.eventId ?? "",
+                  assignees: (task.assignees ?? []).map((a) => ({
+                    assigneeId: a.assigneeId ?? "",
+                  })),
+                }}
+              />
+            ))
+          ) : (
+            <p className="text-gray-500 col-span-full text-center">
+              {searchTerm || selectedStatus !== "All Statuses"
+                ? "No tasks match your current filters."
+                : "No tasks found for this event."}
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="flex items-center justify-between mt-8">
         <div className="flex items-center space-x-2">

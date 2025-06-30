@@ -139,10 +139,11 @@ export const useGetAllTasksByUserId = (
   page?: number,
   pageSize?: number,
   search?: string,
-  status?: string
+  status?: string,
+  eventId?: string
 ): UseQueryResult<TaskResponse> => {
   return useQuery({
-    queryKey: ["get_all_by_user_tasks", page, pageSize, search, status],
+    queryKey: ["get_all_by_user_tasks", page, pageSize, search, status, eventId],
 
     queryFn: async () => {
       const userType = localStorage.getItem("role");
@@ -153,6 +154,7 @@ export const useGetAllTasksByUserId = (
       if (pageSize !== undefined) params.append("limit", pageSize.toString());
       if (search) params.append("search", search);
       if (status) params.append("status", status);
+      if (eventId) params.append("eventId", eventId);
 
       // Include userId as a query param if not admin
       if (userType !== "admin" && userId) {
@@ -265,31 +267,39 @@ export interface EventsOption {
   eventName: string;
 }
 
-export const useGetAllEventsDropdown =
-  (): UseQueryResult<EventsListResponse> => {
-    return useQuery({
-      queryKey: ["events_options"],
-      queryFn: async () => {
-        try {
-          const response = await authFetch.get<EventsListResponse>(
-            "/events/dropdown/events"
-          );
-          return {
-            message: response.data.message,
-            events: response.data.events,
-          };
-        } catch (error) {
-          throw error;
-        }
-      },
-      onSuccess: () => {
-        console.log("Assignee options retrieved successfully");
-      },
-      onError: (error) => {
-        console.error("Assignee options fetch error:", error);
-      },
-    });
-  };
+export const useGetAllEventsDropdown = (
+  clientId?: string
+): UseQueryResult<EventsListResponse> => {
+  return useQuery({
+    queryKey: ["events_options", clientId],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (clientId) {
+        params.append("clientId", clientId);
+      }
+
+      const endpoint = `/events/dropdown/events${
+        params.toString() ? `?${params.toString()}` : ""
+      }`;
+
+      try {
+        const response = await authFetch.get<EventsListResponse>(endpoint);
+        return {
+          message: response.data.message,
+          events: response.data.events,
+        };
+      } catch (error) {
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      console.log("Event options retrieved successfully");
+    },
+    onError: (error) => {
+      console.error("Event options fetch error:", error);
+    },
+  });
+};
 
 
 export interface TaskStatusApprove {
