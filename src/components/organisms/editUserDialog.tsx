@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
+import { Eye, EyeOff } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
@@ -33,8 +33,9 @@ interface EditUserDialogProps {
 export function EditUserDialog({ userId, trigger }: EditUserDialogProps) {
   const [open, setOpen] = useState(false);
   const [selectedRoleType, setSelectedRoleType] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Fetch user data when dialog opens
   const { data: userData, isLoading: isLoadingUser } = useGetUserById(open ? userId : null);
 
   const onSuccess = () => {
@@ -65,7 +66,6 @@ export function EditUserDialog({ userId, trigger }: EditUserDialogProps) {
     email: Yup.string().email("Invalid email").required("Email is required"),
     contactNumber: Yup.string().required("Phone number is required"),
     address: Yup.string().required("Address is required"),
-    // Password fields are optional for updates
     password: Yup.string()
       .min(6, "Minimum 6 characters")
       .nullable(),
@@ -115,8 +115,8 @@ export function EditUserDialog({ userId, trigger }: EditUserDialogProps) {
           email: user.email || "",
           contactNumber: user.contactNumber || "",
           address: user.address || "",
-          password: "", // Don't prefill password
-          confirmPassword: "", // Don't prefill confirm password
+          password: "", 
+          confirmPassword: "", 
           role: user.role || "",
           isActive: user.isActive !== undefined ? user.isActive : true,
         },
@@ -133,11 +133,48 @@ export function EditUserDialog({ userId, trigger }: EditUserDialogProps) {
     setOpen(newOpen);
   };
 
+  const renderPasswordField = (
+    id: string,
+    label: string,
+    showState: boolean,
+    setShowState: (show: boolean) => void
+  ) => (
+    <div className="flex flex-col space-y-1.5">
+      <Label htmlFor={id}>{label}</Label>
+      <div className="relative">
+        <Input
+          id={id}
+          name={id}
+          type={showState ? "text" : "password"}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={String(formik.values[id as keyof typeof formik.values])}
+          className="pr-10"
+        />
+        <button
+          type="button"
+          className="absolute inset-y-0 right-0 pr-3 flex items-center justify-center"
+          onClick={() => setShowState(!showState)}
+        >
+          {showState ? (
+            <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+          ) : (
+            <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+          )}
+        </button>
+      </div>
+      {formik.touched[id as keyof typeof formik.values] &&
+        formik.errors[id as keyof typeof formik.values] && (
+          <span className="text-sm text-red-500">
+            {formik.errors[id as keyof typeof formik.errors]}
+          </span>
+        )}
+    </div>
+  );
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        {trigger}
-      </DialogTrigger>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-[425px] max-h-[80vh] overflow-y-auto">
         <DialogHeader className="flex flex-col items-center gap-2">
           <h1 className="text-2xl font-semibold">Update User</h1>
@@ -156,12 +193,6 @@ export function EditUserDialog({ userId, trigger }: EditUserDialogProps) {
                 { id: "email", label: "Email", type: "email" },
                 { id: "contactNumber", label: "Phone Number", type: "text" },
                 { id: "address", label: "Address", type: "text" },
-                { id: "password", label: "New Password (optional)", type: "password" },
-                {
-                  id: "confirmPassword",
-                  label: "Confirm New Password",
-                  type: "password",
-                },
               ].map(({ id, label, type }) => (
                 <div key={id} className="flex flex-col space-y-1.5">
                   <Label htmlFor={id}>{label}</Label>
@@ -171,17 +202,37 @@ export function EditUserDialog({ userId, trigger }: EditUserDialogProps) {
                     type={type}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    value={String(formik.values[id as keyof typeof formik.values])}
+                    value={String(
+                      formik.values[id as keyof typeof formik.values]
+                    )}
                   />
-                  {formik.touched[id as keyof typeof formik.values] && formik.errors[id as keyof typeof formik.values] && (
-                    <span className="text-sm text-red-500">
-                      {formik.errors[id as keyof typeof formik.errors]}
-                    </span>
-                  )}
+                  {formik.touched[id as keyof typeof formik.values] &&
+                    formik.errors[id as keyof typeof formik.values] && (
+                      <span className="text-sm text-red-500">
+                        {formik.errors[id as keyof typeof formik.errors]}
+                      </span>
+                    )}
                 </div>
               ))}
+
+              {renderPasswordField(
+                "password",
+                "New Password (optional)",
+                showPassword,
+                setShowPassword
+              )}
+              {renderPasswordField(
+                "confirmPassword",
+                "Confirm New Password",
+                showConfirmPassword,
+                setShowConfirmPassword
+              )}
+
               <div>
-                <Label htmlFor="role" className="text-sm font-medium block mb-1">
+                <Label
+                  htmlFor="role"
+                  className="text-sm font-medium block mb-1"
+                >
                   Role
                 </Label>
                 <Select

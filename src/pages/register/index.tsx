@@ -16,12 +16,15 @@ import { Label } from "@/components/ui/label";
 import Logo from "@/assets/svg/sidebar-logo.svg";
 import { useCreateClient } from "@/api/authApi";
 import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 
 function Register() {
   const closeRef = useRef<HTMLButtonElement>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const navigate = useNavigate(); // 👈 initialize
+  const navigate = useNavigate(); 
 
   const onSuccess = () => {
     formik.resetForm();
@@ -30,7 +33,7 @@ function Register() {
       position: "top-center",
       duration: 3000,
     });
-    navigate("/login"); // 👈 redirect to login
+    navigate("/login"); 
   };
 
   const onError = (message: string) => {
@@ -74,6 +77,45 @@ function Register() {
     },
   });
 
+  const renderPasswordField = (
+    id: string,
+    label: string,
+    showState: boolean,
+    setShowState: (show: boolean) => void
+  ) => (
+    <div className="flex flex-col space-y-1.5">
+      <Label htmlFor={id}>{label}</Label>
+      <div className="relative">
+        <Input
+          id={id}
+          name={id}
+          type={showState ? "text" : "password"}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={String(formik.values[id as keyof typeof formik.values])}
+          className="pr-10"
+        />
+        <button
+          type="button"
+          className="absolute inset-y-0 right-0 pr-3 flex items-center justify-center"
+          onClick={() => setShowState(!showState)}
+        >
+          {showState ? (
+            <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+          ) : (
+            <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+          )}
+        </button>
+      </div>
+      {formik.touched[id as keyof typeof formik.values] &&
+        formik.errors[id as keyof typeof formik.values] && (
+          <span className="text-sm text-red-500">
+            {formik.errors[id as keyof typeof formik.errors]}
+          </span>
+        )}
+    </div>
+  );
+
   return (
     <div className="bg-[#e6f8f4] min-h-screen flex items-center justify-center">
       <Card className="w-full max-w-sm shadow-xl">
@@ -99,8 +141,6 @@ function Register() {
               { id: "email", label: "Email", type: "email" },
               { id: "contactNumber", label: "Phone Number", type: "text" },
               { id: "address", label: "Address", type: "text" },
-              { id: "password", label: "Password", type: "password" },
-              { id: "confirmPassword", label: "Confirm Password", type: "password" },
             ].map(({ id, label, type }) => (
               <div key={id} className="flex flex-col space-y-1.5">
                 <Label htmlFor={id}>{label}</Label>
@@ -120,9 +160,22 @@ function Register() {
                   )}
               </div>
             ))}
+
+            {renderPasswordField(
+              "password",
+              "Password",
+              showPassword,
+              setShowPassword
+            )}
+            {renderPasswordField(
+              "confirmPassword",
+              "Confirm Password",
+              showConfirmPassword,
+              setShowConfirmPassword
+            )}
           </CardContent>
 
-          <CardFooter className="grid w-full items-center gap-4">
+          <CardFooter className="grid w-full items-center gap-4 mt-4">
             <Button type="submit" className="bg-green-600" disabled={isLoading}>
               {isLoading ? "Registering..." : "Register"}
             </Button>

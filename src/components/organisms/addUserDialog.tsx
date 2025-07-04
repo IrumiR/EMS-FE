@@ -11,7 +11,7 @@ import {
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Plus } from "lucide-react";
+import { Plus, Eye, EyeOff } from "lucide-react";
 
 import { CardContent } from "../ui/card";
 import toast from "react-hot-toast";
@@ -30,6 +30,8 @@ export function AddUserDialog() {
 
 const [open, setOpen] = useState(false);
 const [selectedRoleType, setSelectedRoleType] = useState<string>("");
+const [showPassword, setShowPassword] = useState(false);
+const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const onSuccess = () => {
     formik.resetForm();
@@ -90,7 +92,6 @@ const [selectedRoleType, setSelectedRoleType] = useState<string>("");
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
-      // When closing the dialog, reset form and errors without submission
       formik.resetForm({
         values: formik.initialValues,
         errors: {},
@@ -101,6 +102,45 @@ const [selectedRoleType, setSelectedRoleType] = useState<string>("");
     setOpen(newOpen);
   };
 
+  const renderPasswordField = (
+    id: string,
+    label: string,
+    showState: boolean,
+    setShowState: (show: boolean) => void
+  ) => (
+    <div className="flex flex-col space-y-1.5">
+      <Label htmlFor={id}>{label}</Label>
+      <div className="relative">
+        <Input
+          id={id}
+          name={id}
+          type={showState ? "text" : "password"}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={(formik.values as any)[id]}
+          className="pr-10"
+        />
+        <button
+          type="button"
+          className="absolute inset-y-0 right-0 pr-3 flex items-center justify-center"
+          onClick={() => setShowState(!showState)}
+        >
+          {showState ? (
+            <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+          ) : (
+            <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+          )}
+        </button>
+      </div>
+      {formik.touched[id as keyof typeof formik.touched] &&
+        formik.errors[id as keyof typeof formik.errors] && (
+          <span className="text-sm text-red-500">
+            {formik.errors[id as keyof typeof formik.errors]}
+          </span>
+        )}
+    </div>
+  );
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger className="flex gap-1 bg-green-600 py-2 pl-2 sm:pr-2 pr-2 items-center rounded-md text-white max-h-[38px] text-xsxl">
@@ -110,14 +150,12 @@ const [selectedRoleType, setSelectedRoleType] = useState<string>("");
         </div>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] max-h-[80vh] overflow-y-auto">
-   
-      <DialogHeader className="flex flex-col items-center gap-2">
+        <DialogHeader className="flex flex-col items-center gap-2">
           <h1 className="text-2xl font-semibold">Add User</h1>
           <DialogDescription className="text-sm text-muted-foreground">
             Fill in the details to register a new user.
           </DialogDescription>
         </DialogHeader>
-
 
         <CardContent className="max-h-[250px] overflow-y-auto space-y-4">
           {[
@@ -125,12 +163,6 @@ const [selectedRoleType, setSelectedRoleType] = useState<string>("");
             { id: "email", label: "Email", type: "email" },
             { id: "contactNumber", label: "Phone Number", type: "text" },
             { id: "address", label: "Address", type: "text" },
-            { id: "password", label: "Password", type: "password" },
-            {
-              id: "confirmPassword",
-              label: "Confirm Password",
-              type: "password",
-            },
           ].map(({ id, label, type }) => (
             <div key={id} className="flex flex-col space-y-1.5">
               <Label htmlFor={id}>{label}</Label>
@@ -150,6 +182,20 @@ const [selectedRoleType, setSelectedRoleType] = useState<string>("");
                 )}
             </div>
           ))}
+
+          {renderPasswordField(
+            "password",
+            "Password",
+            showPassword,
+            setShowPassword
+          )}
+          {renderPasswordField(
+            "confirmPassword",
+            "Confirm Password",
+            showConfirmPassword,
+            setShowConfirmPassword
+          )}
+
           <div>
             <Label htmlFor="role" className="text-sm font-medium block mb-1">
               Role
