@@ -36,18 +36,16 @@ interface SubTaskDialogProps {
 const statusOptions = [
   { value: "To Do", label: "To Do", color: "text-blue-600" },
   { value: "In Progress", label: "In Progress", color: "text-green-600" },
-  { value: "Over Due", label: "Over Due", color: "text-red-600" },
   { value: "Completed", label: "Completed", color: "text-purple-600" },
   { value: "Cancelled", label: "Cancelled", color: "text-gray-600" },
 ];
 
-// Helper function to extract subtask name from various data formats
+
 const extractSubTaskName = (subtask: any) => {
   if (subtask.subTaskName && typeof subtask.subTaskName === 'string') {
     return subtask.subTaskName;
   }
   
-  // If subtask data is stored as character indices, reconstruct the string
   const keys = Object.keys(subtask)
     .filter(key => !isNaN(Number(key)) && key !== 'status' && key !== '_id')
     .sort((a, b) => parseInt(a) - parseInt(b));
@@ -102,7 +100,6 @@ export function SubTaskDialog({ taskId, taskName }: SubTaskDialogProps) {
           };
         });
 
-        // Filter out empty subtasks and ensure we have valid data
         const validSubTasks = normalizedSubTasks.filter((subtask: any) => 
           subtask.name && subtask.name.trim() !== ""
         );
@@ -114,7 +111,6 @@ export function SubTaskDialog({ taskId, taskName }: SubTaskDialogProps) {
     }
   }, [taskData, isOpen]);
 
-  // Refetch task data when dialog opens
   useEffect(() => {
     if (isOpen && taskId) {
       refetchTask();

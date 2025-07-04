@@ -17,6 +17,7 @@ import { useState } from "react";
 import { EditTaskDialog } from "../organisms/editTaskDialog";
 import { ViewTaskDialog } from "../organisms/viewTaskDialog";
 import { SubTaskDialog } from "../organisms/subTaskDialog";
+import { ViewSubTaskDialog } from "../organisms/viewSubTaskDialog";
 import CommentDialog from "../organisms/commentDialog";
 import TaskStatusSelect from "./updateTaskStatus";
 import TaskPrioritySelect from "./updatePriority";
@@ -151,7 +152,11 @@ export default function TaskCard({ task }: { task: Task }) {
         {/* Sub Task Dialog & Due Date */}
 
         <div className="flex items-center justify-between mb-3">
-          <SubTaskDialog taskId={task.id} taskName={task.taskName} />
+          {userType === "client" ? (
+            <ViewSubTaskDialog taskId={task.id} taskName={task.taskName} />
+          ) : (
+            <SubTaskDialog taskId={task.id} taskName={task.taskName} />
+          )}
           <div className="flex items-center gap-2">
             <div className="">
               <span className="text-xs text-gray-500">Due Date: </span>

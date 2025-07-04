@@ -10,9 +10,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { ChevronDown } from "lucide-react";
 import { HiSearch } from "react-icons/hi";
-import { Task, useGetAllTasksByEventId } from "@/api/taskApi";
+import {  useGetAllTasksByEventId } from "@/api/taskApi";
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 
 function EventEditScreen() {
   const { eventId } = useParams();
@@ -111,9 +111,6 @@ function EventEditScreen() {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleStatusChange("Completed")}>
                 Completed
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusChange("Over Due")}>
-                Over Due
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleStatusChange("Cancelled")}>
                 Cancelled

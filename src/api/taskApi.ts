@@ -109,7 +109,14 @@ export const useGetAllTasksByEventId = (
   status?: string
 ): UseQueryResult<TaskResponse> => {
   return useQuery({
-    queryKey: ["get_all_by_event_tasks", eventId, page, pageSize, search, status],
+    queryKey: [
+      "get_all_by_user_tasks",
+      eventId,
+      page,
+      pageSize,
+      search,
+      status,
+    ],
     queryFn: async () => {
       try {
         const params = new URLSearchParams();
