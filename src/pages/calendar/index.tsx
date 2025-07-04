@@ -95,11 +95,15 @@ const EventCalendar = () => {
   return (
     <div className="p-4 space-y-4 mx-auto">
       <div className="flex justify-between items-center space-x-4 flex-wrap">
-        <Button onClick={handlePrevMonth}>Previous</Button>
+        <Button onClick={handlePrevMonth} className="bg-green-600">
+          Previous
+        </Button>
         <h2 className="text-xl font-semibold">
           {format(currentDate, "MMMM yyyy")}
         </h2>
-        <Button onClick={handleNextMonth}>Next</Button>
+        <Button onClick={handleNextMonth} className="bg-green-600">
+          Next
+        </Button>
       </div>
 
       <div className="flex items-center space-x-2 flex-wrap">

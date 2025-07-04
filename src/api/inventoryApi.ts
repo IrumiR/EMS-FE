@@ -6,18 +6,21 @@ import {
   UseQueryResult,
 } from "react-query";
 
-export interface InventoryItemData {
+interface InventoryItemData {
   itemName: string;
-  itemDescription?: string;
+  itemDescription: string;
   category: string[];
-  totalQuantity: number;
-  remainingQuantity?: number;
-  price: number;
   condition: string[];
-  variations?: string[];
-  images?: string[];
-  isExternal?: boolean;
-  assignedEvent?: string[];
+  totalQuantity: number;
+  price: number;
+  isExternal: boolean;
+  createdBy: string;
+  remainingQuantity?: number;
+  images?: {
+    _id: string;
+    data: string; // base64 string
+    contentType: string;
+  }[];
 }
 
 export const useCreateInventoryMutation = (
@@ -27,18 +30,21 @@ export const useCreateInventoryMutation = (
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (itemData: InventoryItemData) => {
-      if (!itemData.remainingQuantity) {
-        itemData.remainingQuantity = itemData.totalQuantity;
-      }
+    mutationFn: async (formData: FormData) => {
+      const response = await authFetch.post("/inventory/create", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-      const response = await authFetch.post("/inventory/create", itemData);
       return response.data;
     },
+
     onSuccess: (data) => {
-      queryClient.invalidateQueries("get_all_inventory");
+      queryClient.invalidateQueries({ queryKey: ["get_all_inventory"] });
       if (onSuccess) onSuccess(data);
     },
+
     onError: (error) => {
       const message =
         (error as any)?.response?.data?.message ||
@@ -47,6 +53,7 @@ export const useCreateInventoryMutation = (
     },
   });
 };
+
 
 //getById
 export const useInventoryItem = (itemId: string | null) => {
@@ -93,6 +100,7 @@ export const useUpdateInventoryMutation = (
     },
   });
 };
+
 
 export const useDeleteInventoryMutation = (
   onSuccess?: () => void,
@@ -166,9 +174,9 @@ export const useGetAllInventory = (
       try {
         const response = await authFetch.get<InventoryResponse>(
           `/inventory/all?limit=${pageSize ?? 10}&page=${page ?? 1}` +
-          (search ? `&search=${encodeURIComponent(search)}` : "") +
-          (itemType ? `&itemType=${itemType}` : "") +
-          (category ? `&category=${category}` : "")
+            (search ? `&search=${encodeURIComponent(search)}` : "") +
+            (itemType ? `&itemType=${itemType}` : "") +
+            (category ? `&category=${category}` : "")
         );
         return response.data;
       } catch (error) {
