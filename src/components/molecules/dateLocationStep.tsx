@@ -58,7 +58,7 @@ export function DateLocationStep({
             selected={startDate}
             onChange={(date: Date | null) => setStartDate(date ?? undefined)}
             dateFormat="MMMM d, yyyy"
-            className="w-full border rounded-md px-3 py-2 text-sm"
+            className="custom-datepicker-wrapper border rounded-md px-3 py-2 text-sm"
             placeholderText="Pick a date"
             useMinDate={true} // 👈 will restrict past dates
             minDate={new Date()}
@@ -72,7 +72,7 @@ export function DateLocationStep({
             selected={endDate}
             onChange={(date: Date | null) => setEndDate(date ?? undefined)}
             dateFormat="MMMM d, yyyy"
-            className="w-full border rounded-md px-3 py-2 text-sm"
+            className="custom-datepicker-wrapper border rounded-md px-3 py-2 text-sm"
             placeholderText="Pick a date"
             minDate={startDate || undefined} // 👈 restrict to after startDate
             disabled={!startDate}

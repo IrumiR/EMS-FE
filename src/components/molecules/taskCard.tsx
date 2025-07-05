@@ -99,7 +99,6 @@ export default function TaskCard({ task }: { task: Task }) {
     });
   };
 
-  // Check if task is overdue
   const isTaskOverdue = () => {
     if (!task.endDate || task.endDate === "NA") return false;
     const endDate = new Date(task.endDate);
@@ -247,21 +246,22 @@ export default function TaskCard({ task }: { task: Task }) {
               </TooltipContent>
             </Tooltip>
 
-            {userType !== "client" && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    className="p-1 hover:bg-red-100 rounded transition-colors"
-                    onClick={() => setIsDeleteDialogOpen(true)}
-                  >
-                    <Trash2 className="w-4 h-4 text-red-500" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Delete Task</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
+            {userType === "admin" &&
+              (task.status === "Completed" || task.status === "Cancelled") && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      className="p-1 hover:bg-red-100 rounded transition-colors"
+                      onClick={() => setIsDeleteDialogOpen(true)}
+                    >
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Delete Task</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
 
             {userType !== "client" && (
               <>

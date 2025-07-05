@@ -3,6 +3,7 @@ import { useGetTaskCountsByStatus } from "@/api/dashboardApi";
 import { ClipboardList, Play, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LucideIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 type StatCardProps = {
   title: string;
@@ -59,6 +60,11 @@ function TaskStats() {
       : "";
 
   const { data, isLoading, error } = useGetTaskCountsByStatus(userId);
+  const navigate = useNavigate();
+
+  const handleCardClick = (status: string) => {
+    navigate(`/tasks?status=${encodeURIComponent(status)}`);
+  };
 
   const counts = useMemo(() => {
     const initial = {
@@ -100,27 +106,39 @@ function TaskStats() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <StatCard
-        title="Open Tasks"
-        value={counts["To Do"]}
-        icon={ClipboardList}
-        description="Tasks ready to start"
-        color="blue"
-      />
-      <StatCard
-        title="In Progress"
-        value={counts["In Progress"]}
-        icon={Play}
-        description="Tasks currently being worked on"
-        color="orange"
-      />
-      <StatCard
-        title="Completed Tasks"
-        value={counts["Completed"]}
-        icon={CheckCircle}
-        description="Successfully finished tasks"
-        color="green"
-      />
+      <div onClick={() => handleCardClick("To Do")} className="cursor-pointer">
+        <StatCard
+          title="To Do Tasks"
+          value={counts["To Do"]}
+          icon={ClipboardList}
+          description="Tasks ready to start"
+          color="blue"
+        />
+      </div>
+      <div
+        onClick={() => handleCardClick("In Progress")}
+        className="cursor-pointer"
+      >
+        <StatCard
+          title="In Progress"
+          value={counts["In Progress"]}
+          icon={Play}
+          description="Tasks currently being worked on"
+          color="orange"
+        />
+      </div>
+      <div
+        onClick={() => handleCardClick("Completed")}
+        className="cursor-pointer"
+      >
+        <StatCard
+          title="Completed Tasks"
+          value={counts["Completed"]}
+          icon={CheckCircle}
+          description="Successfully finished tasks"
+          color="green"
+        />
+      </div>
     </div>
   );
 }

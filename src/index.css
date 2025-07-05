@@ -140,3 +140,21 @@
   padding: 10px;
   font-family: 'Arial', sans-serif;
 }
+
+/* Default styles for larger screens */
+.custom-datepicker-input {
+  width: 250px;
+}
+
+.custom-datepicker-wrapper {
+  display: inline-block;
+  width: 257px;
+}
+
+/* Responsive override for smaller screens */
+@media (max-width: 600px) {
+  .custom-datepicker-input,
+  .custom-datepicker-wrapper {
+    width: 100%;
+  }
+}

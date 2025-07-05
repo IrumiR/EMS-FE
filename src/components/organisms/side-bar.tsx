@@ -7,11 +7,9 @@ import {
   HiOutlineArchive,
   HiOutlineCurrencyDollar,
   HiOutlineUsers,
-  HiOutlineCog,
   HiChevronLeft,
 } from "react-icons/hi";
 import { FileSliders } from "lucide-react";
-import { FiUser } from "react-icons/fi";
 import Logo from "../../assets/svg/sidebar-logo.svg";
 import { JSX, useState, useEffect } from "react";
 import { CalendarClock } from "lucide-react";

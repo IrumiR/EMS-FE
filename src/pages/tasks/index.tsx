@@ -11,7 +11,8 @@ import { Input } from "@/components/ui/input";
 import { ChevronDown } from "lucide-react";
 import { HiSearch } from "react-icons/hi";
 import { useGetAllEventsDropdown, useGetAllTasksByUserId } from "@/api/taskApi";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 function TasksScreen() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -25,6 +26,20 @@ function TasksScreen() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
    const eventList = useGetAllEventsDropdown();
    console.log(eventList);
+
+   const [searchParams, setSearchParams] = useSearchParams();
+
+   useEffect(() => {
+     const statusFromUrl = searchParams.get("status");
+     if (
+       statusFromUrl &&
+       ["To Do", "In Progress", "Completed", "Cancelled"].includes(
+         statusFromUrl
+       )
+     ) {
+       setSelectedStatus(statusFromUrl);
+     }
+   }, [searchParams]);
 
   const { data, isLoading } = useGetAllTasksByUserId(
     currentPage,
@@ -45,6 +60,7 @@ function TasksScreen() {
 
   const handleStatusChange = (status: string) => {
     setSelectedStatus(status);
+    setSearchParams({ status });
     setCurrentPage(1);
   };
 

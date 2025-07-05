@@ -38,6 +38,8 @@ function InventoryScreen() {
   const [reserveItemId, setReserveItemId] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<any>(null);
 
+  const userType = localStorage.getItem("role");
+
   const columns = [
     { key: "itemName", label: "Item Name" },
     { key: "category", label: "Category" },
@@ -117,7 +119,9 @@ function InventoryScreen() {
         </div>
 
         <div>
-          <AddItemDialog />
+          {(userType === "admin" || userType === "manager") && (
+            <AddItemDialog />
+          )}
         </div>
       </div>
 
@@ -223,17 +227,19 @@ function InventoryScreen() {
                 >
                   <CalendarCheck className="h-4 w-4 text-purple-600" />
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="p-1 hover:bg-gray-100"
-                  onClick={() => {
-                    setSelectedItem(row._id);
-                    setDeleteItemDialogOpen(true);
-                  }}
-                >
-                  <Trash2 className="h-4 w-4 text-red-600" />
-                </Button>
+                {(userType === "admin" || userType === "manager") && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="p-1 hover:bg-gray-100"
+                    onClick={() => {
+                      setSelectedItem(row._id);
+                      setDeleteItemDialogOpen(true);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 text-red-600" />
+                  </Button>
+                )}
               </div>
             )}
           />

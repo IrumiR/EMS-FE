@@ -9,7 +9,7 @@ export function ProgressSteps({ activeStep }: ProgressStepsProps) {
     <div className="flex items-center justify-between w-full mb-6 gap-2">
       <div className="flex flex-col items-center">
         <div
-          className={`h-1 w-28 rounded-full ${
+          className={`h-1 md:w-40 w-28 rounded-full ${
             activeStep === "details" ? "bg-green-600" : "bg-gray-200"
           }`}
         />
@@ -25,7 +25,7 @@ export function ProgressSteps({ activeStep }: ProgressStepsProps) {
       </div>
       <div className="flex flex-col items-center">
         <div
-          className={`h-1 w-28 rounded-full ${
+          className={`h-1 md:w-40 w-28 rounded-full ${
             activeStep === "date" ? "bg-green-600" : "bg-gray-200"
           }`}
         />
@@ -41,7 +41,7 @@ export function ProgressSteps({ activeStep }: ProgressStepsProps) {
       </div>
       <div className="flex flex-col items-center">
         <div
-          className={`h-1 w-28 rounded-full ${
+          className={`h-1 md:w-40 w-28 rounded-full ${
             activeStep === "guests" ? "bg-green-600" : "bg-gray-200"
           }`}
         />

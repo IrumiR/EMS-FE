@@ -61,12 +61,8 @@ console.log("Mapped Inventory Items for MultiSelect:", inventoryItems);
 
   return (
     <div className="space-y-4">
-
       <div>
-        <Label
-          htmlFor="assignees"
-          className="text-sm font-medium block mb-1"
-        >
+        <Label htmlFor="assignees" className="text-sm font-medium block mb-1">
           Assignees
         </Label>
         <div className="w-full">
@@ -80,12 +76,10 @@ console.log("Mapped Inventory Items for MultiSelect:", inventoryItems);
             filterBy="name"
             dataKey="id"
             placeholder={
-              assigneesLoading
-                ? "Loading assignees..."
-                : "Select assignees"
+              assigneesLoading ? "Loading assignees..." : "Select assignees"
             }
             maxSelectedLabels={3}
-            className="prime-multiselect w-full h-11"
+            className="prime-multiselect w-full h-11 placeholder:text-sm"
             itemTemplate={assigneeItemTemplate}
             style={{ width: "100%" }}
             appendTo="self"
@@ -97,18 +91,13 @@ console.log("Mapped Inventory Items for MultiSelect:", inventoryItems);
       </div>
 
       <div>
-        <Label
-          htmlFor="inventory"
-          className="text-sm font-medium block mb-1"
-        >
+        <Label htmlFor="inventory" className="text-sm font-medium block mb-1">
           Inventory Items
         </Label>
         <div className="w-full">
           <MultiSelect
             value={selectedItems}
-            onChange={(e: MultiSelectChangeEvent) =>
-              setSelectedItems(e.value)
-            }
+            onChange={(e: MultiSelectChangeEvent) => setSelectedItems(e.value)}
             options={inventoryItems}
             optionLabel="name"
             dataKey="id"

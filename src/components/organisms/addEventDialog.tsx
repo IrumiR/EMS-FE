@@ -175,7 +175,7 @@ export function AddEventDialog() {
           <span className="hidden xl:inline">Add Event</span>
         </div>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] max-h-[100vh]">
+      <DialogContent className="sm:max-w-[600px] max-h-[100vh]">
         <div className="mb-6">
           <div className="flex items-center">
             <div className="text-sm font-medium">

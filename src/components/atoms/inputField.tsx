@@ -79,12 +79,13 @@ const InputField = React.forwardRef<HTMLInputElement, InputProps>(
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="inline-block ml-2 align-middle cursor-help">
-                      <HelpCircle size={16} className="text-gray-400 hover:text-gray-600" />
+                      <HelpCircle
+                        size={16}
+                        className="text-gray-400 hover:text-gray-600"
+                      />
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent>
-                    {tooltip}
-                  </TooltipContent>
+                  <TooltipContent>{tooltip}</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             )}
@@ -96,7 +97,7 @@ const InputField = React.forwardRef<HTMLInputElement, InputProps>(
               {icon}
             </div>
           )}
-          
+
           <input
             type={effectiveType}
             placeholder={placeholder}
@@ -104,7 +105,7 @@ const InputField = React.forwardRef<HTMLInputElement, InputProps>(
             value={inputValue}
             onChange={handleChange}
             className={`w-full rounded border bg-[#FDFDFD] px-6 py-2 text-gray-600 placeholder:text-[#919191] 
-              placeholder:font-normal focus:outline-none focus:ring-1 focus:border-transparent 
+              placeholder:font-normal placeholder:text-sm focus:outline-none focus:ring-1 focus:border-transparent 
               ${
                 validationError
                   ? "border-Error focus:ring-Error"
