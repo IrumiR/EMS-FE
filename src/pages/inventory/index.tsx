@@ -17,12 +17,13 @@ import { HiSearch } from "react-icons/hi";
 import TableComponent from "@/components/molecules/table";
 import AddItemDialog from "@/components/organisms/addItemDialog";
 import { useGetAllInventory } from "@/api/inventoryApi";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ViewItemDialog } from "@/components/organisms/viewItemDialog";
 import { EditItemDialog } from "@/components/organisms/editItemDialog";
 import { ReserveItemDialog } from "@/components/organisms/reserveItemDialog";
 import { DeleteItemDialog } from "@/components/organisms/deleteItemDialog";
 import { Badge } from "@/components/ui/badge";
+import { useSearchParams } from "react-router-dom";
 
 function InventoryScreen() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -107,6 +108,21 @@ function InventoryScreen() {
     setRowsPerPage(newRowsPerPage);
     setCurrentPage(1);
   };
+
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const typeFromUrl = searchParams.get("itemType");
+    if (typeFromUrl) {
+      const normalizedType =
+        typeFromUrl.charAt(0).toUpperCase() +
+        typeFromUrl.slice(1).toLowerCase();
+      if (["All", "Internal", "External"].includes(normalizedType)) {
+        setSelectedItemType(normalizedType);
+      }
+    }
+  }, [searchParams]);
+
 
   return (
     <div>

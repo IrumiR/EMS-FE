@@ -78,10 +78,11 @@ export const useGetAllBudgets = (
   page?: number,
   pageSize?: number,
   search?: string,
-  clientId?: string
+  clientId?: string,
+  type?: "Pending" | "Approved" | "Rejected"
 ): UseQueryResult<BudgetResponse> => {
   return useQuery({
-    queryKey: ["get_all_budgets", page, pageSize, search, clientId],
+    queryKey: ["get_all_budgets", page, pageSize, search, clientId, type],
     queryFn: async () => {
       try {
         const params = new URLSearchParams();
@@ -89,6 +90,7 @@ export const useGetAllBudgets = (
         if (pageSize !== undefined) params.append("limit", pageSize.toString());
         if (search) params.append("search", search);
         if (clientId) params.append("clientId", clientId);
+        if (type) params.append("type", type);
 
         const response = await authFetch.get<BudgetResponse>(
           `/budget/all/?${params.toString()}`

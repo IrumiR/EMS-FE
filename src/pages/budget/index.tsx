@@ -1,14 +1,21 @@
 import { AddBudgetDialog } from "@/components/organisms/addBudgetDialog";
 import BudgetCard from "@/components/molecules/budgetCard";
 import { useGetAllBudgets } from "@/api/budgetApi";
-import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import { Budget } from "@/components/types";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { useSearchParams } from "react-router-dom";
 
 function BudgetScreen() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [searchTerm, setSearchTerm] = useState("");
+  const [budgetType, setBudgetType] = useState<
+    "Pending" | "Approved" | "Rejected" | undefined
+  >(undefined);
+
 
 // Define types for budget and eventId
 type EventIdType = {
@@ -41,7 +48,8 @@ const { data, isLoading, error } = useGetAllBudgets(
   currentPage,
   rowsPerPage,
   searchTerm,
-  queryClientId
+  queryClientId,
+  budgetType
 );
 
 const totalBudgets = data?.pagination?.total || 0;
@@ -68,6 +76,20 @@ const budgets: Budget[] = (data?.budgets || []).map((budget: any) => ({
     setCurrentPage(1);
   };
 
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const statusParam = searchParams.get("status");
+    if (
+      statusParam === "Pending" ||
+      statusParam === "Approved" ||
+      statusParam === "Rejected"
+    ) {
+      setBudgetType(statusParam);
+    }
+  }, [searchParams]);
+
+
   if (error) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -88,6 +110,33 @@ const budgets: Budget[] = (data?.budgets || []).map((budget: any) => ({
 
         <div>
           {(role === "admin" || role === "manager") && <AddBudgetDialog />}
+        </div>
+      </div>
+
+      <div className="mt-4 flex items-center justify-end space-x-2">
+        <div className="">
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <Button variant="outline" className="bg-transparent">
+                {budgetType ?? "All Budgets"}
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setBudgetType(undefined)}>
+                All
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setBudgetType("Pending")}>
+                Pending
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setBudgetType("Approved")}>
+                Approved
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setBudgetType("Rejected")}>
+                Rejected
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 

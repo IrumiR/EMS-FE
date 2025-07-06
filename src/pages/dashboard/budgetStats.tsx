@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, CheckSquare, XCircle } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 import { useGetBudgetCountsByStatus } from "@/api/dashboardApi";
+import { useNavigate } from "react-router-dom";
 
 type StatCardProps = {
   title: string;
@@ -56,6 +57,8 @@ function BudgetStats() {
   const getCount = (status: string) =>
     data?.data.find((item) => item.status === status)?.count ?? 0;
 
+  const navigate = useNavigate();
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -105,27 +108,43 @@ function BudgetStats() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <StatCard
-        title="Pending Budget"
-        value={getCount("Pending")}
-        icon={DollarSign}
-        description="Awaiting approval"
-        color="yellow"
-      />
-      <StatCard
-        title="Approved Budget"
-        value={getCount("Approved")}
-        icon={CheckSquare}
-        description="Approved and allocated"
-        color="green"
-      />
-      <StatCard
-        title="Rejected Budget"
-        value={getCount("Rejected")}
-        icon={XCircle}
-        description="Rejected requests"
-        color="red"
-      />
+      <div
+        className="cursor-pointer"
+        onClick={() => navigate("/budget?status=Pending")}
+      >
+        <StatCard
+          title="Pending Budget"
+          value={getCount("Pending")}
+          icon={DollarSign}
+          description="Awaiting approval"
+          color="yellow"
+        />
+      </div>
+      <div
+        className="cursor-pointer"
+        onClick={() => navigate("/budget?status=Approved")}
+      >
+        <StatCard
+          title="Approved Budget"
+          value={getCount("Approved")}
+          icon={CheckSquare}
+          description="Approved and allocated"
+          color="green"
+        />
+      </div>
+
+      <div
+        className="cursor-pointer"
+        onClick={() => navigate("/budget?status=Rejected")}
+      >
+        <StatCard
+          title="Rejected Budget"
+          value={getCount("Rejected")}
+          icon={XCircle}
+          description="Rejected requests"
+          color="red"
+        />
+      </div>
     </div>
   );
 }

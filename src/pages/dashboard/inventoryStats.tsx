@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Package, Building, ExternalLink } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 import { useGetInventoryItemCount } from "@/api/dashboardApi"; 
+import { useNavigate } from "react-router-dom";
 
 type StatCardProps = {
   title: string;
@@ -58,6 +59,7 @@ function InventoryStats() {
     internalCount: 0,
     externalCount: 0,
   };
+  const navigate = useNavigate();
 
   if (isLoading) {
     return (
@@ -108,27 +110,42 @@ function InventoryStats() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <StatCard
-        title="Total Items"
-        value={counts.totalCount}
-        icon={Package}
-        description="All inventory items"
-        color="blue"
-      />
-      <StatCard
-        title="Internal Items"
-        value={counts.internalCount}
-        icon={Building}
-        description="Company-owned items"
-        color="indigo"
-      />
-      <StatCard
-        title="External Items"
-        value={counts.externalCount}
-        icon={ExternalLink}
-        description="Rented or borrowed items"
-        color="purple"
-      />
+      <div
+        onClick={() => navigate(`/inventory?itemType=all`)}
+        className="cursor-pointer"
+      >
+        <StatCard
+          title="Total Items"
+          value={counts.totalCount}
+          icon={Package}
+          description="All inventory items"
+          color="blue"
+        />
+      </div>
+      <div
+        onClick={() => navigate(`/inventory?itemType=internal`)}
+        className="cursor-pointer"
+      >
+        <StatCard
+          title="Internal Items"
+          value={counts.internalCount}
+          icon={Building}
+          description="Company-owned items"
+          color="indigo"
+        />
+      </div>
+      <div
+        onClick={() => navigate(`/inventory?itemType=external`)}
+        className="cursor-pointer"
+      >
+        <StatCard
+          title="External Items"
+          value={counts.externalCount}
+          icon={ExternalLink}
+          description="Rented or borrowed items"
+          color="purple"
+        />
+      </div>
     </div>
   );
 }
