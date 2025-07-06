@@ -13,6 +13,8 @@ import EventCardGrid from "@/components/molecules/eventCard";
 import { useEffect, useState, useMemo } from "react";
 import { useGetAllEvents } from "@/api/eventApi";
 import { eventTypeImages } from "@/components/molecules/eventDetailsStep";
+import { useSearchParams } from "react-router-dom";
+
 
 function EventsScreen() {
   interface Event {
@@ -33,11 +35,19 @@ function EventsScreen() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(100);
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // Determine if we need to fetch all events (when filters are active)
+  useEffect(() => {
+    const statusFromUrl = searchParams.get("status");
+    if (statusFromUrl && statusOptions.includes(statusFromUrl)) {
+      setStatusFilter(statusFromUrl);
+    }
+  }, [searchParams]);
+
+
   const hasActiveFilters = statusFilter !== "" || eventTypeFilter !== "";
 
-  // Use different pagination logic based on whether filters are active
+ 
   const fetchCurrentPage = hasActiveFilters ? 1 : currentPage;
   const fetchRowsPerPage = hasActiveFilters ? 100 : rowsPerPage; 
 
@@ -83,16 +93,15 @@ function EventsScreen() {
       }));
       setEvents(formattedEvents);
     } else if (!data?.isLoading) {
-      // Only clear events if not loading to prevent flickering
       setEvents([]);
     }
   }, [eventsData, data?.isLoading]);
 
-  // Extract stable values from pagination to avoid infinite loops
+
   const paginationTotal = pagination?.total || 0;
   const paginationTotalPages = pagination?.totalPages || 1;
 
-  // Client-side filtering and pagination
+
   const { filteredEvents, totalFilteredEvents, totalPages } = useMemo(() => {
     let filtered = [...events];
 
@@ -124,7 +133,7 @@ function EventsScreen() {
       };
     }
 
-    // If no filters, use server-side pagination data
+  
     return {
       filteredEvents: filtered,
       totalFilteredEvents: paginationTotal,
@@ -162,9 +171,14 @@ function EventsScreen() {
 
   const handleStatusFilterChange = (status: string) => {
     setStatusFilter(status);
-    setCurrentPage(1); 
+    setCurrentPage(1);
+    if (status) {
+      setSearchParams({ status });
+    } else {
+      setSearchParams({});
+    }
   };
-
+  
   const handleEventTypeFilterChange = (eventType: string) => {
     setEventTypeFilter(eventType);
     setCurrentPage(1); 

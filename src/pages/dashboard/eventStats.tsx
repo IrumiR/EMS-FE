@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Clock, CheckCircle, Pause } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 import { useGetEventCountByStatus } from "@/api/dashboardApi";
+import { useNavigate } from "react-router-dom";
 
 type StatCardProps = {
   title: string;
@@ -51,10 +52,17 @@ const StatCard = ({
 };
 
 function EventStats() {
- 
-
   const { data, isLoading, error } = useGetEventCountByStatus();
   const eventCounts = data?.data ?? [];
+  const navigate = useNavigate();
+
+  const handleCardClick = (status: string | null) => {
+    if (status) {
+      navigate(`/events?status=${encodeURIComponent(status)}`);
+    } else {
+      navigate(`/events`);
+    }
+  };
 
 
   if (isLoading) {
@@ -87,7 +95,7 @@ function EventStats() {
           color="red"
         />
         <StatCard
-          title="Active Events"
+          title="In Progress Events"
           value="Error"
           icon={Clock}
           description="Failed to load data"
@@ -123,34 +131,51 @@ function EventStats() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <StatCard
-        title="Total Events"
-        value={totalEvents}
-        icon={Calendar}
-        description="All events in the system"
-        color="blue"
-      />
-      <StatCard
-        title="Active Events"
-        value={activeEvents}
-        icon={Clock}
-        description="Currently running events"
-        color="orange"
-      />
-      <StatCard
-        title="Pending Events"
-        value={pendingEvents}
-        icon={Pause}
-        description="Events awaiting approval"
-        color="yellow"
-      />
-      <StatCard
-        title="Completed Events"
-        value={completedEvents}
-        icon={CheckCircle}
-        description="Successfully finished events"
-        color="green"
-      />
+      <div onClick={() => handleCardClick(null)} className="cursor-pointer">
+        <StatCard
+          title="Total Events"
+          value={totalEvents}
+          icon={Calendar}
+          description="All events in the system"
+          color="blue"
+        />
+      </div>
+
+      <div
+        onClick={() => handleCardClick("In Progress")}
+        className="cursor-pointer"
+      >
+        <StatCard
+          title="In Progress Events"
+          value={activeEvents}
+          icon={Clock}
+          description="Currently running events"
+          color="orange"
+        />
+      </div>
+
+      <div
+        onClick={() => handleCardClick("Pending Approval")}
+        className="cursor-pointer"
+      >
+        <StatCard
+          title="Pending Events"
+          value={pendingEvents}
+          icon={Pause}
+          description="Events awaiting approval"
+          color="yellow"
+        />
+      </div>
+
+      <div onClick={() => handleCardClick("Completed")} className="cursor-pointer">
+        <StatCard
+          title="Completed Events"
+          value={completedEvents}
+          icon={CheckCircle}
+          description="Successfully finished events"
+          color="green"
+        />
+      </div>
     </div>
   );
 }

@@ -97,11 +97,17 @@ const Sidebar = ({ role }: SidebarProps) => {
         icon: <HiOutlineClipboardList size={20} />,
       },
       {
+        to: "/budget",
+        label: "BUDGET",
+        icon: <HiOutlineCurrencyDollar size={20} />,
+      },
+      {
         to: "/inventory",
         label: "INVENTORY",
         icon: <HiOutlineArchive size={20} />,
       },
       { to: "/calendar", label: "CALENDAR", icon: <CalendarClock size={20} /> },
+      { to: "/team", label: "TEAM", icon: <HiOutlineUsers size={20} /> },
     ],
     client: [
       {
@@ -133,6 +139,7 @@ const Sidebar = ({ role }: SidebarProps) => {
         icon: <HiOutlineArchive size={20} />,
       },
       { to: "/calendar", label: "CALENDAR", icon: <CalendarClock size={20} /> },
+      { to: "/team", label: "TEAM", icon: <HiOutlineUsers size={20} /> },
     ],
   };
 

@@ -31,7 +31,7 @@ function DashboardScreen() {
           className={`grid w-full mb-6 ${
             userType === "client"
               ? "grid-cols-2"
-              : userType === "team-member" || userType === "manager"
+              :  userType === "manager"
               ? "grid-cols-5"
               : "grid-cols-4"
           }`}
@@ -46,7 +46,9 @@ function DashboardScreen() {
           {userType !== "client" && (
             <TabsTrigger value="inventory">Inventory</TabsTrigger>
           )}
-          <TabsTrigger value="budget">Budget</TabsTrigger>
+          {(userType === "admin" || userType === "manager") && (
+            <TabsTrigger value="budget">Budget</TabsTrigger>
+          )}
         </TabsList>
 
         {/* Tasks Tab */}

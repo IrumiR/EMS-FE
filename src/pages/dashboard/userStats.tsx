@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, User, UserCheck } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 import { useGetUserCountByRole } from "@/api/dashboardApi";
+import { useNavigate } from "react-router-dom";
 
 type StatCardProps = {
   title: string;
@@ -53,6 +54,15 @@ const StatCard = ({
 function UserStats() {
   const { data, isLoading, error } = useGetUserCountByRole();
   const roleCounts = data?.data ?? [];
+  const navigate = useNavigate();
+
+  const handleCardClick = (role: string | null) => {
+    if (role) {
+      navigate(`/team?role=${encodeURIComponent(role)}`);
+    } else {
+      navigate(`/team`);
+    }
+  };
 
   const getCountByRole = (role: string) => {
     return roleCounts.find((item) => item.role === role)?.count || 0;
@@ -111,27 +121,33 @@ function UserStats() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <StatCard
-        title="Total Users"
-        value={totalUsers}
-        icon={Users}
-        description="All registered users"
-        color="blue"
-      />
-      <StatCard
-        title="Total Clients"
-        value={clientCount}
-        icon={User}
-        description="External clients"
-        color="purple"
-      />
-      <StatCard
-        title="Team Members"
-        value={teamMemberCount}
-        icon={UserCheck}
-        description="Internal team members"
-        color="indigo"
-      />
+      <div onClick={() => handleCardClick(null)} className="cursor-pointer">
+        <StatCard
+          title="Total Users"
+          value={totalUsers}
+          icon={Users}
+          description="All registered users"
+          color="blue"
+        />
+      </div>
+      <div onClick={() => handleCardClick("client")} className="cursor-pointer">
+        <StatCard
+          title="Total Clients"
+          value={clientCount}
+          icon={User}
+          description="External clients"
+          color="purple"
+        />
+      </div>
+      <div onClick={() => handleCardClick("team-member")} className="cursor-pointer">
+        <StatCard
+          title="Team Members"
+          value={teamMemberCount}
+          icon={UserCheck}
+          description="Internal team members"
+          color="indigo"
+        />
+      </div>
     </div>
   );
 }

@@ -14,7 +14,8 @@ import { EditUserDialog } from "@/components/organisms/editUserDialog";
 import { ViewUserDialog } from "@/components/organisms/viewUserDialog";
 import { DeactivateUserDialog } from "@/components/organisms/deactivateUserDialog";
 import { useGetAllUsers } from "@/api/authApi";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 function TeamScreen() {
   const columns = [
@@ -28,6 +29,7 @@ function TeamScreen() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const userType = localStorage.getItem("role");
 
   const data = useGetAllUsers(
     currentPage,
@@ -40,6 +42,21 @@ function TeamScreen() {
   console.log("Users data", data.data?.users);
   const totalUsers = data.data?.pagination.total || 0;
   const totalPages = Math.ceil(totalUsers / rowsPerPage);
+
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const roleFromUrl = searchParams.get("role");
+    if (roleFromUrl) {
+      const normalizedRole = roleFromUrl.toLowerCase();
+      const matchedRole = roles.find((r) => r.toLowerCase() === normalizedRole);
+      if (matchedRole) {
+        setSelectedRole(matchedRole);
+      }
+    }
+  }, [searchParams]);
+
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -57,14 +74,19 @@ function TeamScreen() {
   ) => {
     const newRowsPerPage = Number(event.target.value);
     setRowsPerPage(newRowsPerPage);
-    setCurrentPage(1); // Reset to first page when changing page size
+    setCurrentPage(1); 
   };
 
   const handleRoleChange = (role: string) => {
     setSelectedRole(role);
-    setCurrentPage(1); 
+    setCurrentPage(1);
+    if (role === "All Roles") {
+      navigate("/team");
+    } else {
+      navigate(`/team?role=${encodeURIComponent(role.toLowerCase())}`);
+    }
   };
-
+  
   const formattedUsers = users.map((user) => ({
     ...user,
     role: Array.isArray(user.role) ? user.role.join(", ") : user.role,
@@ -80,9 +102,7 @@ function TeamScreen() {
           <p className="mt-4 text-gray-600">Find and filter user roles here.</p>
         </div>
 
-        <div>
-          <AddUserDialog />
-        </div>
+        <div>{userType === "admin" && <AddUserDialog />}</div>
       </div>
 
       <div className="mt-4 flex items-center justify-between">
@@ -135,36 +155,42 @@ function TeamScreen() {
                   </Button>
                 }
               />
-              <EditUserDialog
-                userId={row._id}
-                trigger={
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="p-1 hover:bg-gray-100"
-                  >
-                    <FilePenLine className="h-4 w-4 text-green-600" />
-                  </Button>
-                }
-              />
-              <DeactivateUserDialog
-                userId={row._id}
-                isActive={row.isActive}
-                trigger={
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="p-1 hover:bg-gray-100"
-                    title={row.isActive ? "Deactivate User" : "Activate User"}
-                  >
-                    <Repeat
-                      className={`h-4 w-4 ${
-                        row.isActive ? "text-red-600" : "text-green-600"
-                      }`}
-                    />
-                  </Button>
-                }
-              />
+              {userType === "admin" && (
+                <>
+                  <EditUserDialog
+                    userId={row._id}
+                    trigger={
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="p-1 hover:bg-gray-100"
+                      >
+                        <FilePenLine className="h-4 w-4 text-green-600" />
+                      </Button>
+                    }
+                  />
+                  <DeactivateUserDialog
+                    userId={row._id}
+                    isActive={row.isActive}
+                    trigger={
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="p-1 hover:bg-gray-100"
+                        title={
+                          row.isActive ? "Deactivate User" : "Activate User"
+                        }
+                      >
+                        <Repeat
+                          className={`h-4 w-4 ${
+                            row.isActive ? "text-red-600" : "text-green-600"
+                          }`}
+                        />
+                      </Button>
+                    }
+                  />
+                </>
+              )}
             </div>
           )}
         />
