@@ -323,12 +323,19 @@ interface EventReportResponse {
   events: EventReport[];
 }
 
-export const useGetEventReport = (): UseQueryResult<EventReportResponse> => {
+export const useGetEventReport = (
+  range?: "past_day" | "past_week" | "past_month"
+): UseQueryResult<EventReportResponse> => {
   return useQuery({
-    queryKey: ["get_event_report"],
+    queryKey: ["get_event_report", range],
     queryFn: async () => {
       const response = await authFetch.get<EventReportResponse>(
-        "/events/report"
+        "/events/report",
+        {
+          params: {
+            range,
+          },
+        }
       );
       return response.data;
     },
