@@ -11,8 +11,8 @@ import { Input } from "@/components/ui/input";
 import { ChevronDown } from "lucide-react";
 import { HiSearch } from "react-icons/hi";
 import {  useGetAllTasksByEventId } from "@/api/taskApi";
-import { useParams } from "react-router-dom";
-import {  useState } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
+import {  useEffect, useState } from "react";
 
 function EventEditScreen() {
   const { eventId } = useParams();
@@ -36,6 +36,21 @@ function EventEditScreen() {
    const tasks = data?.tasks || [];
    const totalTasks = data?.pagination.total || 0;
    const totalPages = Math.ceil(totalTasks / rowsPerPage);
+
+   const [searchParams] = useSearchParams();
+
+   useEffect(() => {
+     const status = searchParams.get("status");
+     if (
+       status === "To Do" ||
+       status === "In Progress" ||
+       status === "Completed" ||
+       status === "Cancelled"
+     ) {
+       setSelectedStatus(status);
+     }
+   }, [searchParams]);
+
 
    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
      setSearchTerm(event.target.value);

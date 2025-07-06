@@ -1,5 +1,9 @@
 import { useMemo } from "react";
-import { useGetTaskCountsByStatus } from "@/api/dashboardApi";
+import {
+  useGetTaskCountsByStatus,
+  useGetTaskStatusCount,
+} from "@/api/dashboardApi";
+import {useGetAllEvents } from "@/api/eventApi";
 import { ClipboardList, Play, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LucideIcon } from "lucide-react";
@@ -54,17 +58,27 @@ const StatCard = ({
 
 function TaskStats() {
   const role = localStorage.getItem("role");
-  const userId =
-    role === "team-member" || role === "manager"
-      ? localStorage.getItem("userId") || ""
-      : "";
-
-  const { data, isLoading, error } = useGetTaskCountsByStatus(userId);
+  const userId = localStorage.getItem("userId") || "";
   const navigate = useNavigate();
 
-  const handleCardClick = (status: string) => {
-    navigate(`/tasks?status=${encodeURIComponent(status)}`);
-  };
+  // Use the appropriate API based on role
+  const {
+    data: teamData,
+    isLoading: isTeamLoading,
+    error: teamError,
+  } = useGetTaskCountsByStatus(role !== "client" ? userId : "");
+
+  const {
+    data: clientData,
+    isLoading: isClientLoading,
+    error: clientError,
+  } = useGetTaskStatusCount();
+
+  const {
+    data: clientEventData,
+    isLoading: isEventLoading,
+    error: eventError,
+  } = useGetAllEvents(1, 1);
 
   const counts = useMemo(() => {
     const initial = {
@@ -72,31 +86,42 @@ function TaskStats() {
       "In Progress": 0,
       Completed: 0,
     };
-    if (!data?.data) return initial;
 
-    for (const { status, count } of data.data) {
+    const sourceData = role === "client" ? clientData?.data : teamData?.data;
+    if (!sourceData) return initial;
+
+    for (const { status, count } of sourceData) {
       if (status === "To Do") initial["To Do"] = count;
       else if (status === "In Progress") initial["In Progress"] = count;
       else if (status === "Completed") initial["Completed"] = count;
     }
     return initial;
-  }, [data]);
+  }, [role, teamData, clientData]);
 
-  if (role === "admin" || role === "client") {
-    return (
-      <div className="text-sm text-gray-500">
-        Task statistics are not available for admins or clients.
-      </div>
-    );
-  }
+  const isLoading = role === "client" ? isClientLoading : isTeamLoading;
+  const error = role === "client" ? clientError : teamError;
 
-  if (isLoading) {
+  const handleCardClick = (status: string) => {
+    if (role === "client") {
+      const eventId = clientEventData?.events?.[0]?._id;
+      if (eventId) {
+        navigate(
+          `/events/${eventId}/edit?status=${encodeURIComponent(status)}`
+        );
+      }
+    } else {
+      navigate(`/tasks?status=${encodeURIComponent(status)}`);
+    }
+  };
+  
+
+  if (isLoading || isEventLoading) {
     return (
       <div className="text-sm text-gray-500">Loading task statistics...</div>
     );
   }
 
-  if (error) {
+  if (error || eventError) {
     return (
       <div className="text-red-500 font-medium">
         Failed to load task statistics.
