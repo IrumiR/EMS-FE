@@ -211,6 +211,7 @@ interface BudgetReport {
   _id: string;
   totalAmount: number;
   createdAt: string;
+  isApproved: boolean;
   eventId: {
     _id: string;
     eventName: string;
@@ -230,12 +231,17 @@ interface BudgetReportResponse {
   budgets: BudgetReport[];
 }
 
-export const useGetBudgetReport = (): UseQueryResult<BudgetReportResponse> => {
+export const useGetBudgetReport = (
+  dateRange?: "pastDay" | "pastWeek" | "pastMonth"
+): UseQueryResult<BudgetReportResponse> => {
   return useQuery({
-    queryKey: ["get_budget_report"],
+    queryKey: ["get_budget_report", dateRange],
     queryFn: async () => {
       const response = await authFetch.get<BudgetReportResponse>(
-        "/budget/report"
+        "/budget/report",
+        {
+          params: dateRange ? { dateRange } : {},
+        }
       );
       return response.data;
     },
