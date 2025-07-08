@@ -302,3 +302,44 @@ export const useGetInventoryReport =
       },
     });
   };
+
+
+  export interface ReservationReport {
+    itemId: string;
+    itemName: string;
+    date: string;
+    reservedQuantity: number;
+    event: {
+      _id: string;
+      name: string;
+    } | null;
+    createdAt: string;
+  }
+
+  interface ReservationReportResponse {
+    message: string;
+    reservations: ReservationReport[];
+  }
+
+  export const useGetReservationReport = (
+    dateRange?: "pastDay" | "pastWeek" | "pastMonth"
+  ): UseQueryResult<ReservationReportResponse> => {
+    return useQuery({
+      queryKey: ["get_reservation_report", dateRange],
+      queryFn: async () => {
+        const response = await authFetch.get<ReservationReportResponse>(
+          "/inventory/reservations", 
+          {
+            params: dateRange ? { dateRange } : {},
+          }
+        );
+        return response.data;
+      },
+      onSuccess: () => {
+        console.log("Reservation report data fetched successfully");
+      },
+      onError: (error) => {
+        console.error("Error fetching reservation report data:", error);
+      },
+    });
+  };
