@@ -272,6 +272,7 @@ export interface UserReport {
   email: string;
   role: string;
   contactNumber?: string;
+  isActive: boolean;
   createdAt: string;
 }
 
@@ -280,11 +281,18 @@ interface UserReportResponse {
   users: UserReport[];
 }
 
-export const useGetUserReport = (): UseQueryResult<UserReportResponse> => {
+export const useGetUserReport = (
+  dateRange?: "pastDay" | "pastWeek" | "pastMonth"
+): UseQueryResult<UserReportResponse> => {
   return useQuery({
-    queryKey: ["get_user_report"],
+    queryKey: ["get_user_report", dateRange],
     queryFn: async () => {
-      const response = await authFetch.get<UserReportResponse>("/users/report");
+      const response = await authFetch.get<UserReportResponse>(
+        "/users/report",
+        {
+          params: dateRange ? { dateRange } : {},
+        }
+      );
       return response.data;
     },
     onSuccess: () => {

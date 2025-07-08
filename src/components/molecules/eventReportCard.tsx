@@ -4,6 +4,7 @@ import { useGetEventReport } from "@/api/eventApi";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import { toast } from "react-hot-toast";
 
 export default function EventReportCard() {
   const [openDropdown, setOpenDropdown] = useState<boolean>(false);
@@ -24,7 +25,7 @@ export default function EventReportCard() {
 
   const getDateRangeDetails = (range: string) => {
     const today = new Date();
-    const end = new Date(today.setHours(0, 0, 0, 0)); 
+    const end = new Date(today.setHours(0, 0, 0, 0));
     let start;
 
     if (range === "past-day") {
@@ -117,6 +118,11 @@ export default function EventReportCard() {
   };
 
   const generateEventReportExcel = (events: any[]) => {
+    const { label, start, end } = getDateRangeDetails(selectedDateRange);
+    const rangeText = `Date Range - ${label} (${formatDate(
+      start
+    )} - ${formatDate(end)})`;
+
     const excelData = events.map((event, index) => ({
       "#": index + 1,
       "Event Name": event.eventName,
@@ -128,8 +134,9 @@ export default function EventReportCard() {
     }));
 
     const workbook = XLSX.utils.book_new();
-
-    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const worksheet = XLSX.utils.json_to_sheet([]);
+    XLSX.utils.sheet_add_aoa(worksheet, [[rangeText]], { origin: "A1" });
+    XLSX.utils.sheet_add_json(worksheet, excelData, { origin: "A3" });
     worksheet["!cols"] = [
       { wch: 5 },
       { wch: 25 },
@@ -148,7 +155,7 @@ export default function EventReportCard() {
     setOpenDropdown(false);
 
     if (!eventReport || !eventReport.events?.length) {
-      alert("No event report data available");
+      toast.error("No event report data available");
       return;
     }
 
