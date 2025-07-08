@@ -187,8 +187,6 @@ export const useGetAllTasksByUserId = (
   });
 };
 
-
-
 export const useGetTaskById = (
   taskId: string | null,
   enabled: boolean = true
@@ -388,6 +386,53 @@ export const useDeleteTask = (onSuccess: () => void, onError: () => void) => {
     },
     onError: () => {
       onError();
+    },
+  });
+};
+
+interface CalendarTask {
+  taskName: string;
+  status: string;
+  priority: string;
+  startDate: string;
+  endDate: string;
+  eventName: string;
+}
+
+interface MonthlyTasksResponse {
+  message: string;
+  tasks: {
+    [date: string]: CalendarTask[];
+  };
+}
+
+
+export const useGetAllTasksByMonth = (
+  year: number,
+  month: number,
+  userId?: string,
+  clientId?: string
+): UseQueryResult<MonthlyTasksResponse> => {
+  return useQuery({
+    queryKey: ["get_monthly_tasks", year, month, userId, clientId],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      params.append("year", year.toString());
+      params.append("month", month.toString());
+      if (userId) params.append("userId", userId);
+      if (clientId) params.append("clientId", clientId);
+
+      const response = await authFetch.get<MonthlyTasksResponse>(
+        `/tasks/monthly?${params.toString()}`
+      );
+
+      return response.data;
+    },
+    onSuccess: () => {
+      console.log("Monthly tasks retrieved successfully");
+    },
+    onError: (error) => {
+      console.error("Error fetching monthly tasks:", error);
     },
   });
 };
