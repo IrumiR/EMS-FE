@@ -23,6 +23,7 @@ interface BudgetViewDialogProps {
     clientName: string;
     status: string;
     expenses: Array<{ name: string; value: number }>;
+    inventoryItems: Array<{ itemName: string; remainingQuantity: number; price: number }>;
     totalAmount: number;
     remarks: string;
     createdBy: string;
@@ -134,11 +135,9 @@ export default function BudgetViewDialog({
     }
   };
 
-  // Get current status and remarks from budget
   const currentStatus = getStatusFromBudget(budget?.isApproved ?? null);
   const currentRemarks = getRemarksFromBudget(budget?.isApproved ?? null, budget?.remarks || "");
 
-  // Show action buttons only for pending budgets
   const showActionButtons = budget?.isApproved === null;
 
   const getRemarksFieldStyle = () => {
@@ -196,9 +195,13 @@ export default function BudgetViewDialog({
 
             {/* Status */}
             <div className="flex flex-col space-y-1">
-              <Label className="text-sm font-medium text-gray-700">Status:</Label>
+              <Label className="text-sm font-medium text-gray-700">
+                Status:
+              </Label>
               <p
-                className={`text-sm font-medium ${getStatusColor(currentStatus)}`}
+                className={`text-sm font-medium ${getStatusColor(
+                  currentStatus
+                )}`}
               >
                 {currentStatus}
               </p>
@@ -228,6 +231,39 @@ export default function BudgetViewDialog({
               </div>
             </div>
 
+            {/* Inventory Items */}
+            <div className="flex flex-col space-y-2">
+              <Label className="text-sm font-medium text-gray-700">
+                Inventory Items:
+              </Label>
+              <div className="space-y-2">
+                {budget?.inventoryItems?.length ? (
+                  budget.inventoryItems.map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 px-3 bg-gray-50 rounded gap-1"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                        <span className="text-sm text-gray-700">
+                          • {item.itemName}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          (Qty: {item.remainingQuantity})
+                        </span>
+                      </div>
+                      <span className="text-sm font-medium text-gray-900">
+                        Rs. {item.price.toLocaleString()}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No inventory items used
+                  </p>
+                )}
+              </div>
+            </div>
+
             {/* Total Amount */}
             <div className="flex flex-col space-y-1">
               <Label className="text-sm font-medium text-gray-700">
@@ -243,9 +279,7 @@ export default function BudgetViewDialog({
               <Label className="text-sm font-medium text-gray-700">
                 Remarks:
               </Label>
-              <p className="text-sm text-gray-900">
-                {currentRemarks}
-              </p>
+              <p className="text-sm text-gray-900">{currentRemarks}</p>
             </div>
 
             {/* Created By */}
@@ -260,14 +294,18 @@ export default function BudgetViewDialog({
 
             {/* Remarks Field - Show for both approve and reject actions */}
             {showRemarksField && showActionButtons && (
-              <div className={`flex flex-col space-y-2 ${remarksFieldStyle.containerClass}`}>
+              <div
+                className={`flex flex-col space-y-2 ${remarksFieldStyle.containerClass}`}
+              >
                 <Label className={remarksFieldStyle.labelClass}>
-                  {actionType === 'approve' ? 'Approval Remarks:' : 'Rejection Remarks:'}
+                  {actionType === "approve"
+                    ? "Approval Remarks:"
+                    : "Rejection Remarks:"}
                 </Label>
                 <Textarea
                   placeholder={
-                    actionType === 'approve' 
-                      ? "Please provide remarks for approval..." 
+                    actionType === "approve"
+                      ? "Please provide remarks for approval..."
                       : "Please provide reason for rejection..."
                   }
                   value={remarks}
@@ -292,35 +330,41 @@ export default function BudgetViewDialog({
                 Cancel
               </Button>
 
-          {userType === "client" && (
-            <>
-              <Button
-                variant="destructive"
-                onClick={handleReject}
-                className="w-full sm:w-auto order-2"
-                disabled={(showRemarksField && !remarks.trim()) || budgetMutation.isLoading || (showRemarksField && actionType === 'approve')}
-              >
-                {budgetMutation.isLoading && actionType === 'reject' 
-                  ? "Processing..." 
-                  : showRemarksField && actionType === 'reject' 
-                    ? "Confirm Reject" 
-                    : "Reject"
-                }
-              </Button>
-              <Button
-                onClick={handleApprove}
-                className="w-full sm:w-auto order-1 sm:order-3 bg-green-600 hover:bg-green-700"
-                disabled={(showRemarksField && !remarks.trim()) || budgetMutation.isLoading || (showRemarksField && actionType === 'reject')}
-              >
-                {budgetMutation.isLoading && actionType === 'approve' 
-                  ? "Processing..." 
-                  : showRemarksField && actionType === 'approve' 
-                    ? "Confirm Approve" 
-                    : "Approve"
-                }
-              </Button>
-            </>
-          )}
+              {userType === "client" && (
+                <>
+                  <Button
+                    variant="destructive"
+                    onClick={handleReject}
+                    className="w-full sm:w-auto order-2"
+                    disabled={
+                      (showRemarksField && !remarks.trim()) ||
+                      budgetMutation.isLoading ||
+                      (showRemarksField && actionType === "approve")
+                    }
+                  >
+                    {budgetMutation.isLoading && actionType === "reject"
+                      ? "Processing..."
+                      : showRemarksField && actionType === "reject"
+                      ? "Confirm Reject"
+                      : "Reject"}
+                  </Button>
+                  <Button
+                    onClick={handleApprove}
+                    className="w-full sm:w-auto order-1 sm:order-3 bg-green-600 hover:bg-green-700"
+                    disabled={
+                      (showRemarksField && !remarks.trim()) ||
+                      budgetMutation.isLoading ||
+                      (showRemarksField && actionType === "reject")
+                    }
+                  >
+                    {budgetMutation.isLoading && actionType === "approve"
+                      ? "Processing..."
+                      : showRemarksField && actionType === "approve"
+                      ? "Confirm Approve"
+                      : "Approve"}
+                  </Button>
+                </>
+              )}
             </>
           ) : (
             <Button

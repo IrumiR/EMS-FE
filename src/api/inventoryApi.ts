@@ -196,6 +196,7 @@ export interface InventoryOption {
   itemId: string;
   itemName: string;
   remainingQuantity: number;
+  price: number;
 }
 
 export interface InventoryOptionResponse {

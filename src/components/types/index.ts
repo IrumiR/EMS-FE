@@ -27,6 +27,13 @@ export interface Budget {
     amount: number;
     _id: string;
   }>;
+  inventoryItems: Array<{
+    itemId: string;
+    itemName: string;
+    remainingQuantity: number;
+    price: number;
+    _id?: string;
+  }>;
   totalAmount: number;
   discount: number;
   remarks: string;

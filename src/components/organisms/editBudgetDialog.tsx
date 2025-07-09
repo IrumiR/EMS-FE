@@ -16,188 +16,41 @@ import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { Loader2, Trash2 } from "lucide-react";
-import { useEffect } from "react";
-import { useGetAllEventsDropdown } from "@/api/taskApi";
-import { useGetClientOptions } from "@/api/authApi";
-import { useUpdateBudget } from "@/api/budgetApi";
-import toast from "react-hot-toast";
-import * as Yup from "yup";
-import { useFormik } from "formik";
+import { Loader2, Trash2, Plus, Minus } from "lucide-react";
 import { Budget } from "../types";
-
-type Expense = {
-  expenseName: string;
-  amount: string; 
-  _id?: string;
-};
-
-
+import { useEditBudget } from "@/hooks/useEditBudget";
 
 interface EditBudgetDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  budget?: Budget ;
-  budgetId: string
+  budget?: Budget;
+  budgetId: string;
 }
 
-// Validation schema
-const validationSchema = Yup.object({
-  clientId: Yup.string().required("Client is required"),
-  eventId: Yup.string().required("Event is required"),
-  expenses: Yup.array()
-    .of(
-      Yup.object({
-        expenseName: Yup.string().required("Expense name is required"),
-        amount: Yup.string()
-          .required("Amount is required")
-          .test("is-positive", "Amount must be greater than 0", (value) => {
-            return parseFloat(value || "0") > 0;
-          }),
-      })
-    )
-    .min(1, "At least one expense is required"),
-  totalAmount: Yup.string()
-    .required("Total amount is required")
-    .test("is-positive", "Total amount must be greater than 0", (value) => {
-      return parseFloat(value || "0") > 0;
-    }),
-});
-
-const onSuccess = () => {
-  toast.success("Budget updated successfully!", {
-    id: "success-toast",
-    position: "top-center",
-    duration: 3000,
-  });
-};
-
-const onError = (message: string) => {
-  toast.error(message, {
-    id: "error-toast",
-    position: "top-center",
-    duration: 4000,
-  });
-};
-
-export function EditBudgetDialog({ open, onOpenChange, budget, budgetId }: EditBudgetDialogProps) {
-  const eventList = useGetAllEventsDropdown();
-  const { data: clientsData, isLoading: clientsLoading } = useGetClientOptions();
-  const { mutate: updateBudget, isLoading: isUpdating } = useUpdateBudget(
-    budgetId,
-    onSuccess,
-    onError
-  );
-
-  const formik = useFormik({
-    initialValues: {
-      clientId: "",
-      eventId: "",
-      expenses: [{ expenseName: "", amount: "" }] as unknown as Expense[],
-      totalAmount: "",
-    },
-    validationSchema,
-    onSubmit: (values) => {
-      if (!budget?._id) {
-        toast.error("Budget ID is missing");
-        return;
-      }
-
-      const payload = {
-        budgetId: budget._id,
-        eventId: values.eventId,
-        clientId: values.clientId,
-        expenses: values.expenses.map((expense) => ({
-          expenseName: expense.expenseName,
-          amount: parseFloat(expense.amount),
-          _id: expense._id, // Include _id if it exists for updates
-        })),
-        totalAmount: parseFloat(values.totalAmount),
-      };
-
-      updateBudget(payload, {
-        onSuccess: (response) => {
-          toast.success("Budget updated successfully!");
-          onOpenChange(false);
-          formik.resetForm();
-        },
-        onError: (error: any) => {
-          const errorMessage = error?.response?.data?.message || "Failed to update budget";
-          toast.error(errorMessage);
-        },
-      });
-    },
-  });
-
-  // Populate form when budget data is available
-  useEffect(() => {
-    if (budget && open) {
-      formik.setValues({
-        clientId: budget.clientId._id,
-        eventId: budget.eventId._id,
-        expenses: budget.expenses.map((expense) => ({
-          expenseName: expense.expenseName,
-          amount: expense.amount.toString(),
-          _id: expense._id,
-        })),
-        totalAmount: budget.totalAmount.toString(),
-      });
-    }
-  }, [budget, open]);
-
-  // Calculate total from all expense amounts
-  const calculateTotal = () => {
-    const total = formik.values.expenses.reduce((sum, expense) => {
-      const value = parseFloat(expense.amount) || 0;
-      return sum + value;
-    }, 0);
-    formik.setFieldValue("totalAmount", total.toString());
-  };
-
-  const handleExpenseChange = (index: number, field: keyof Expense, value: string) => {
-    const updatedExpenses = [...formik.values.expenses];
-    updatedExpenses[index] = { ...updatedExpenses[index], [field]: value };
-    formik.setFieldValue("expenses", updatedExpenses);
-
-    // Auto-calculate total if amount field changed
-    if (field === "amount") {
-      setTimeout(() => {
-        const total = updatedExpenses.reduce((sum, expense) => {
-          const val = parseFloat(expense.amount) || 0;
-          return sum + val;
-        }, 0);
-        formik.setFieldValue("totalAmount", total.toString());
-      }, 0);
-    }
-  };
-
-  const handleAddExpense = () => {
-    const newExpenses = [...formik.values.expenses, { expenseName: "", amount: "" }];
-    formik.setFieldValue("expenses", newExpenses);
-  };
-
-  const handleDeleteExpense = (index: number) => {
-    const updatedExpenses = [...formik.values.expenses];
-    updatedExpenses.splice(index, 1);
-    const finalExpenses = updatedExpenses.length
-      ? updatedExpenses
-      : [{ expenseName: "", amount: "" }];
-    formik.setFieldValue("expenses", finalExpenses);
-
-    // Recalculate total after deletion
-    setTimeout(() => {
-      const total = finalExpenses.reduce((sum, expense) => {
-        const val = parseFloat(expense.amount) || 0;
-        return sum + val;
-      }, 0);
-      formik.setFieldValue("totalAmount", total.toString());
-    }, 0);
-  };
-
-  const handleCancel = () => {
-    formik.resetForm();
-    onOpenChange(false);
-  };
+export function EditBudgetDialog({
+  open,
+  onOpenChange,
+  budget,
+  budgetId,
+}: EditBudgetDialogProps) {
+  const {
+    formik,
+    eventList,
+    clientsData,
+    inventoryData,
+    clientsLoading,
+    inventoryLoading,
+    isUpdating,
+    handleExpenseChange,
+    handleInventoryChange,
+    handleInventoryItemSelect,
+    handleQuantityChange,
+    handleAddExpense,
+    handleAddInventoryItem,
+    handleDeleteExpense,
+    handleDeleteInventoryItem,
+    handleCancel,
+  } = useEditBudget({ budget, budgetId, open, onOpenChange });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -206,7 +59,10 @@ export function EditBudgetDialog({ open, onOpenChange, budget, budgetId }: EditB
           <DialogTitle className="text-center">Edit Budget</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={formik.handleSubmit} className="flex flex-col flex-1 min-h-0">
+        <form
+          onSubmit={formik.handleSubmit}
+          className="flex flex-col flex-1 min-h-0"
+        >
           <ScrollArea className="flex-1 min-h-0">
             <div className="grid gap-4 py-4 pr-4">
               {/* Client Dropdown */}
@@ -214,7 +70,9 @@ export function EditBudgetDialog({ open, onOpenChange, budget, budgetId }: EditB
                 <Label htmlFor="client">Client</Label>
                 <Select
                   value={formik.values.clientId}
-                  onValueChange={(value) => formik.setFieldValue("clientId", value)}
+                  onValueChange={(value) =>
+                    formik.setFieldValue("clientId", value)
+                  }
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select Client" />
@@ -241,7 +99,9 @@ export function EditBudgetDialog({ open, onOpenChange, budget, budgetId }: EditB
                   </SelectContent>
                 </Select>
                 {formik.touched.clientId && formik.errors.clientId && (
-                  <span className="text-red-500 text-sm">{formik.errors.clientId}</span>
+                  <span className="text-red-500 text-sm">
+                    {formik.errors.clientId}
+                  </span>
                 )}
               </div>
 
@@ -250,7 +110,9 @@ export function EditBudgetDialog({ open, onOpenChange, budget, budgetId }: EditB
                 <Label htmlFor="event">Event</Label>
                 <Select
                   value={formik.values.eventId}
-                  onValueChange={(value) => formik.setFieldValue("eventId", value)}
+                  onValueChange={(value) =>
+                    formik.setFieldValue("eventId", value)
+                  }
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select Event" />
@@ -270,7 +132,9 @@ export function EditBudgetDialog({ open, onOpenChange, budget, budgetId }: EditB
                   </SelectContent>
                 </Select>
                 {formik.touched.eventId && formik.errors.eventId && (
-                  <span className="text-red-500 text-sm">{formik.errors.eventId}</span>
+                  <span className="text-red-500 text-sm">
+                    {formik.errors.eventId}
+                  </span>
                 )}
               </div>
 
@@ -285,7 +149,11 @@ export function EditBudgetDialog({ open, onOpenChange, budget, budgetId }: EditB
                         placeholder="Expense"
                         value={expense.expenseName}
                         onChange={(e) =>
-                          handleExpenseChange(index, "expenseName", e.target.value)
+                          handleExpenseChange(
+                            index,
+                            "expenseName",
+                            e.target.value
+                          )
                         }
                         className="w-full"
                       />
@@ -313,26 +181,36 @@ export function EditBudgetDialog({ open, onOpenChange, budget, budgetId }: EditB
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
-                    
+
                     {/* Validation errors for this expense */}
-                    {formik.touched.expenses?.[index] && formik.errors.expenses?.[index] && (
-                      <div className="mt-1">
-                        {typeof formik.errors.expenses[index] === 'object' && (
-                          <>
-                            {(formik.errors.expenses[index] as any)?.expenseName && (
-                              <span className="text-red-500 text-sm block">
-                                {(formik.errors.expenses[index] as any).expenseName}
-                              </span>
-                            )}
-                            {(formik.errors.expenses[index] as any)?.amount && (
-                              <span className="text-red-500 text-sm block">
-                                {(formik.errors.expenses[index] as any).amount}
-                              </span>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    )}
+                    {formik.touched.expenses?.[index] &&
+                      formik.errors.expenses?.[index] && (
+                        <div className="mt-1">
+                          {typeof formik.errors.expenses[index] ===
+                            "object" && (
+                            <>
+                              {(formik.errors.expenses[index] as any)
+                                ?.expenseName && (
+                                <span className="text-red-500 text-sm block">
+                                  {
+                                    (formik.errors.expenses[index] as any)
+                                      .expenseName
+                                  }
+                                </span>
+                              )}
+                              {(formik.errors.expenses[index] as any)
+                                ?.amount && (
+                                <span className="text-red-500 text-sm block">
+                                  {
+                                    (formik.errors.expenses[index] as any)
+                                      .amount
+                                  }
+                                </span>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      )}
                   </div>
                 ))}
 
@@ -349,6 +227,169 @@ export function EditBudgetDialog({ open, onOpenChange, budget, budgetId }: EditB
                 </div>
               </div>
 
+              {/* Inventory Items Section */}
+              <div className="grid gap-3">
+                <Label>Inventory Items</Label>
+                {formik.values.inventoryItems.map((item, index) => (
+                  <div key={index}>
+                    <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                      {/* Inventory Item Dropdown */}
+                      <Select
+                        value={item.itemId}
+                        onValueChange={(value) =>
+                          handleInventoryItemSelect(index, value)
+                        }
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select Item" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {inventoryLoading ? (
+                            <SelectItem value="loading" disabled>
+                              <div className="flex items-center">
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Loading inventory...
+                              </div>
+                            </SelectItem>
+                          ) : inventoryData?.items?.length ? (
+                            inventoryData.items.map((inventoryItem) => (
+                              <SelectItem
+                                key={inventoryItem.itemId}
+                                value={inventoryItem.itemId}
+                              >
+                                {inventoryItem.itemName}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="no-items" disabled>
+                              No inventory items available
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+
+                      {/* Quantity Controls */}
+                      <div className="flex items-center gap-1 border rounded-md flex-shrink-0">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleQuantityChange(index, false)}
+                          className="h-8 w-8 p-0"
+                          disabled={item.quantity <= 1}
+                        >
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        <Input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) => {
+                            const newQuantity = Math.min(
+                              Math.max(1, parseInt(e.target.value) || 1),
+                              item.maxQuantity || 1
+                            );
+                            handleInventoryChange(
+                              index,
+                              "quantity",
+                              newQuantity
+                            );
+                          }}
+                          className="w-16 text-center border-0 focus-visible:ring-0 h-8"
+                          min="1"
+                          max={item.maxQuantity || 1}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleQuantityChange(index, true)}
+                          className="h-8 w-8 p-0"
+                          disabled={item.quantity >= (item.maxQuantity || 1)}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
+
+                      {/* Price Field */}
+                      <Input
+                        placeholder="Price"
+                        type="number"
+                        value={item.price}
+                        onChange={(e) =>
+                          handleInventoryChange(index, "price", e.target.value)
+                        }
+                        className="w-full min-w-[80px]"
+                        readOnly
+                      />
+
+                      {/* Delete Button */}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteInventoryItem(index)}
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50 justify-self-end sm:justify-self-auto"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    {/* Inventory validation errors */}
+                    {formik.touched.inventoryItems?.[index] &&
+                      formik.errors.inventoryItems?.[index] && (
+                        <div className="text-red-500 text-sm mt-1">
+                          {typeof formik.errors.inventoryItems[index] ===
+                          "object" ? (
+                            <>
+                              {(formik.errors.inventoryItems[index] as any)
+                                ?.itemId && (
+                                <div>
+                                  {
+                                    (formik.errors.inventoryItems[index] as any)
+                                      .itemId
+                                  }
+                                </div>
+                              )}
+                              {(formik.errors.inventoryItems[index] as any)
+                                ?.quantity && (
+                                <div>
+                                  {
+                                    (formik.errors.inventoryItems[index] as any)
+                                      .quantity
+                                  }
+                                </div>
+                              )}
+                              {(formik.errors.inventoryItems[index] as any)
+                                ?.price && (
+                                <div>
+                                  {
+                                    (formik.errors.inventoryItems[index] as any)
+                                      .price
+                                  }
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <div>{formik.errors.inventoryItems[index]}</div>
+                          )}
+                        </div>
+                      )}
+                  </div>
+                ))}
+
+                {/* Add Inventory Button */}
+                <div className="mt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleAddInventoryItem}
+                    className="w-full"
+                  >
+                    Add Inventory
+                  </Button>
+                </div>
+              </div>
+
               {/* Total Amount Field */}
               <div className="grid gap-2">
                 <Label htmlFor="totalAmount">Total Amount</Label>
@@ -359,9 +400,12 @@ export function EditBudgetDialog({ open, onOpenChange, budget, budgetId }: EditB
                   value={formik.values.totalAmount}
                   onChange={formik.handleChange}
                   className="w-full"
+                  readOnly
                 />
                 {formik.touched.totalAmount && formik.errors.totalAmount && (
-                  <span className="text-red-500 text-sm">{formik.errors.totalAmount}</span>
+                  <span className="text-red-500 text-sm">
+                    {formik.errors.totalAmount}
+                  </span>
                 )}
               </div>
             </div>

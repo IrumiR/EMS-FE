@@ -14,6 +14,12 @@ export interface CreateBudgetData {
     expenseName: string;
     amount: number;
   }[];
+  inventoryItems?: {
+    itemId: string;
+    itemName: string;
+    remainingQuantity: number;
+    price: number;
+  }[];
   totalAmount: number;
   discount?: number;
   remarks?: string;
