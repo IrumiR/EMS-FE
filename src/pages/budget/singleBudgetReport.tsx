@@ -24,77 +24,148 @@ export const SingleBudgetReport = (budget: Budget) => {
       : "Rejected";
   doc.text(`Status: ${status}`, 14, 65);
 
-  // Add line separator
   doc.line(14, 72, 196, 72);
 
-  // Prepare expenses data for table
-  const expensesData = budget.expenses.map((expense, index) => [
-    index + 1,
-    expense.expenseName,
-    `Rs. ${expense.amount.toLocaleString()}`,
-  ]);
+  let currentY = 80;
 
-  // Add expenses table
-  autoTable(doc, {
-    startY: 80,
-    head: [["#", "Expense Name", "Amount"]],
-    body: expensesData,
-    theme: "grid",
-    headStyles: {
-      fillColor: [41, 128, 185],
-      textColor: [255, 255, 255],
-      fontStyle: "bold",
-    },
-    columnStyles: {
-      0: { cellWidth: 15, halign: "center" },
-      1: { cellWidth: 120 },
-      2: { cellWidth: 40, halign: "right" },
-    },
-    margin: { left: 14, right: 14 },
-  });
+  // Add expenses section if there are expenses
+  if (budget.expenses && budget.expenses.length > 0) {
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Expenses", 14, currentY);
+    currentY += 10;
 
-  // Get the final Y position after the table
-  const finalY = (doc as any).lastAutoTable.finalY || 80;
+    const expensesData = budget.expenses.map((expense, index) => [
+      index + 1,
+      expense.expenseName,
+      `Rs. ${expense.amount.toLocaleString()}`,
+    ]);
 
-  // Add summary section
-  doc.line(14, finalY + 10, 196, finalY + 10);
+    // Add expenses table
+    autoTable(doc, {
+      startY: currentY,
+      head: [["#", "Expense Name", "Amount"]],
+      body: expensesData,
+      theme: "grid",
+      headStyles: {
+        fillColor: [41, 128, 185],
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+      },
+      columnStyles: {
+        0: { cellWidth: 15, halign: "center" },
+        1: { cellWidth: 120 },
+        2: { cellWidth: 40, halign: "right" },
+      },
+      margin: { left: 14, right: 14 },
+    });
+
+    // Update current Y position
+    currentY = (doc as any).lastAutoTable.finalY + 15;
+  }
+
+  // Add inventory items section if there are inventory items
+  if (budget.inventoryItems && budget.inventoryItems.length > 0) {
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Inventory Items", 14, currentY);
+    currentY += 10;
+
+    // Prepare inventory data for table
+    const inventoryData = budget.inventoryItems.map((item, index) => [
+      index + 1,
+      item.itemName,
+      item.remainingQuantity.toString(),
+      `Rs. ${item.price.toLocaleString()}`,
+      `Rs. ${(item.remainingQuantity * item.price).toLocaleString()}`,
+    ]);
+
+    // Add inventory table
+    autoTable(doc, {
+      startY: currentY,
+      head: [["#", "Item Name", "Quantity", "Unit Price", "Total"]],
+      body: inventoryData,
+      theme: "grid",
+      headStyles: {
+        fillColor: [46, 204, 113],
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+      },
+      columnStyles: {
+        0: { cellWidth: 15, halign: "center" },
+        1: { cellWidth: 80 },
+        2: { cellWidth: 25, halign: "center" },
+        3: { cellWidth: 35, halign: "right" },
+        4: { cellWidth: 40, halign: "right" },
+      },
+      margin: { left: 14, right: 14 },
+    });
+
+    currentY = (doc as any).lastAutoTable.finalY + 15;
+  }
+
+  doc.line(14, currentY, 196, currentY);
+  currentY += 15;
 
   doc.setFontSize(12);
-  doc.text(
-    `Subtotal: Rs. ${budget.totalAmount.toLocaleString()}`,
-    140,
-    finalY + 25
+  doc.setFont("helvetica", "normal");
+
+  // Calculate totals
+  const expensesTotal = budget.expenses.reduce(
+    (sum, expense) => sum + expense.amount,
+    0
   );
-  doc.text(
-    `Discount: Rs. ${budget.discount.toLocaleString()}`,
-    140,
-    finalY + 35
+  const inventoryTotal = budget.inventoryItems.reduce(
+    (sum, item) => sum + item.remainingQuantity * item.price,
+    0
   );
+  const subtotal = expensesTotal + inventoryTotal;
+
+  // Display breakdown
+  if (budget.expenses.length > 0) {
+    doc.text(
+      `Expenses Total: Rs. ${expensesTotal.toLocaleString()}`,
+      140,
+      currentY
+    );
+    currentY += 10;
+  }
+
+  if (budget.inventoryItems.length > 0) {
+    doc.text(
+      `Inventory Total: Rs. ${inventoryTotal.toLocaleString()}`,
+      140,
+      currentY
+    );
+    currentY += 10;
+  }
+
+  doc.text(`Subtotal: Rs. ${subtotal.toLocaleString()}`, 140, currentY);
+  currentY += 10;
+
+  doc.text(`Discount: Rs. ${budget.discount.toLocaleString()}`, 140, currentY);
+  currentY += 15;
 
   // Calculate final total
-  const finalTotal = budget.totalAmount - budget.discount;
+  const finalTotal = subtotal - budget.discount;
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.text(
-    `Total Amount: Rs. ${finalTotal.toLocaleString()}`,
-    140,
-    finalY + 50
-  );
+  doc.text(`Total Amount: Rs. ${finalTotal.toLocaleString()}`, 140, currentY);
+  currentY += 20;
 
   // Add remarks if available
   if (budget.remarks && budget.remarks.trim()) {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
-    doc.text("Remarks:", 14, finalY + 70);
+    doc.text("Remarks:", 14, currentY);
+    currentY += 10;
 
-    // Handle long remarks by splitting into multiple lines
     const remarks = budget.remarks;
     const maxWidth = 170;
     const lines = doc.splitTextToSize(remarks, maxWidth);
-    doc.text(lines, 14, finalY + 80);
+    doc.text(lines, 14, currentY);
   }
 
-  // Add footer
   const pageHeight = doc.internal.pageSize.height;
   doc.setFontSize(10);
   doc.setTextColor(128, 128, 128);

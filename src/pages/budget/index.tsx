@@ -17,19 +17,6 @@ function BudgetScreen() {
   >(undefined);
 
 
-// Define types for budget and eventId
-type EventIdType = {
-  eventName?: string;
-  [key: string]: any;
-};
-
-type BudgetType = {
-  _id: string | number;
-  eventId?: EventIdType | string | null;
-  isApproved: boolean;
-  totalAmount: number;
-  expenses?: { expenseName?: string; amount?: number }[];
-};
 
 const userId = localStorage.getItem("userId") || "";
 const role = localStorage.getItem("role") || "";

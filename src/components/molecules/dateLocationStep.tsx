@@ -26,6 +26,7 @@ interface DateLocationStepProps extends StepProps {
   setLocation: (location: string) => void;
   selectedClientId: string;
   setSelectedClientId: (id: string) => void;
+  isValid?: boolean;
 }
 
 export function DateLocationStep({

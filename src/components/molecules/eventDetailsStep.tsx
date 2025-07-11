@@ -28,6 +28,7 @@ interface EventDetailsStepProps extends StepProps {
   setCustomEventType: (value: string) => void;
   description: string;
   setDescription: (value: string) => void;
+  isValid?: boolean;
 }
 
 export const eventTypeImages = {

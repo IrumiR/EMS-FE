@@ -51,6 +51,30 @@ export function AddEventDialog() {
   const [selectedItems, setSelectedItems] = useState<InventoryItem[]>([]);
   const userId = localStorage.getItem("userId");
 
+  const isDetailsStepValid = () => {
+    return (
+      eventName.trim() !== "" &&
+      selectedEventType !== "" &&
+      (selectedEventType !== "others" || customEventType.trim() !== "") &&
+      description.trim() !== ""
+    );
+  };
+
+  const isDateStepValid = () => {
+    return (
+      startDate !== undefined &&
+      endDate !== undefined &&
+      startTime !== undefined &&
+      endTime !== undefined &&
+      location.trim() !== "" &&
+      selectedClientId !== ""
+    );
+  };
+
+  const isGuestsStepValid = () => {
+    return selectedAssignees.length > 0;
+  };
+
   const resetForm = () => {
     // Reset step
     setActiveStep("details");
@@ -201,6 +225,7 @@ export function AddEventDialog() {
                   setDescription={setDescription}
                   onNext={handleNextStep}
                   onPrevious={() => {}}
+                  isValid={isDetailsStepValid()}
                 />
               )}
 
@@ -221,6 +246,7 @@ export function AddEventDialog() {
                   setSelectedClientId={setSelectedClientId}
                   onNext={handleNextStep}
                   onPrevious={handlePreviousStep}
+                  isValid={isDateStepValid()}
                 />
               )}
 
@@ -248,6 +274,7 @@ export function AddEventDialog() {
                   setSelectedItems={setSelectedItems}
                   onNext={handleSubmit}
                   onPrevious={handlePreviousStep}
+                  isValid={isGuestsStepValid()}
                 />
               )}
             </div>
@@ -268,6 +295,11 @@ export function AddEventDialog() {
             type="submit"
             className="bg-green-600 hover:bg-green-700"
             onClick={activeStep !== "guests" ? handleNextStep : handleSubmit}
+            disabled={
+              (activeStep === "details" && !isDetailsStepValid()) ||
+              (activeStep === "date" && !isDateStepValid()) ||
+              (activeStep === "guests" && !isGuestsStepValid())
+            }
           >
             {activeStep === "guests" ? "Create Event" : "Next"}
           </Button>

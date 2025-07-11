@@ -18,6 +18,7 @@ interface TasksAssigneesStepProps extends StepProps {
   setSelectedAssignees: (assignees: Assignee[]) => void;
   selectedItems: InventoryItem[];
   setSelectedItems: (items: InventoryItem[]) => void;
+  isValid?: boolean;
 }
 
 export function TasksAssigneesStep({

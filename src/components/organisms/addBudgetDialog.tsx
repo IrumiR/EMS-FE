@@ -221,7 +221,7 @@ export function AddBudgetDialog() {
                         handleInventoryItemSelect(index, value)
                       }
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full sm:w-36 flex-shrink-0">
                         <SelectValue placeholder="Select Item" />
                       </SelectTrigger>
                       <SelectContent>
@@ -296,7 +296,7 @@ export function AddBudgetDialog() {
                       onChange={(e) =>
                         handleInventoryChange(index, "price", e.target.value)
                       }
-                      className="w-full min-w-[80px]"
+                      className="w-full min-w-[100px] sm:w-28 flex-shrink-0"
                       readOnly
                     />
 

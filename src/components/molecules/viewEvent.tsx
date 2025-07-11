@@ -55,35 +55,41 @@ export default function ViewEventDialog({
         {!isLoading && event && (
           <div className="text-sm space-y-3 mt-4 max-h-96 overflow-y-auto">
             <div className="grid grid-cols-3 gap-2">
-              <strong className="col-span-1">Name:</strong> 
+              <strong className="col-span-1">Name:</strong>
               <span className="col-span-2">{event.eventName}</span>
             </div>
             <div className="grid grid-cols-3 gap-2">
-              <strong className="col-span-1">Type:</strong> 
-              <span className="col-span-2">{event.eventType ? event.eventType.join(", ") : ''}</span>
+              <strong className="col-span-1">Type:</strong>
+              <span className="col-span-2">
+                {event.eventType ? event.eventType.join(", ") : ""}
+              </span>
             </div>
             <div className="grid grid-cols-3 gap-2">
-              <strong className="col-span-1">Status:</strong> 
+              <strong className="col-span-1">Status:</strong>
               <span className="col-span-2">{event.status}</span>
             </div>
             <div className="grid grid-cols-3 gap-2">
-              <strong className="col-span-1">Description:</strong> 
+              <strong className="col-span-1">Description:</strong>
               <span className="col-span-2">{event.eventDescription}</span>
             </div>
             <div className="grid grid-cols-3 gap-2">
-              <strong className="col-span-1">Location:</strong> 
+              <strong className="col-span-1">Location:</strong>
               <span className="col-span-2">{event.proposedLocation}</span>
             </div>
             <div className="grid grid-cols-3 gap-2">
               <strong className="col-span-1">Start Date:</strong>
               <span className="col-span-2">
-                {event.startDate ? new Date(event.startDate).toLocaleDateString() : 'N/A'}
+                {event.startDate
+                  ? new Date(event.startDate).toLocaleDateString()
+                  : "N/A"}
               </span>
             </div>
             <div className="grid grid-cols-3 gap-2">
               <strong className="col-span-1">End Date:</strong>
               <span className="col-span-2">
-                {event.endDate ? new Date(event.endDate).toLocaleDateString() : 'N/A'}
+                {event.endDate
+                  ? new Date(event.endDate).toLocaleDateString()
+                  : "N/A"}
               </span>
             </div>
             {event.startTime && (
@@ -98,9 +104,27 @@ export default function ViewEventDialog({
                 <span className="col-span-2">{event.endTime}</span>
               </div>
             )}
-           <div className="grid grid-cols-3 gap-2">
-              <strong className="col-span-1">Client:</strong> 
+            <div className="grid grid-cols-3 gap-2">
+              <strong className="col-span-1">Client:</strong>
               <span className="col-span-2">{event?.clientId?.userName}</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <strong className="col-span-1">Assignees:</strong>
+              <span className="col-span-2">
+                {event.assignees && event.assignees.length > 0
+                  ? event.assignees.map((a: any) => a.userName).join(", ")
+                  : "No assignees added"}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <strong className="col-span-1">Inventory Items:</strong>
+              <span className="col-span-2">
+                {event.inventoryItems && event.inventoryItems.length > 0
+                  ? event.inventoryItems
+                      .map((item: any) => item.itemName)
+                      .join(", ")
+                  : "No inventory items added"}
+              </span>
             </div>
           </div>
         )}
