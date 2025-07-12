@@ -8,6 +8,7 @@ import {
   CornerDownRight,
   X,
   Loader2,
+  MessageCircle,
   Download,
 } from "lucide-react";
 import {
@@ -52,7 +53,6 @@ export default function CommentDialog({
     isCreatingReply,
     isDeletingComment,
   } = useCommentData(taskId, open);
-  console.log(messagesWithReplies, "messagesWithReplies");
 
   const handleFileSelect = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -103,289 +103,203 @@ export default function CommentDialog({
     setShowReplyFileUpload(false);
   };
 
+  const formatTimeAgo = (dateString: string) => {
+    const now = new Date();
+    const commentDate = new Date(dateString);
+    const diffInMinutes = Math.floor(
+      (now.getTime() - commentDate.getTime()) / (1000 * 60)
+    );
+
+    if (diffInMinutes < 1) return "Just now";
+    if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
+    if (diffInMinutes < 1440)
+      return `${Math.floor(diffInMinutes / 60)} hours ago`;
+    return `${Math.floor(diffInMinutes / 1440)} days ago`;
+  };
+
+  const displayComments = messagesWithReplies;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md w-full max-h-[90vh] h-[600px] p-0 flex flex-col">
-        <DialogHeader className="p-4 flex-shrink-0">
-          <DialogTitle>Comments - {taskName}</DialogTitle>
+      <DialogContent className="sm:max-w-2xl w-full max-h-[90vh] h-[700px] p-0 flex flex-col">
+        <DialogHeader className="p-6 flex-shrink-0 border-b">
+          <DialogTitle className="text-xl font-semibold">
+            Comments - {taskName}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="flex flex-col h-full min-h-0">
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+          <div className="flex-1 overflow-y-auto p-6 space-y-6 min-h-0">
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
                 <span className="ml-2 text-gray-500">Loading comments...</span>
               </div>
-            ) : messagesWithReplies.length === 0 ? (
+            ) : displayComments.length === 0 ? (
               <div className="text-center text-gray-500 py-8">
+                <MessageCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                 <p>No comments yet</p>
+                <p className="text-sm">
+                  Be the first to start the conversation!
+                </p>
               </div>
             ) : (
-              messagesWithReplies.map((message) => (
-                <div key={message.id} className="space-y-2">
-                  {/* Parent Message */}
-                  <div className="group">
-                    <div
-                      className={`flex ${
-                        message.isReply ? "justify-end" : "justify-start"
-                      }`}
-                    >
-                      <div
-                        className={`flex max-w-[80%] ${
-                          message.isReply ? "flex-row-reverse" : "flex-row"
-                        } space-x-2`}
-                      >
-                        <div
-                          className={`flex flex-col ${
-                            message.isReply ? "items-end" : "items-start"
-                          }`}
-                        >
-                          <div
-                            className={`rounded-2xl px-4 py-2 ${
-                              message.isReply
-                                ? "bg-green-600 text-white rounded-br-md"
-                                : "bg-gray-100 text-gray-900 rounded-bl-md"
-                            }`}
-                          >
-                            {message.content && (
-                              <p className="text-sm leading-relaxed">
-                                {message.content}
-                              </p>
-                            )}
-                            {message.images && message.images.length > 0 && (
-                              <div
-                                className={`${
-                                  message.content ? "mt-2" : ""
-                                } space-y-2`}
-                              >
-                                {message.images?.length > 0 && (
-                                  <div className="flex flex-wrap gap-2 mt-2">
-                                    {message.images.map(
-                                      (imageUrl, imgIndex) => (
-                                        <div
-                                          key={imgIndex}
-                                          className="relative group w-full max-w-[200px] rounded-lg overflow-hidden"
-                                        >
-                                          <a
-                                            href={imageUrl}
-                                            download={`attachment-${
-                                              imgIndex + 1
-                                            }`}
-                                            className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-white bg-opacity-80 p-1 rounded-full shadow"
-                                          >
-                                            <Download className="w-4 h-4 text-gray-700 hover:text-green-600" />
-                                          </a>
-
-                                          <img
-                                            src={imageUrl}
-                                            alt={`Attachment ${imgIndex + 1}`}
-                                            className="w-full h-auto object-cover rounded-lg transition-opacity duration-200 group-hover:opacity-75"
-                                          />
-                                        </div>
-                                      )
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 mt-1 px-2">
-                            <span className="text-xs text-gray-500">
-                              {message.sender}
-                            </span>
-                            <span className="text-xs text-gray-400">•</span>
-                            <span className="text-xs text-gray-500">
-                              {message.timestamp}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+              displayComments.map((comment) => (
+                <div key={comment.id} className="space-y-4">
+                  {/* Parent Comment */}
+                  <div className="flex space-x-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+                      {comment.sender.charAt(0).toUpperCase()}
                     </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <span className="font-semibold text-gray-900">
+                          {comment.sender}
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          {formatTimeAgo(comment.timestamp)}
+                        </span>
+                      </div>
+                      <p className="text-gray-800 text-sm leading-relaxed mb-3">
+                        {comment.content}
+                      </p>
 
-                    {/* Action buttons */}
-                    <div
-                      className={`flex ${
-                        message.isReply ? "justify-end" : "justify-start"
-                      } mt-1 opacity-0 group-hover:opacity-100 transition-opacity`}
-                    >
-                      <div className="flex space-x-1 px-2">
+                      {/* Images */}
+                      {comment.images && comment.images.length > 0 && (
+                        <div
+                          className={`${
+                            comment.content ? "mt-2" : ""
+                          } space-y-2`}
+                        >
+                          {comment.images?.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {comment.images.map((imageUrl, imgIndex) => (
+                                <div
+                                  key={imgIndex}
+                                  className="relative group w-full max-w-[200px] rounded-lg overflow-hidden"
+                                >
+                                  <a
+                                    href={imageUrl}
+                                    download={`attachment-${imgIndex + 1}`}
+                                    className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-white bg-opacity-80 p-1 rounded-full shadow"
+                                  >
+                                    <Download className="w-4 h-4 text-gray-700 hover:text-green-600" />
+                                  </a>
+
+                                  <img
+                                    src={imageUrl}
+                                    alt={`Attachment ${imgIndex + 1}`}
+                                    className="w-full h-auto object-cover rounded-lg transition-opacity duration-200 group-hover:opacity-75"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Action buttons */}
+                      <div className="flex items-center space-x-4">
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-6 w-6 p-0 text-gray-400 hover:text-blue-600"
-                          onClick={() => handleForwardMessage(message.id)}
-                          disabled={isCreatingReply}
+                          className="text-xs font-medium text-gray-500 hover:text-blue-600 px-0"
+                          onClick={() => handleForwardMessage(comment.id)}
                         >
-                          <CornerDownRight className="w-3 h-3" />
+                          <CornerDownRight className="w-4 h-4 mr-1" />
+                          Reply
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-6 w-6 p-0 text-gray-400 hover:text-red-600"
-                          onClick={() => handleDeleteMessage(message.id)}
+                          className="text-xs font-medium text-gray-500 hover:text-red-600 px-0"
+                          onClick={() => handleDeleteMessage(comment.id)}
                           disabled={isDeletingComment}
                         >
-                          {isDeletingComment ? (
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                          ) : (
-                            <Trash2 className="w-3 h-3" />
-                          )}
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          Delete
                         </Button>
                       </div>
                     </div>
                   </div>
 
                   {/* Replies */}
-                  {message.replies && message.replies.length > 0 && (
-                    <div className="ml-4 sm:ml-8 space-y-2">
-                      {message.replies.map((reply) => {
-                        const parentMsg = getParentMessage(reply.parentId!);
-                        return (
-                          <div key={reply.id} className="group">
-                            <div
-                              className={`flex ${
-                                reply.isReply ? "justify-end" : "justify-start"
-                              }`}
-                            >
-                              <div
-                                className={`flex max-w-[80%] ${
-                                  reply.isReply
-                                    ? "flex-row-reverse"
-                                    : "flex-row"
-                                } space-x-2`}
-                              >
-                                <div
-                                  className={`flex flex-col ${
-                                    reply.isReply ? "items-end" : "items-start"
-                                  }`}
-                                >
-                                  <div
-                                    className={`rounded-2xl px-4 py-2 ${
-                                      reply.isReply
-                                        ? "bg-green-600 text-white rounded-br-md"
-                                        : "bg-gray-100 text-gray-900 rounded-bl-md"
-                                    }`}
-                                  >
-                                    {parentMsg && (
-                                      <div
-                                        className={`mb-2 pb-2 border-b ${
-                                          reply.isReply
-                                            ? "border-green-400 border-opacity-50"
-                                            : "border-gray-300"
-                                        }`}
-                                      >
-                                        <p
-                                          className={`text-xs ${
-                                            reply.isReply
-                                              ? "text-green-200"
-                                              : "text-gray-500"
-                                          } mb-1`}
-                                        >
-                                          {parentMsg.sender}
-                                        </p>
-                                        <p
-                                          className={`text-xs ${
-                                            reply.isReply
-                                              ? "text-green-100"
-                                              : "text-gray-600"
-                                          } leading-relaxed`}
-                                        >
-                                          {parentMsg.content}
-                                        </p>
-                                      </div>
-                                    )}
-                                    {reply.content && (
-                                      <p className="text-sm leading-relaxed">
-                                        {reply.content}
-                                      </p>
-                                    )}
-                                    {reply.images &&
-                                      reply.images.length > 0 && (
-                                        <div
-                                          className={`${
-                                            reply.content ? "mt-2" : ""
-                                          } space-y-2`}
-                                        >
-                                          {reply.images.map(
-                                            (imageUrl, imgIndex) => (
-                                              <div
-                                                key={imgIndex}
-                                                className="relative group w-full max-w-[200px] rounded-lg overflow-hidden"
-                                              >
-                                                <a
-                                                  href={imageUrl}
-                                                  download={`attachment-${
-                                                    imgIndex + 1
-                                                  }`}
-                                                  className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-white bg-opacity-80 p-1 rounded-full shadow"
-                                                >
-                                                  <Download className="w-4 h-4 text-gray-700 hover:text-green-600" />
-                                                </a>
-
-                                                <img
-                                                  src={imageUrl}
-                                                  alt={`Attachment ${
-                                                    imgIndex + 1
-                                                  }`}
-                                                  className="w-full h-auto object-cover rounded-lg transition-opacity duration-200 group-hover:opacity-75"
-                                                />
-                                              </div>
-                                            )
-                                          )}
-                                        </div>
-                                      )}
-                                  </div>
-                                  <div className="flex items-center gap-2 mt-1 px-2">
-                                    <span className="text-xs text-gray-500">
-                                      {reply.sender}
-                                    </span>
-                                    <span className="text-xs text-gray-400">
-                                      •
-                                    </span>
-                                    <span className="text-xs text-gray-500">
-                                      {reply.timestamp}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
+                  {comment.replies && comment.replies.length > 0 && (
+                    <div className="ml-13 space-y-4">
+                      {comment.replies.map((reply) => (
+                        <div key={reply.id} className="flex space-x-3">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center text-white font-semibold text-xs">
+                            {reply.sender.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <span className="font-semibold text-gray-900 text-sm">
+                                {reply.sender}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {formatTimeAgo(reply.timestamp)}
+                              </span>
                             </div>
+                            <p className="text-gray-800 text-sm leading-relaxed mb-3">
+                              {reply.content}
+                            </p>
+
+                            {/* Reply Images */}
+                            {reply.images && reply.images.length > 0 && (
+                              <div
+                                className={`${
+                                  reply.content ? "mt-2" : ""
+                                } space-y-2`}
+                              >
+                                {reply.images.map((imageUrl, imgIndex) => (
+                                  <div
+                                    key={imgIndex}
+                                    className="relative group w-full max-w-[200px] rounded-lg overflow-hidden"
+                                  >
+                                    <a
+                                      href={imageUrl}
+                                      download={`attachment-${imgIndex + 1}`}
+                                      className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-white bg-opacity-80 p-1 rounded-full shadow"
+                                    >
+                                      <Download className="w-4 h-4 text-gray-700 hover:text-green-600" />
+                                    </a>
+
+                                    <img
+                                      src={imageUrl}
+                                      alt={`Attachment ${imgIndex + 1}`}
+                                      className="w-full h-auto object-cover rounded-lg transition-opacity duration-200 group-hover:opacity-75"
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            )}
 
                             {/* Reply action buttons */}
-                            <div
-                              className={`flex ${
-                                reply.isReply ? "justify-end" : "justify-start"
-                              } mt-1 opacity-0 group-hover:opacity-100 transition-opacity`}
-                            >
-                              <div className="flex space-x-1 px-2">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-6 w-6 p-0 text-gray-400 hover:text-blue-600"
-                                  onClick={() => handleForwardMessage(reply.id)}
-                                  disabled={isCreatingReply}
-                                >
-                                  <CornerDownRight className="w-3 h-3" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-6 w-6 p-0 text-gray-400 hover:text-red-600"
-                                  onClick={() => handleDeleteMessage(reply.id)}
-                                  disabled={isDeletingComment}
-                                >
-                                  {isDeletingComment ? (
-                                    <Loader2 className="w-3 h-3 animate-spin" />
-                                  ) : (
-                                    <Trash2 className="w-3 h-3" />
-                                  )}
-                                </Button>
-                              </div>
+                            <div className="flex items-center space-x-4">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-xs font-medium text-gray-500 hover:text-blue-600 px-0"
+                                onClick={() => handleForwardMessage(reply.id)}
+                              >
+                                <CornerDownRight className="w-4 h-4 mr-1" />
+                                Reply
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-xs font-medium text-gray-500 hover:text-red-600 px-0"
+                                onClick={() => handleDeleteMessage(reply.id)}
+                                disabled={isDeletingComment}
+                              >
+                                <Trash2 className="w-4 h-4 mr-1" />
+                                Delete
+                              </Button>
                             </div>
                           </div>
-                        );
-                      })}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -396,7 +310,7 @@ export default function CommentDialog({
           {/* Reply Input */}
           {replyingTo && (
             <div className="p-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
-              <div className="mb-3 p-2 bg-white rounded-lg border-l-4 border-green-500">
+              <div className="mb-3 p-3 bg-white rounded-lg border-l-4 border-blue-500">
                 <p className="text-xs text-gray-500 mb-1">Replying to:</p>
                 <p className="text-sm text-gray-700">
                   {getParentMessage(replyingTo)?.content}
@@ -406,7 +320,7 @@ export default function CommentDialog({
               {/* File Upload for Reply */}
               {showReplyFileUpload && (
                 <div className="mb-3">
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-white hover:border-green-400 transition-colors">
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-white hover:border-blue-400 transition-colors">
                     <input
                       type="file"
                       id="reply-file-upload"
@@ -427,9 +341,6 @@ export default function CommentDialog({
                       </div>
                     </label>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Max file size: 15MB. Accepted formats: JPG, PNG, GIF.
-                  </p>
 
                   {/* Selected Files Preview */}
                   {selectedReplyFiles.length > 0 && (
@@ -462,7 +373,7 @@ export default function CommentDialog({
                   size="sm"
                   className={`rounded-full p-2 flex-shrink-0 ${
                     showReplyFileUpload
-                      ? "text-green-600 bg-green-50 hover:bg-green-100"
+                      ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
                       : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                   }`}
                   onClick={() => setShowReplyFileUpload(!showReplyFileUpload)}
@@ -478,13 +389,13 @@ export default function CommentDialog({
                     !isCreatingReply &&
                     handleSendNewReply()
                   }
-                  className="flex-1 rounded-full border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  className="flex-1 rounded-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                   disabled={isCreatingReply}
                 />
                 <Button
                   onClick={handleSendNewReply}
                   size="sm"
-                  className="rounded-full bg-green-600 hover:bg-green-700 text-white p-2 flex-shrink-0"
+                  className="rounded-full bg-blue-600 hover:bg-blue-700 text-white p-2 flex-shrink-0"
                   disabled={
                     (!replyMessage.trim() && selectedReplyFiles.length === 0) ||
                     isCreatingReply
@@ -514,7 +425,7 @@ export default function CommentDialog({
             <div className="p-4 border-t border-gray-200 flex-shrink-0">
               {showFileUpload && (
                 <div className="mb-3">
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-green-400 transition-colors">
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-400 transition-colors">
                     <input
                       type="file"
                       id="main-file-upload"
@@ -535,9 +446,6 @@ export default function CommentDialog({
                       </div>
                     </label>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Max file size: 15MB. Accepted formats: JPG, PNG, GIF.
-                  </p>
 
                   {/* Selected Files Preview */}
                   {selectedFiles.length > 0 && (
@@ -570,7 +478,7 @@ export default function CommentDialog({
                   size="sm"
                   className={`rounded-full p-2 flex-shrink-0 ${
                     showFileUpload
-                      ? "text-green-600 bg-green-50 hover:bg-green-100"
+                      ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
                       : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                   }`}
                   onClick={() => setShowFileUpload(!showFileUpload)}
@@ -578,7 +486,7 @@ export default function CommentDialog({
                   <Paperclip className="w-4 h-4" />
                 </Button>
                 <Input
-                  placeholder="Add a comment..."
+                  placeholder="Write a comment..."
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyPress={(e) =>
@@ -586,13 +494,13 @@ export default function CommentDialog({
                     !isCreatingComment &&
                     handleSendNewMessage()
                   }
-                  className="flex-1 rounded-full border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  className="flex-1 rounded-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                   disabled={isCreatingComment}
                 />
                 <Button
                   onClick={handleSendNewMessage}
                   size="sm"
-                  className="rounded-full bg-green-600 hover:bg-green-700 text-white p-2 flex-shrink-0"
+                  className="rounded-full bg-blue-600 hover:bg-blue-700 text-white p-2 flex-shrink-0"
                   disabled={
                     (!newMessage.trim() && selectedFiles.length === 0) ||
                     isCreatingComment

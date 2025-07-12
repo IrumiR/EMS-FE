@@ -74,15 +74,7 @@ export const useCommentData = (taskId: string, isOpen: boolean) => {
         sender: comment.createdBy.userName,
         avatar: "/api/placeholder/40/40",
         content: comment.commentText,
-        timestamp: comment.createdAt
-          ? new Date(comment.createdAt).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-          : new Date().toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
+        timestamp: comment.createdAt ?? "",
         isReply: false,
         originalCommentId: comment._id,
         images:
@@ -99,15 +91,7 @@ export const useCommentData = (taskId: string, isOpen: boolean) => {
             sender: reply.createdBy.userName || "Unknown",
             avatar: "/api/placeholder/40/40",
             content: reply.commentText,
-            timestamp: reply.createdAt
-              ? new Date(reply.createdAt).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-              : new Date().toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }),
+           timestamp: comment.createdAt ?? "",
             isReply: true,
             parentId: mainMessage.id,
             originalCommentId: comment._id,
