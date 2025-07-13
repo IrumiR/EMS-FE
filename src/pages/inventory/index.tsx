@@ -47,6 +47,7 @@ function InventoryScreen() {
     { key: "condition", label: "Condition" },
     { key: "totalQuantity", label: "Total Quantity" },
     { key: "itemType", label: "Item Type" },
+    { key: "reserveType", label: "Reserve Type" },
   ];
 
   const { data, isLoading } = useGetAllInventory(
@@ -81,6 +82,18 @@ function InventoryScreen() {
         }
       >
         {item.isExternal ? "External" : "Internal"}
+      </Badge>
+    ),
+    reserveType: (
+      <Badge
+        variant={item.isSingleUse ? "destructive" : "default"}
+        className={
+          item.isSingleUse
+            ? "bg-orange-100 text-orange-800 hover:bg-orange-200"
+            : "bg-blue-100 text-blue-800 hover:bg-blue-200"
+        }
+      >
+        {item.isSingleUse ? "Single Use" : "Rental"}
       </Badge>
     ),
   }));

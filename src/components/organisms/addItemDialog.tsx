@@ -115,6 +115,7 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({
       totalQuantity: "",
       price: "",
       isExternal: false,
+      isSingleUse: false,
       createdBy: "",
       images: "",
     },
@@ -131,6 +132,7 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({
         formData.append("remainingQuantity", String(values.totalQuantity)); 
         formData.append("price", String(values.price));
         formData.append("isExternal", String(values.isExternal));
+        formData.append("isSingleUse", String(values.isSingleUse));
         formData.append("createdBy", userId ?? "");
     
         selectedImages.forEach((file) => {
@@ -361,7 +363,7 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({
                     </p>
                   </div>
 
-                  <div className="flex items-center space-x-2 mt-4">
+                  <div className="flex flex-col sm:flex-row sm:gap-4 mt-4">
                     <Switch
                       id="isExternal"
                       checked={formik.values.isExternal}
@@ -371,6 +373,17 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({
                     />
                     <Label className="text-sm font-medium text-gray-700">
                       Is External
+                    </Label>
+
+                    <Switch
+                      id="isSingleUse"
+                      checked={formik.values.isSingleUse}
+                      onCheckedChange={(checked) =>
+                        formik.setFieldValue("isSingleUse", checked)
+                      }
+                    />
+                    <Label className="text-sm font-medium text-gray-700">
+                      Is Single Use
                     </Label>
                   </div>
                 </DialogDescription>

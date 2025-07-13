@@ -14,6 +14,7 @@ interface InventoryItemData {
   totalQuantity: number;
   price: number;
   isExternal: boolean;
+  isSingleUse: boolean;
   createdBy: string;
   remainingQuantity?: number;
   images?: {
@@ -139,6 +140,7 @@ export interface InventoryItem {
   variations: string[];
   images: string[];
   isExternal: boolean;
+  isSingleUse: boolean;
   assignedEvent: string[];
   createdBy: string;
   createdAt: string;
