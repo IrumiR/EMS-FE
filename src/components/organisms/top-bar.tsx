@@ -65,20 +65,14 @@ const Topbar = () => {
   return (
     <header className="h-20 bg-white shadow-xs px-6 flex items-center justify-between z-50">
       <nav className="flex items-center text-sm text-gray-600 space-x-1">
-        {pathSegments.map((segment, index) => {
-          const fullPath = pathSegments.slice(0, index + 1).join("/");
-          const label = segment.replace(" ", "").toLocaleLowerCase();
-          return (
-            <div key={index} className="flex items-center space-x-1">
-              <Link
-                to={fullPath}
-                className="hover:text-green-600 capitalize font-semibold text-base"
-              >
-                {label}
-              </Link>
-            </div>
-          );
-        })}
+        {pathSegments.length > 0 && (
+          <Link
+            to={`/${pathSegments[0]}`}
+            className="hover:text-green-600 capitalize font-semibold text-base"
+          >
+            {pathSegments[0].replace(" ", "").toLocaleLowerCase()}
+          </Link>
+        )}
       </nav>
 
       <div className="text-sm text-gray-700 gap-4 flex items-center">

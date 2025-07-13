@@ -16,6 +16,7 @@ import {
   subMonths,
 } from "date-fns";
 import { useGetAllTasksByMonth } from "@/api/taskApi"; 
+import {useGetAssigneeOptions} from "@/api/authApi";
 
 const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const monthNames = [
@@ -40,18 +41,23 @@ const TasksCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date(2025, 5));
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth() + 1;
+  const [selectedAssigneeId, setSelectedAssigneeId] = useState("");
 
+ const userType = localStorage.getItem("role");
   const userId = localStorage.getItem("userId") || "";
   const role = localStorage.getItem("role");
 
   let queryUserId = "";
   let queryClientId = "";
 
-  if (role === "client") {
-    queryClientId = userId;
-  } else if (role !== "admin") {
-    queryUserId = userId;
-  }
+ if (role === "client") {
+   queryClientId = userId;
+ } else if (selectedAssigneeId) {
+   queryUserId = selectedAssigneeId;
+ } else if (role !== "admin") {
+   queryUserId = userId;
+ }
+
 
   const { data, isLoading, isError } = useGetAllTasksByMonth(
     year,
@@ -60,6 +66,13 @@ const TasksCalendar = () => {
     queryClientId
   );
   const tasks = data?.tasks || {};
+
+  const {
+    data: assigneeData,
+    isLoading: assigneesLoading,
+    isError: assigneesError,
+  } = useGetAssigneeOptions();
+
 
   const daysInMonth = eachDayOfInterval({
     start: startOfMonth(currentDate),
@@ -130,6 +143,27 @@ const TasksCalendar = () => {
             </option>
           ))}
         </select>
+
+        {(userType === "admin" || userType === "manager") && (
+          <div>
+            <label htmlFor="assignee-select" className="font-medium">
+              Assignee:
+            </label>
+            <select
+              id="assignee-select"
+              value={selectedAssigneeId}
+              onChange={(e) => setSelectedAssigneeId(e.target.value)}
+              className="border rounded px-2 py-1 text-xs md:text-sm"
+            >
+              <option value="">All</option>
+              {assigneeData?.assignees.map((assignee) => (
+                <option key={assignee.userId} value={assignee.userId}>
+                  {assignee.userName}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-7 gap-2 text-center font-medium text-xs md:text-sm">
@@ -246,7 +280,7 @@ const TasksCalendar = () => {
                         </div>
 
                         <p className="truncate text-muted-foreground">
-                         {task.eventName}
+                          {task.eventName}
                         </p>
                       </CardContent>
                     </Card>
