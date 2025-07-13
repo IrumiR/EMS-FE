@@ -232,6 +232,46 @@ export const useGetInventoryOptions =
     });
   };
 
+export interface ReserveSingleUseInventory {
+  itemId: string;
+  eventId: string;
+  date: string;
+  reservedQuantity: number;
+}
+
+export interface ReserveSingleUseInventoryResponse {
+  message: string;
+  item: ReserveSingleUseInventory[];
+}
+
+export const useReserveSingleUseInventoryMutation = (
+  onSuccess?: (data: ReserveSingleUseInventoryResponse) => void,
+  onError?: (message: string) => void
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (reservationData: ReserveSingleUseInventory) => {
+      const response = await authFetch.post(
+        "/inventory/reserve-single-use",
+        reservationData
+      );
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries("get_all_inventory");
+      if (onSuccess) onSuccess(data);
+    },
+    onError: (error) => {
+      const message =
+        (error as any)?.response?.data?.message ||
+        "Failed to reserve inventory item";
+      if (onError) onError(message);
+    },
+  });
+};
+
+
 export interface ReserveInventory {
   itemId: string;
   eventId: string;
@@ -316,6 +356,8 @@ export const useGetInventoryReport =
       _id: string;
       name: string;
     } | null;
+    isExternal: boolean;
+    isSingleUse: boolean;
     createdAt: string;
   }
 

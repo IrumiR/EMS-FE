@@ -22,6 +22,7 @@ import { ViewItemDialog } from "@/components/organisms/viewItemDialog";
 import { EditItemDialog } from "@/components/organisms/editItemDialog";
 import { ReserveItemDialog } from "@/components/organisms/reserveItemDialog";
 import { DeleteItemDialog } from "@/components/organisms/deleteItemDialog";
+import { SingleUseItemReserveDialog } from "@/components/organisms/singleUseItemReserveDialog";
 import { Badge } from "@/components/ui/badge";
 import { useSearchParams } from "react-router-dom";
 
@@ -35,6 +36,8 @@ function InventoryScreen() {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [reserveDialogOpen, setReserveDialogOpen] = useState(false);
+  const [singleUseReserveDialogOpen, setSingleUseReserveDialogOpen] =
+    useState(false);
   const [deleteItemDialogOpen, setDeleteItemDialogOpen] = useState(false);
   const [reserveItemId, setReserveItemId] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<any>(null);
@@ -45,7 +48,7 @@ function InventoryScreen() {
     { key: "itemName", label: "Item Name" },
     { key: "category", label: "Category" },
     { key: "condition", label: "Condition" },
-    { key: "totalQuantity", label: "Total Quantity" },
+    { key: "remainingQuantity", label: "Total Quantity" },
     { key: "itemType", label: "Item Type" },
     { key: "reserveType", label: "Reserve Type" },
   ];
@@ -69,9 +72,36 @@ function InventoryScreen() {
     category: Array.isArray(item.category)
       ? item.category.join(", ")
       : item.category,
-    condition: Array.isArray(item.condition)
-      ? item.condition.join(", ")
-      : item.condition,
+    condition: Array.isArray(item.condition) ? (
+      item.condition.map((cond) => (
+        <Badge
+          key={cond}
+          variant="default"
+          className={
+            cond === "New"
+              ? "bg-purple-100 text-purple-800 hover:bg-purple-200 mr-1"
+              : cond === "Used"
+              ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200 mr-1"
+              : "bg-gray-100 text-gray-800 hover:bg-gray-200 mr-1"
+          }
+        >
+          {cond}
+        </Badge>
+      ))
+    ) : (
+      <Badge
+        variant="default"
+        className={
+          item.condition === "New"
+            ? "bg-purple-100 text-purple-800 hover:bg-purple-200"
+            : item.condition === "Used"
+            ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+        }
+      >
+        {item.condition}
+      </Badge>
+    ),
     itemType: (
       <Badge
         variant={item.isExternal ? "destructive" : "default"}
@@ -122,6 +152,16 @@ function InventoryScreen() {
     setCurrentPage(1);
   };
 
+  const handleReserveClick = (item: any) => {
+    setReserveItemId(item._id);
+
+    if (item.isSingleUse) {
+      setSingleUseReserveDialogOpen(true);
+    } else {
+      setReserveDialogOpen(true);
+    }
+  };
+
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
@@ -135,7 +175,6 @@ function InventoryScreen() {
       }
     }
   }, [searchParams]);
-
 
   return (
     <div>
@@ -249,10 +288,7 @@ function InventoryScreen() {
                   variant="ghost"
                   size="sm"
                   className="p-1 hover:bg-gray-100"
-                  onClick={() => {
-                    setReserveItemId(row._id);
-                    setReserveDialogOpen(true);
-                  }}
+                  onClick={() => handleReserveClick(row)}
                 >
                   <CalendarCheck className="h-4 w-4 text-purple-600" />
                 </Button>
@@ -280,6 +316,14 @@ function InventoryScreen() {
           open={viewDialogOpen}
           onOpenChange={setViewDialogOpen}
           itemId={selectedItem}
+        />
+      </div>
+
+      <div>
+        <SingleUseItemReserveDialog
+          open={singleUseReserveDialogOpen}
+          onOpenChange={setSingleUseReserveDialogOpen}
+          itemId={reserveItemId ?? ""}
         />
       </div>
 

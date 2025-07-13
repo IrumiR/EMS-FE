@@ -97,13 +97,24 @@ export default function InventoryReportCard() {
       r.event?.name || "-",
       new Date(r.date).toLocaleDateString(),
       r.reservedQuantity,
+      r.isExternal ? "Yes" : "No",
+      r.isSingleUse ? "Yes" : "No",
       new Date(r.createdAt).toLocaleDateString(),
     ]);
 
     autoTable(doc, {
       startY: 40,
       head: [
-        ["#", "Item Name", "Event Name", "Reserved For", "Qty", "Created At"],
+        [
+          "#",
+          "Item Name",
+          "Event Name",
+          "Reserved For",
+          "Qty",
+          "isExternal",
+          "isSingleUse",
+          "Created At",
+        ],
       ],
       body: tableData,
       theme: "grid",
@@ -125,6 +136,8 @@ export default function InventoryReportCard() {
       "Event Name": r.event?.name || "-",
       "Reserved For": new Date(r.date).toLocaleDateString(),
       Quantity: r.reservedQuantity,
+      isExternal: r.isExternal ? "Yes" : "No",
+      isSingleUse: r.isSingleUse ? "Yes" : "No",
       "Created At": new Date(r.createdAt).toLocaleDateString(),
     }));
 
@@ -139,6 +152,8 @@ export default function InventoryReportCard() {
       { wch: 25 },
       { wch: 18 },
       { wch: 10 },
+      { wch: 12 },
+      { wch: 12 },
       { wch: 18 },
     ];
 

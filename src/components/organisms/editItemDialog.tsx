@@ -70,6 +70,7 @@ export function EditItemDialog({ open, onOpenChange, itemId }: EditItemDialogPro
       price: "",
       itemDescription: "",
       isExternal: false,
+      isSingleUse: false
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -84,6 +85,7 @@ export function EditItemDialog({ open, onOpenChange, itemId }: EditItemDialogPro
           price: parseFloat(values.price),
           itemDescription: values.itemDescription,
           isExternal: values.isExternal,
+          isSingleUse: values.isSingleUse,
         };
 
         await updateInventoryMutation.mutateAsync({
@@ -111,6 +113,7 @@ export function EditItemDialog({ open, onOpenChange, itemId }: EditItemDialogPro
         price: item.price ? item.price.toString() : "",
         itemDescription: item.itemDescription || "",
         isExternal: item.isExternal || false,
+        isSingleUse: item.isSingleUse || false,
       });
     }
   }, [open, item]);
@@ -164,7 +167,9 @@ export function EditItemDialog({ open, onOpenChange, itemId }: EditItemDialogPro
                 {isLoadingItem ? (
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
-                    <span className="ml-2 text-gray-600">Loading item details...</span>
+                    <span className="ml-2 text-gray-600">
+                      Loading item details...
+                    </span>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -186,10 +191,12 @@ export function EditItemDialog({ open, onOpenChange, itemId }: EditItemDialogPro
                         onBlur={formik.handleBlur}
                       />
                       {formik.touched.itemName && formik.errors.itemName && (
-                        <p className="text-red-500 text-xs mt-1">{formik.errors.itemName}</p>
+                        <p className="text-red-500 text-xs mt-1">
+                          {formik.errors.itemName}
+                        </p>
                       )}
                     </div>
-                    
+
                     <div className="flex flex-col sm:flex-row sm:gap-4">
                       <div className="w-full mb-4 sm:mb-0">
                         <label
@@ -200,9 +207,16 @@ export function EditItemDialog({ open, onOpenChange, itemId }: EditItemDialogPro
                         </label>
                         <div className="mt-3">
                           <MultiSelect
-                            value={formik.values.category.map(cat => categoryOptions.find(opt => opt.id === cat)).filter(Boolean)}
+                            value={formik.values.category
+                              .map((cat) =>
+                                categoryOptions.find((opt) => opt.id === cat)
+                              )
+                              .filter(Boolean)}
                             onChange={(e: MultiSelectChangeEvent) =>
-                              formik.setFieldValue("category", e.value.map((item: any) => item.id))
+                              formik.setFieldValue(
+                                "category",
+                                e.value.map((item: any) => item.id)
+                              )
                             }
                             options={categoryOptions}
                             optionLabel="name"
@@ -220,7 +234,9 @@ export function EditItemDialog({ open, onOpenChange, itemId }: EditItemDialogPro
                           />
                         </div>
                         {formik.touched.category && formik.errors.category && (
-                          <p className="text-red-500 text-xs mt-1">{formik.errors.category}</p>
+                          <p className="text-red-500 text-xs mt-1">
+                            {formik.errors.category}
+                          </p>
                         )}
                       </div>
                       <div className="w-full">
@@ -232,9 +248,16 @@ export function EditItemDialog({ open, onOpenChange, itemId }: EditItemDialogPro
                         </label>
                         <div className="mt-3">
                           <MultiSelect
-                            value={formik.values.condition.map(cond => conditionOptions.find(opt => opt.id === cond)).filter(Boolean)}
+                            value={formik.values.condition
+                              .map((cond) =>
+                                conditionOptions.find((opt) => opt.id === cond)
+                              )
+                              .filter(Boolean)}
                             onChange={(e: MultiSelectChangeEvent) =>
-                              formik.setFieldValue("condition", e.value.map((item: any) => item.id))
+                              formik.setFieldValue(
+                                "condition",
+                                e.value.map((item: any) => item.id)
+                              )
                             }
                             options={conditionOptions}
                             optionLabel="name"
@@ -251,12 +274,15 @@ export function EditItemDialog({ open, onOpenChange, itemId }: EditItemDialogPro
                             panelClassName="prime-panel"
                           />
                         </div>
-                        {formik.touched.condition && formik.errors.condition && (
-                          <p className="text-red-500 text-xs mt-1">{formik.errors.condition}</p>
-                        )}
+                        {formik.touched.condition &&
+                          formik.errors.condition && (
+                            <p className="text-red-500 text-xs mt-1">
+                              {formik.errors.condition}
+                            </p>
+                          )}
                       </div>
                     </div>
-                    
+
                     <div className="flex flex-col sm:flex-row sm:gap-4">
                       <div className="w-full mb-4 sm:mb-0">
                         <label
@@ -275,9 +301,12 @@ export function EditItemDialog({ open, onOpenChange, itemId }: EditItemDialogPro
                           onChange={formik.handleChange}
                           onBlur={formik.handleBlur}
                         />
-                        {formik.touched.totalQuantity && formik.errors.totalQuantity && (
-                          <p className="text-red-500 text-xs mt-1">{formik.errors.totalQuantity}</p>
-                        )}
+                        {formik.touched.totalQuantity &&
+                          formik.errors.totalQuantity && (
+                            <p className="text-red-500 text-xs mt-1">
+                              {formik.errors.totalQuantity}
+                            </p>
+                          )}
                       </div>
                       <div className="w-full">
                         <label
@@ -298,11 +327,13 @@ export function EditItemDialog({ open, onOpenChange, itemId }: EditItemDialogPro
                           onBlur={formik.handleBlur}
                         />
                         {formik.touched.price && formik.errors.price && (
-                          <p className="text-red-500 text-xs mt-1">{formik.errors.price}</p>
+                          <p className="text-red-500 text-xs mt-1">
+                            {formik.errors.price}
+                          </p>
                         )}
                       </div>
                     </div>
-                    
+
                     <div>
                       <label
                         htmlFor="itemDescription"
@@ -319,11 +350,14 @@ export function EditItemDialog({ open, onOpenChange, itemId }: EditItemDialogPro
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
                       />
-                      {formik.touched.itemDescription && formik.errors.itemDescription && (
-                        <p className="text-red-500 text-xs mt-1">{formik.errors.itemDescription}</p>
-                      )}
+                      {formik.touched.itemDescription &&
+                        formik.errors.itemDescription && (
+                          <p className="text-red-500 text-xs mt-1">
+                            {formik.errors.itemDescription}
+                          </p>
+                        )}
                     </div>
-                    
+
                     <div>
                       <label
                         htmlFor="images"
@@ -335,7 +369,7 @@ export function EditItemDialog({ open, onOpenChange, itemId }: EditItemDialogPro
                         <div className="border rounded-md p-2">
                           <FileUpload
                             name="demo[]"
-                            url={'/api/upload'}
+                            url={"/api/upload"}
                             multiple
                             accept="image/*"
                             maxFileSize={1000000}
@@ -352,15 +386,28 @@ export function EditItemDialog({ open, onOpenChange, itemId }: EditItemDialogPro
                         Max file size: 1MB. Accepted formats: JPG, PNG, GIF.
                       </p>
                     </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <Switch 
+
+                    <div className="flex flex-col sm:flex-row sm:gap-4 mt-4">
+                      <Switch
                         id="isExternal"
                         checked={formik.values.isExternal}
-                        onCheckedChange={(checked) => formik.setFieldValue("isExternal", checked)}
+                        onCheckedChange={(checked) =>
+                          formik.setFieldValue("isExternal", checked)
+                        }
                       />
                       <Label className="text-sm font-medium text-gray-700">
                         Is External
+                      </Label>
+
+                      <Switch
+                        id="isSingleUse"
+                        checked={formik.values.isSingleUse}
+                        onCheckedChange={(checked) =>
+                          formik.setFieldValue("isSingleUse", checked)
+                        }
+                      />
+                      <Label className="text-sm font-medium text-gray-700">
+                        Is Single Use
                       </Label>
                     </div>
                   </div>
