@@ -11,9 +11,14 @@ export default function BudgetReportCard() {
   const [openDateDropdown, setOpenDateDropdown] = useState(false);
   const [selectedDateRange, setSelectedDateRange] = useState<string>("");
 
-  const { data: budgetReport } = useGetBudgetReport(
-    selectedDateRange?.replace("-", "_") as "pastDay" | "pastWeek" | "pastMonth"
-  );
+ const { data: budgetReport } = useGetBudgetReport(
+   selectedDateRange === "all"
+     ? undefined
+     : (selectedDateRange?.replace("-", "_") as
+         | "pastDay"
+         | "pastWeek"
+         | "pastMonth")
+ );
 
   const dateRangeOptions = [
     { value: "pastDay", label: "Past Day" },

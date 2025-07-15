@@ -11,12 +11,14 @@ export default function UserReportCard() {
   const [openDateDropdown, setOpenDateDropdown] = useState(false);
   const [selectedDateRange, setSelectedDateRange] = useState<string>("");
 
-  const { data: userReport, isLoading } = useGetUserReport(
-    selectedDateRange?.replace("-", "_") as
-      | "pastDay"
-      | "pastWeek"
-      | "pastMonth"
-  );
+ const { data: userReport, isLoading } = useGetUserReport(
+   selectedDateRange === "all"
+     ? undefined
+     : (selectedDateRange?.replace("-", "_") as
+         | "pastDay"
+         | "pastWeek"
+         | "pastMonth")
+ );
 
   const dateRangeOptions = [
     { value: "pastDay", label: "Past Day" },

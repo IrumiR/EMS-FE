@@ -11,16 +11,20 @@ export default function EventReportCard() {
   const [openDateDropdown, setOpenDateDropdown] = useState<boolean>(false);
   const [selectedDateRange, setSelectedDateRange] = useState<string>("");
   const { data: eventReport, isLoading } = useGetEventReport(
-    selectedDateRange?.replace("-", "_") as
-      | "past_day"
-      | "past_week"
-      | "past_month"
+    selectedDateRange === "all"
+      ? undefined
+      : (selectedDateRange?.replace("-", "_") as
+          | "past_day"
+          | "past_week"
+          | "past_month")
   );
+
 
   const dateRangeOptions = [
     { value: "past-day", label: "Past Day" },
     { value: "past-week", label: "Past Week" },
     { value: "past-month", label: "Past Month" },
+    // { value: "all", label: "All" },
   ];
 
   const getDateRangeDetails = (range: string) => {
