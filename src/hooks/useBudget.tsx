@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useGetAllEventsDropdown } from "@/api/taskApi";
 import { useGetClientOptions } from "@/api/authApi";
 import { useGetInventoryOptions } from "@/api/inventoryApi";
@@ -45,6 +45,10 @@ const validationSchema = Yup.object({
         .required("Price is required"),
     })
   ),
+  discountPercentage: Yup.number()
+    .min(0, "Discount cannot be negative")
+    .max(100, "Discount cannot exceed 100%")
+    .nullable(),
   totalAmount: Yup.number()
     .positive("Total amount must be positive")
     .required("Total amount is required"),
@@ -76,6 +80,7 @@ export function useBudget() {
       selectedEventId: "",
       expenses: [{ expense: "", value: "" }] as Expense[],
       inventoryItems: [] as InventoryItem[],
+      discountPercentage: "",
       totalAmount: 0,
     },
     validationSchema,
@@ -96,6 +101,9 @@ export function useBudget() {
           price: Number(item.price),
         })),
         totalAmount: Number(values.totalAmount),
+        discount: values.discountPercentage
+          ? Number(values.discountPercentage)
+          : undefined,
         createdBy: userId || "",
       };
 
@@ -105,7 +113,16 @@ export function useBudget() {
 
   const eventList = useGetAllEventsDropdown(formik.values.selectedClientId);
 
-  const calculateTotal = () => {
+  useEffect(() => {
+    const total = calculateTotal();
+    formik.setFieldValue("totalAmount", total);
+  }, [
+    formik.values.expenses,
+    formik.values.inventoryItems,
+    formik.values.discountPercentage,
+  ]);
+
+  const calculateSubtotal = () => {
     const expenseTotal = formik.values.expenses.reduce((sum, expense) => {
       const val = parseFloat(expense.value) || 0;
       return sum + val;
@@ -119,6 +136,14 @@ export function useBudget() {
     return expenseTotal + inventoryTotal;
   };
 
+  const calculateTotal = () => {
+    const subtotal = calculateSubtotal();
+    const discountPercent = parseFloat(formik.values.discountPercentage) || 0;
+    const discountAmount = (subtotal * discountPercent) / 100;
+    const finalTotal = subtotal - discountAmount;
+    return Math.max(0, finalTotal); 
+  };
+
   const handleExpenseChange = (
     index: number,
     field: keyof Expense,
@@ -127,14 +152,6 @@ export function useBudget() {
     const updatedExpenses = [...formik.values.expenses];
     updatedExpenses[index] = { ...updatedExpenses[index], [field]: value };
     formik.setFieldValue("expenses", updatedExpenses);
-
-    // Auto-calculate total if value field changed
-    if (field === "value") {
-      setTimeout(() => {
-        const total = calculateTotal();
-        formik.setFieldValue("totalAmount", total);
-      }, 0);
-    }
   };
 
   const handleInventoryChange = (
@@ -153,12 +170,6 @@ export function useBudget() {
     }
 
     formik.setFieldValue("inventoryItems", updatedInventory);
-
-    // Auto-calculate total
-    setTimeout(() => {
-      const total = calculateTotal();
-      formik.setFieldValue("totalAmount", total);
-    }, 0);
   };
 
   const handleInventoryItemSelect = (index: number, itemId: string) => {
@@ -179,12 +190,6 @@ export function useBudget() {
       };
 
       formik.setFieldValue("inventoryItems", updatedInventory);
-
-      // Auto-calculate total
-      setTimeout(() => {
-        const total = calculateTotal();
-        formik.setFieldValue("totalAmount", total);
-      }, 0);
     }
   };
 
@@ -200,6 +205,10 @@ export function useBudget() {
     }
 
     handleInventoryChange(index, "quantity", newQuantity);
+  };
+
+  const handleDiscountChange = (value: string) => {
+    formik.setFieldValue("discountPercentage", value);
   };
 
   const handleAddExpense = () => {
@@ -222,24 +231,12 @@ export function useBudget() {
       ? updatedExpenses
       : [{ expense: "", value: "" }];
     formik.setFieldValue("expenses", finalExpenses);
-
-    // Recalculate total after deletion
-    setTimeout(() => {
-      const total = calculateTotal();
-      formik.setFieldValue("totalAmount", total);
-    }, 0);
   };
 
   const handleDeleteInventoryItem = (index: number) => {
     const updatedInventory = [...formik.values.inventoryItems];
     updatedInventory.splice(index, 1);
     formik.setFieldValue("inventoryItems", updatedInventory);
-
-    // Recalculate total after deletion
-    setTimeout(() => {
-      const total = calculateTotal();
-      formik.setFieldValue("totalAmount", total);
-    }, 0);
   };
 
   const handleCancel = () => {
@@ -270,11 +267,16 @@ export function useBudget() {
     handleInventoryChange,
     handleInventoryItemSelect,
     handleQuantityChange,
+    handleDiscountChange,
     handleAddExpense,
     handleAddInventoryItem,
     handleDeleteExpense,
     handleDeleteInventoryItem,
     handleCancel,
     handleCreateBudget,
+
+    // Calculation helpers
+    calculateSubtotal,
+    calculateTotal,
   };
 }

@@ -274,6 +274,15 @@ export default function BudgetViewDialog({
               </p>
             </div>
 
+            {/* <div className="flex flex-col space-y-1">
+              <Label className="text-sm font-medium text-gray-700">
+                Discount:
+              </Label>
+              <p className="text-lg font-semibold text-gray-900">
+               {budget?.discount?.toLocaleString() || "0"} %
+              </p>
+            </div> */}
+
             {/* Remarks */}
             <div className="flex flex-col space-y-1">
               <Label className="text-sm font-medium text-gray-700">

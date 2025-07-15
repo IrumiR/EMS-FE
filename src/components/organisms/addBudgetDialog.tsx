@@ -17,7 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Plus, Trash2, Minus } from "lucide-react";
+import { Loader2, Plus, Trash2, Minus, Percent } from "lucide-react";
 import { useBudget } from "@/hooks/useBudget";
 
 export function AddBudgetDialog() {
@@ -35,13 +35,19 @@ export function AddBudgetDialog() {
     handleInventoryChange,
     handleInventoryItemSelect,
     handleQuantityChange,
+    handleDiscountChange,
     handleAddExpense,
     handleAddInventoryItem,
     handleDeleteExpense,
     handleDeleteInventoryItem,
     handleCancel,
     handleCreateBudget,
+    calculateSubtotal,
   } = useBudget();
+
+  const subtotal = calculateSubtotal();
+  const discountPercent = parseFloat(formik.values.discountPercentage) || 0;
+  const discountAmount = (subtotal * discountPercent) / 100;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -362,6 +368,44 @@ export function AddBudgetDialog() {
                   Add Inventory
                 </Button>
               </div>
+            </div>
+
+            {/* <div className="grid gap-2">
+              <Label htmlFor="discount">Discount (%)</Label>
+              <div className="relative">
+                <Input
+                  id="discount"
+                  placeholder="Enter discount percentage"
+                  type="number"
+                  value={formik.values.discountPercentage}
+                  onChange={(e) => handleDiscountChange(e.target.value)}
+                  className="w-full pr-8"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                />
+                <Percent className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              </div>
+              {formik.touched.discountPercentage &&
+                formik.errors.discountPercentage && (
+                  <span className="text-red-500 text-sm">
+                    {formik.errors.discountPercentage}
+                  </span>
+                )}
+            </div> */}
+
+            {/* Total Calculation Summary */}
+            <div className="grid gap-2 p-4 bg-gray-50 rounded-lg">
+              <div className="flex justify-between items-center text-sm">
+                <span>Subtotal:</span>
+                <span>Rs.{subtotal.toFixed(2)}</span>
+              </div>
+              {discountPercent > 0 && (
+                <div className="flex justify-between items-center text-sm text-green-600">
+                  <span>Discount ({discountPercent}%):</span>
+                  <span>-Rs.{discountAmount.toFixed(2)}</span>
+                </div>
+              )}
             </div>
 
             <div className="grid gap-2">
