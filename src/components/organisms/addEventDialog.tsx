@@ -258,11 +258,11 @@ export function AddEventDialog() {
                   tasks={tasks.map((t) => ({
                     id: t.taskName,
                     name: t.taskName,
-                  }))} // mapping to expected format
+                  }))} 
                   setTasks={(newTasks) => {
                     setTasks(
                       newTasks.map((t) => ({
-                        taskName: t.name, // map back to original format
+                        taskName: t.name, 
                         assigneeId: "defaultId",
                         commentId: "defaultComment",
                       }))

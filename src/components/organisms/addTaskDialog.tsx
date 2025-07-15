@@ -131,6 +131,7 @@ export function AddTaskDialog() {
 
   const { data: assigneesData, isLoading: assigneesLoading } =
     useGetAssigneeOptions();
+    // useGetEventAssigneeOptions(selectedEventId || eventId || "");
 
   const assignees =
     assigneesData?.assignees?.map((a) => ({
@@ -249,7 +250,7 @@ export function AddTaskDialog() {
                           : ""
                       }`}
                       placeholderText="Pick a date"
-                      useMinDate={true} 
+                      useMinDate={true}
                       minDate={new Date()}
                     />
                     {formik.touched.startDate && formik.errors.startDate && (
@@ -317,6 +318,11 @@ export function AddTaskDialog() {
                     showClear={true}
                     panelClassName="prime-panel"
                   />
+
+                  {/* multi select placeholder - assigneesLoading ? "Loading assignees..." :
+                  !selectedEventId && !eventId ? "Select an event first" :
+                  "Select assignees" 
+                  multiselect disabled={!selectedEventId && !eventId} */}
 
                   {formik.touched.assignees && formik.errors.assignees && (
                     <div className="text-red-500 text-sm">

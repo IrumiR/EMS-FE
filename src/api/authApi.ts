@@ -266,6 +266,42 @@ export const useGetAssigneeOptions = (): UseQueryResult<AssigneesResponse> => {
   });
 };
 
+export interface EventAssigneeOption {
+  userId: string;
+  userName: string;
+}
+
+export interface EventAssigneesResponse {
+  message: string;
+  assignees: EventAssigneeOption[];
+}
+
+export const useGetEventAssigneeOptions = (
+  eventId: string
+): UseQueryResult<EventAssigneesResponse> => {
+  return useQuery({
+    queryKey: ["event_assignee_options", eventId],
+    queryFn: async () => {
+      if (!eventId) throw new Error("Event ID is required");
+
+      const response = await authFetch.get<EventAssigneesResponse>(
+        `/users/dropdown/event-assignees/${eventId}`
+      );
+      return {
+        message: response.data.message,
+        assignees: response.data.assignees,
+      };
+    },
+    enabled: !!eventId,
+    onSuccess: () => {
+      console.log("Event Assignee options retrieved successfully");
+    },
+    onError: (error) => {
+      console.error("Event Assignee options fetch error:", error);
+    },
+  });
+};
+
 export interface UserReport {
   _id: string;
   userName: string;
