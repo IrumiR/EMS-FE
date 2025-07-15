@@ -4,7 +4,8 @@ import * as Yup from "yup";
 import { format, parse } from "date-fns";
 import { toast } from "react-hot-toast";
 import { useGetEventById, useUpdateEvent } from "@/api/eventApi";
-import { useGetClientOptions } from "@/api/authApi";
+import { useGetClientOptions, useGetAssigneeOptions } from "@/api/authApi";
+import { useGetInventoryOptions } from "@/api/inventoryApi";
 
 interface UseUpdateEventDialogProps {
   eventId: string;
@@ -20,6 +21,12 @@ interface UseUpdateEventDialogProps {
   setEndTime: (date: Date | undefined) => void;
   selectedClientId: string;
   setSelectedClientId: (id: string) => void;
+  selectedAssignees: Array<{ name: string; id: string }>;
+  setSelectedAssignees: (
+    assignees: Array<{ name: string; id: string }>
+  ) => void;
+  selectedItems: Array<{ name: string; id: string }>;
+  setSelectedItems: (items: Array<{ name: string; id: string }>) => void;
 }
 
 export const useUpdateEventDialog = ({
@@ -34,6 +41,10 @@ export const useUpdateEventDialog = ({
   setEndTime,
   selectedClientId,
   setSelectedClientId,
+  selectedAssignees,
+  setSelectedAssignees,
+  selectedItems,
+  setSelectedItems,
 }: UseUpdateEventDialogProps) => {
   const [localStartTime, setLocalStartTime] = useState<Date | null>(null);
   const [localEndTime, setLocalEndTime] = useState<Date | null>(null);
@@ -42,6 +53,10 @@ export const useUpdateEventDialog = ({
   const { data, isLoading, isError } = useGetEventById(open ? eventId : null);
   const { data: clientsData, isLoading: clientsLoading } =
     useGetClientOptions();
+  const { data: assigneesData, isLoading: assigneesLoading } =
+    useGetAssigneeOptions();
+  const { data: inventoryData, isLoading: inventoryLoading } =
+    useGetInventoryOptions();
 
   const validationSchema = Yup.object({
     eventName: Yup.string().required("Event name is required"),
@@ -130,6 +145,8 @@ export const useUpdateEventDialog = ({
           clientId: selectedClientId,
           eventDescription: values.eventDescription || "",
           proposedLocation: values.location || "",
+          assignees: selectedAssignees.map((a) => a.id),
+          inventoryItems: selectedItems.map((i) => i.id),
         },
       });
     },
@@ -142,14 +159,17 @@ export const useUpdateEventDialog = ({
       setLocalStartTime(null);
       setLocalEndTime(null);
       formik.resetForm();
+      setSelectedAssignees([]);
+      setSelectedItems([]);
     }
   }, [open]);
 
   // Load data when dialog opens and data is available
   useEffect(() => {
-    if (open && data?.event) {
+    if (open && data?.event && !isDataLoaded) {
       const event = data.event;
 
+      // Set form values
       formik.setValues({
         eventName: event.eventName || "",
         eventType: Array.isArray(event.eventType) ? event.eventType[0] : "",
@@ -159,9 +179,11 @@ export const useUpdateEventDialog = ({
         client: event?.clientId?.userName || "",
       });
 
+      // Set dates
       setStartDate(event.startDate ? new Date(event.startDate) : undefined);
       setEndDate(event.endDate ? new Date(event.endDate) : undefined);
 
+      // Set start time
       if (event.startTime) {
         const startTimeDate = parse(event.startTime, "HH:mm:ss", new Date());
         if (!isNaN(startTimeDate.getTime())) {
@@ -172,8 +194,8 @@ export const useUpdateEventDialog = ({
         setLocalStartTime(null);
         setStartTime(undefined);
       }
-      
 
+      // Set end time
       if (event.endTime) {
         const endTimeDate = parse(event.endTime, "HH:mm:ss", new Date());
         if (!isNaN(endTimeDate.getTime())) {
@@ -184,12 +206,44 @@ export const useUpdateEventDialog = ({
         setLocalEndTime(null);
         setEndTime(undefined);
       }
-      
 
+      // Set selected client
       setSelectedClientId(event?.clientId?._id || "");
+
+      // Handle assignees
+      if (event.assignees && Array.isArray(event.assignees)) {
+        const mappedAssignees = event.assignees.map((assignee: any) => ({
+          name: assignee.userName || assignee.name,
+          id: assignee._id || assignee.id,
+        }));
+        console.log("Setting assignees:", mappedAssignees);
+        setSelectedAssignees(mappedAssignees);
+      } else {
+        console.log("No assignees found in event data");
+        setSelectedAssignees([]);
+      }
+
+      // Handle inventory items
+      if (event.inventoryItems && Array.isArray(event.inventoryItems)) {
+        const mappedItems = event.inventoryItems.map((item: any) => ({
+          name: item.itemName || item.name,
+          id: item._id || item.id,
+        }));
+        console.log("Setting inventory items:", mappedItems);
+        setSelectedItems(mappedItems);
+      } else {
+        console.log("No inventory items found in event data");
+        setSelectedItems([]);
+      }
+
+      // Debug the full event data structure
+      console.log("Full event data:", event);
+      console.log("Event assignees:", event.assignees);
+      console.log("Event inventory items:", event.inventoryItems);
+
       setIsDataLoaded(true);
     }
-  }, [open, data, eventId]);
+  }, [open, data, eventId, isDataLoaded]);
 
   const handleStartTimeChange = (e: any) => {
     const newTime = e.value;
@@ -240,5 +294,9 @@ export const useUpdateEventDialog = ({
     isUpdating,
     data,
     isDataLoaded,
+    assigneesData,
+    assigneesLoading,
+    inventoryData,
+    inventoryLoading,
   };
 };

@@ -214,6 +214,7 @@ export const useUpdateEvent = (
     onSuccess: (data) => {
       queryClient.invalidateQueries("get_all_events");
       queryClient.invalidateQueries(["event", data.event._id]);
+      queryClient.invalidateQueries(["get_event_by_id"]);
       if (onSuccess) onSuccess(data);
     },
     onError(error) {

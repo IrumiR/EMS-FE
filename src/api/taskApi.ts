@@ -111,7 +111,7 @@ export const useGetAllTasksByEventId = (
 ): UseQueryResult<TaskResponse> => {
   return useQuery({
     queryKey: [
-      "get_all_by_event_tasks",
+      "get_all_by_user_tasks", // "get_all_by_event_tasks" 
       eventId,
       page,
       pageSize,

@@ -69,6 +69,8 @@ function EventCard({
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [startTimeState, setStartTime] = useState<Date | undefined>(undefined);
   const [endTime, setEndTime] = useState<Date | undefined>(undefined);
+  const [selectedAssignees, setSelectedAssignees] = useState<any[]>([]);
+  const [selectedItems, setSelectedItems] = useState<any[]>([]);
 
   const handleEdit = () => {
     navigate(`/events/${id}/edit`);
@@ -206,6 +208,10 @@ function EventCard({
             setEndTime={setEndTime}
             selectedClientId={selectedClientId}
             setSelectedClientId={setSelectedClientId}
+            selectedAssignees={selectedAssignees}
+            setSelectedAssignees={setSelectedAssignees}
+            selectedItems={selectedItems} 
+            setSelectedItems={setSelectedItems}
           />
 
           <DeleteEventDialog

@@ -22,6 +22,9 @@ import { Clock, Loader2 } from "lucide-react";
 import DatePickerComponent from "../atoms/datePicker";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useUpdateEventDialog } from "@/hooks/useUpdateEventDialog";
+import { MultiSelect, MultiSelectChangeEvent } from "primereact/multiselect";
+import { useGetAssigneeOptions } from "@/api/authApi";
+import { useGetInventoryOptions } from "@/api/inventoryApi";
 
 interface UpdateEventDialogProps {
   title: string;
@@ -39,6 +42,12 @@ interface UpdateEventDialogProps {
   eventData?: any;
   selectedClientId: string;
   setSelectedClientId: (id: string) => void;
+  selectedAssignees: Array<{ name: string; id: string }>;
+  setSelectedAssignees: (
+    assignees: Array<{ name: string; id: string }>
+  ) => void;
+  selectedItems: Array<{ name: string; id: string }>;
+  setSelectedItems: (items: Array<{ name: string; id: string }>) => void;
 }
 
 export default function UpdateEventDialog({
@@ -56,6 +65,10 @@ export default function UpdateEventDialog({
   setEndTime,
   selectedClientId,
   setSelectedClientId,
+  selectedAssignees,
+  setSelectedAssignees,
+  selectedItems,
+  setSelectedItems,
 }: UpdateEventDialogProps) {
   const {
     formik,
@@ -83,12 +96,50 @@ export default function UpdateEventDialog({
     setEndTime,
     selectedClientId,
     setSelectedClientId,
+    selectedAssignees,
+    setSelectedAssignees, 
+    selectedItems, 
+    setSelectedItems, 
   });
+
+  const { data: assigneesData, isLoading: assigneesLoading } =
+    useGetAssigneeOptions();
+  const { data: inventoryData, isLoading: inventoryLoading } =
+    useGetInventoryOptions();
+
+  const assignees =
+    assigneesData?.assignees?.map((a) => ({
+      name: a.userName,
+      id: a.userId,
+    })) || [];
+
+  const inventoryItems = Array.isArray(inventoryData?.items)
+    ? inventoryData.items.map((item) => ({
+        name: item.itemName,
+        id: item.itemId,
+      }))
+    : [];
+
+  const assigneeItemTemplate = (option: { name: string; id: string }) => {
+    return (
+      <div className="flex items-center py-1 px-2">
+        <span>{option.name}</span>
+      </div>
+    );
+  };
+
+  const inventoryItemTemplate = (option: { name: string; id: string }) => {
+    return (
+      <div className="flex items-center py-1 px-2">
+        <span>{option.name}</span>
+      </div>
+    );
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-md max-h-[100vh]"
+        className="max-w-2xl max-h-[100vh] w-[95vw] sm:w-full"
         key={`update-event-${eventId}-${open}`}
       >
         <ScrollArea className="max-h-[80vh] pr-4">
@@ -369,6 +420,75 @@ export default function UpdateEventDialog({
                   )}
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Assignees Selection */}
+            <div>
+              <Label
+                htmlFor="assignees"
+                className="text-sm font-medium block mb-1"
+              >
+                Assignees
+              </Label>
+              <div className="w-full">
+                <MultiSelect
+                  value={selectedAssignees}
+                  onChange={(e: MultiSelectChangeEvent) =>
+                    setSelectedAssignees(e.value)
+                  }
+                  options={assignees}
+                  optionLabel="name"
+                  filterBy="name"
+                  dataKey="id"
+                  placeholder={
+                    assigneesLoading
+                      ? "Loading assignees..."
+                      : "Select assignees"
+                  }
+                  maxSelectedLabels={3}
+                  className="prime-multiselect w-full h-11 placeholder:text-sm"
+                  itemTemplate={assigneeItemTemplate}
+                  style={{ width: "100%" }}
+                  appendTo="self"
+                  filter={true}
+                  showClear={true}
+                  panelClassName="prime-panel"
+                />
+              </div>
+            </div>
+
+            {/* Inventory Items Selection */}
+            <div>
+              <Label
+                htmlFor="inventory"
+                className="text-sm font-medium block mb-1"
+              >
+                Inventory Items
+              </Label>
+              <div className="w-full">
+                <MultiSelect
+                  value={selectedItems}
+                  onChange={(e: MultiSelectChangeEvent) =>
+                    setSelectedItems(e.value)
+                  }
+                  options={inventoryItems}
+                  optionLabel="name"
+                  dataKey="id"
+                  placeholder={
+                    inventoryLoading
+                      ? "Loading inventory items..."
+                      : "Select inventory items"
+                  }
+                  maxSelectedLabels={3}
+                  className="prime-multiselect w-full h-11"
+                  itemTemplate={inventoryItemTemplate}
+                  style={{ width: "100%" }}
+                  appendTo="self"
+                  filter={true}
+                  showClear={true}
+                  panelClassName="prime-panel"
+                />
+              </div>
             </div>
           </form>
         </ScrollArea>
