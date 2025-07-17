@@ -19,7 +19,10 @@ import { useRef, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import toast from "react-hot-toast";
-import { useInventoryItem, useUpdateInventoryMutation } from "@/api/inventoryApi";
+import {
+  useInventoryItem,
+  useUpdateInventoryMutation,
+} from "@/api/inventoryApi";
 import { Loader2 } from "lucide-react";
 import { MultiSelect, MultiSelectChangeEvent } from "primereact/multiselect";
 
@@ -46,16 +49,24 @@ const validationSchema = Yup.object({
 const categoryOptions = [
   { name: "Audio", id: "Audio" },
   { name: "Lighting", id: "Lighting" },
-  { name: "Staging", id: "Staging" }
+  { name: "Staging", id: "Staging" },
 ];
 
 const conditionOptions = [
   { name: "New", id: "New" },
-  { name: "Used", id: "Used" }
+  { name: "Used", id: "Used" },
 ];
 
-export function EditItemDialog({ open, onOpenChange, itemId }: EditItemDialogProps) {
-  const { data: response, isLoading: isLoadingItem, error } = useInventoryItem(itemId);
+export function EditItemDialog({
+  open,
+  onOpenChange,
+  itemId,
+}: EditItemDialogProps) {
+  const {
+    data: response,
+    isLoading: isLoadingItem,
+    error,
+  } = useInventoryItem(itemId);
   const updateInventoryMutation = useUpdateInventoryMutation();
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -70,7 +81,7 @@ export function EditItemDialog({ open, onOpenChange, itemId }: EditItemDialogPro
       price: "",
       itemDescription: "",
       isExternal: false,
-      isSingleUse: false
+      isSingleUse: false,
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -105,11 +116,25 @@ export function EditItemDialog({ open, onOpenChange, itemId }: EditItemDialogPro
   // Load item data when dialog opens and item data is available
   useEffect(() => {
     if (open && item && typeof item === "object") {
+      // For single-use items, use remainingQuantity instead of totalQuantity
+      const quantityToShow =
+        item.isSingleUse && item.remainingQuantity !== undefined
+          ? item.remainingQuantity
+          : item.totalQuantity;
+
       formik.setValues({
         itemName: item.itemName || "",
-        category: Array.isArray(item.category) ? item.category : item.category ? [item.category] : [],
-        condition: Array.isArray(item.condition) ? item.condition : item.condition ? [item.condition] : [],
-        totalQuantity: item.totalQuantity ? item.totalQuantity.toString() : "",
+        category: Array.isArray(item.category)
+          ? item.category
+          : item.category
+          ? [item.category]
+          : [],
+        condition: Array.isArray(item.condition)
+          ? item.condition
+          : item.condition
+          ? [item.condition]
+          : [],
+        totalQuantity: quantityToShow ? quantityToShow.toString() : "",
         price: item.price ? item.price.toString() : "",
         itemDescription: item.itemDescription || "",
         isExternal: item.isExternal || false,
@@ -289,13 +314,19 @@ export function EditItemDialog({ open, onOpenChange, itemId }: EditItemDialogPro
                           htmlFor="totalQuantity"
                           className="mb-2 text-sm font-medium text-gray-700 text-left"
                         >
-                          Total Quantity
+                          {item?.isSingleUse
+                            ? "Remaining Quantity"
+                            : "Total Quantity"}
                         </label>
                         <InputField
                           id="totalQuantity"
                           name="totalQuantity"
                           type="number"
-                          placeholder="Enter total quantity"
+                          placeholder={
+                            item?.isSingleUse
+                              ? "Enter remaining quantity"
+                              : "Enter total quantity"
+                          }
                           className="h-9 mt-3"
                           value={formik.values.totalQuantity}
                           onChange={formik.handleChange}

@@ -87,7 +87,7 @@ function EventEditScreen() {
         </div>
 
         <div>
-          {(userType !== "client") && <AddTaskDialog />}
+          {(userType !== "client" && userType !== "team-member") && <AddTaskDialog />}
         </div>
       </div>
 

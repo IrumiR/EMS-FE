@@ -165,7 +165,7 @@ export const useGetAllTasksByUserId = (
       if (eventId) params.append("eventId", eventId);
 
       // Include userId as a query param if not admin
-      if (userType !== "admin" && userId) {
+      if (userType !== "admin" && userType !== "manager" && userId) {
         params.append("userId", userId);
       }
 
@@ -272,6 +272,8 @@ export interface EventsListResponse {
 export interface EventsOption {
   _id: string;
   eventName: string;
+  startDate: string;
+  endDate: string;
 }
 
 export const useGetAllEventsDropdown = (

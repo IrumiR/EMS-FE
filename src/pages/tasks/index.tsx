@@ -21,6 +21,7 @@ function TasksScreen() {
   const [selectedEventId, setSelectedEventId] = useState<string | undefined>(
     undefined
   );
+   const userType = localStorage.getItem("role");
 
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -96,7 +97,9 @@ function TasksScreen() {
         </div>
 
         <div>
-          <AddTaskDialog />
+          {userType !== "team-member" && (
+            <AddTaskDialog />
+          )}
         </div>
       </div>
 

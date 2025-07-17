@@ -53,6 +53,16 @@ export function ViewItemDialog({
       .replace("LKR", "Rs.");
   };
 
+  // Helper function to determine if item is single use
+  const isSingleUse = (item: any) => {
+    return item.hasOwnProperty("remainingQuantity");
+  };
+
+  // Helper function to get the appropriate quantity to display
+  const getDisplayQuantity = (item: any) => {
+    return isSingleUse(item) ? item.remainingQuantity : item.totalQuantity;
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild></DialogTrigger>
@@ -153,10 +163,10 @@ export function ViewItemDialog({
                   <div className="text-center">
                     <p className="text-sm text-gray-600">Total Quantity</p>
                     <p className="text-xl font-semibold text-blue-600">
-                      {item.totalQuantity || 0}
+                      {getDisplayQuantity(item) || 0}
                     </p>
                   </div>
-                 
+
                   <div className="text-center">
                     <p className="text-sm text-gray-600 flex items-center justify-center gap-1">
                       Unit Price
@@ -228,7 +238,8 @@ export function ViewItemDialog({
                                     variant="outline"
                                     className="text-xs bg-white"
                                   >
-                                    {reservation.eventId?.eventName || "Unknown Event"}
+                                    {reservation.eventId?.eventName ||
+                                      "Unknown Event"}
                                   </Badge>
                                   <span className="text-xs text-gray-600">
                                     Qty: {reservation.reservedQuantity || 0}

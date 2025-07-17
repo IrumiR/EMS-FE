@@ -54,7 +54,7 @@ const TasksCalendar = () => {
    queryClientId = userId;
  } else if (selectedAssigneeId) {
    queryUserId = selectedAssigneeId;
- } else if (role !== "admin") {
+ } else if (role !== "admin" && role !== "manager") {
    queryUserId = userId;
  }
 

@@ -48,7 +48,7 @@ function InventoryScreen() {
     { key: "itemName", label: "Item Name" },
     { key: "category", label: "Category" },
     { key: "condition", label: "Condition" },
-    { key: "remainingQuantity", label: "Total Quantity" },
+    { key: "totalQuantity", label: "Total Quantity" },
     { key: "itemType", label: "Item Type" },
     { key: "reserveType", label: "Reserve Type" },
   ];
@@ -102,6 +102,9 @@ function InventoryScreen() {
         {item.condition}
       </Badge>
     ),
+    // remainingQuantity: item.isSingleUse
+    //   ? item.remainingQuantity
+    //   : item.totalQuantity,
     itemType: (
       <Badge
         variant={item.isExternal ? "destructive" : "default"}
@@ -289,6 +292,7 @@ function InventoryScreen() {
                   size="sm"
                   className="p-1 hover:bg-gray-100"
                   onClick={() => handleReserveClick(row)}
+                  // disabled={row.isLeased}
                 >
                   <CalendarCheck className="h-4 w-4 text-purple-600" />
                 </Button>
