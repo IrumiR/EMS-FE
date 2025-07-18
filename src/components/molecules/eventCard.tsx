@@ -143,6 +143,7 @@ function EventCard({
                 variant="ghost"
                 size="sm"
                 className="p-1 h-8 w-8"
+                // disabled={status === "Pending Approval"}
               >
                 <ListTodo className="h-4 w-4 text-green-600 hover:text-green-700 hover:bg-green-50" />
               </Button>

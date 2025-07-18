@@ -72,6 +72,7 @@ function InventoryScreen() {
     category: Array.isArray(item.category)
       ? item.category.join(", ")
       : item.category,
+    rawCondition: Array.isArray(item.condition) ? item.condition : [item.condition], // 👈 Fixed
     condition: Array.isArray(item.condition) ? (
       item.condition.map((cond) => (
         <Badge
@@ -82,6 +83,8 @@ function InventoryScreen() {
               ? "bg-purple-100 text-purple-800 hover:bg-purple-200 mr-1"
               : cond === "Used"
               ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200 mr-1"
+              : cond === "Damaged"
+              ? "bg-red-100 text-red-800 hover:bg-red-200 mr-1"
               : "bg-gray-100 text-gray-800 hover:bg-gray-200 mr-1"
           }
         >
@@ -292,11 +295,17 @@ function InventoryScreen() {
                   size="sm"
                   className="p-1 hover:bg-gray-100"
                   onClick={() => handleReserveClick(row)}
-                  // disabled={row.isLeased}
+                  disabled={row.rawCondition?.includes("Damaged") || row.isLeased}
                 >
-                  <CalendarCheck className="h-4 w-4 text-purple-600" />
+                  <CalendarCheck
+                    className={`h-4 w-4 ${
+                      row.rawCondition?.includes("Damaged")
+                        ? "text-gray-400"
+                        : "text-purple-600"
+                    }`}
+                  />
                 </Button>
-                {(userType === "admin" || userType === "manager") && (
+                {(userType === "admin") && (
                   <Button
                     variant="ghost"
                     size="sm"

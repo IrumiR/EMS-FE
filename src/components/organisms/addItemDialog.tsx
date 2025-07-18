@@ -77,7 +77,7 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({
     condition: Yup.string().required("Condition is required"),
     totalQuantity: Yup.number()
       .required("Total quantity is required")
-      .positive("Must be positive")
+      .min(0, "Must be 0 or greater")
       .integer("Must be an integer"),
     price: Yup.number()
       .required("Price is required")
@@ -86,13 +86,12 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({
 
   // Handle file selection
   const handleFileSelect = (e: any) => {
-    const file = e.files[0]; 
+    const file = e.files[0];
     if (file) {
       setSelectedImages([file]);
     }
   };
 
- 
   const convertFilesToBase64 = (files: File[]): Promise<string[]> => {
     return Promise.all(
       files.map((file) => {
@@ -123,22 +122,22 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({
     onSubmit: async (values) => {
       try {
         const formData = new FormData();
-    
+
         formData.append("itemName", values.itemName);
         formData.append("itemDescription", values.itemDescription);
-        formData.append("category", values.category); 
-        formData.append("condition", values.condition); 
+        formData.append("category", values.category);
+        formData.append("condition", values.condition);
         formData.append("totalQuantity", String(values.totalQuantity));
-        formData.append("remainingQuantity", String(values.totalQuantity)); 
+        formData.append("remainingQuantity", String(values.totalQuantity));
         formData.append("price", String(values.price));
         formData.append("isExternal", String(values.isExternal));
         formData.append("isSingleUse", String(values.isSingleUse));
         formData.append("createdBy", userId ?? "");
-    
+
         selectedImages.forEach((file) => {
-          formData.append("image", file); 
+          formData.append("image", file);
         });
-   
+
         createInventoryItem(formData);
       } catch (error) {
         toast.error("Failed to process form", {
@@ -148,7 +147,6 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({
         });
       }
     },
-
   });
 
   return (
@@ -239,6 +237,7 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({
                         <SelectContent>
                           <SelectItem value="New">New</SelectItem>
                           <SelectItem value="Used">Used</SelectItem>
+                          {/* <SelectItem value="Damaged">Damaged</SelectItem> */}
                         </SelectContent>
                       </Select>
                       {formik.touched.condition && formik.errors.condition && (

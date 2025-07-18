@@ -37,8 +37,8 @@ const validationSchema = Yup.object({
   category: Yup.array().min(1, "At least one category is required"),
   condition: Yup.array().min(1, "At least one condition is required"),
   totalQuantity: Yup.number()
-    .positive("Total quantity must be positive")
-    .integer("Total quantity must be an integer")
+    .min(0, "Must be 0 or greater")
+    .integer("Must be an integer")
     .required("Total quantity is required"),
   price: Yup.number()
     .positive("Price must be positive")
@@ -55,6 +55,7 @@ const categoryOptions = [
 const conditionOptions = [
   { name: "New", id: "New" },
   { name: "Used", id: "Used" },
+  // { name: "Damaged", id: "Damaged" },
 ];
 
 export function EditItemDialog({
