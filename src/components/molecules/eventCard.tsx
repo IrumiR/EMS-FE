@@ -39,6 +39,8 @@ function EventCard({
   date,
   startTime,
   title,
+  da,
+  en,
   proposedLocation,
   progress,
   onApprove,
@@ -51,6 +53,8 @@ function EventCard({
   date: string;
   startTime: string;
   title: string;
+  da?: string;
+  en?: string;
   proposedLocation: string;
   progress: number;
   onApprove?: (id: string) => void;
@@ -72,9 +76,14 @@ function EventCard({
   const [selectedAssignees, setSelectedAssignees] = useState<any[]>([]);
   const [selectedItems, setSelectedItems] = useState<any[]>([]);
 
-  const handleEdit = () => {
-    navigate(`/events/${id}/edit`);
-  };
+ const handleEdit = () => {
+   const queryParams = new URLSearchParams({
+     startDate: da || "",
+     endDate: en || "",
+   });
+   navigate(`/events/${id}/edit?${queryParams.toString()}`);
+ };
+
 
   return (
     <Card className="overflow-hidden h-full p-2">
@@ -232,6 +241,8 @@ interface Event {
   status: string;
   date: string;
   startTime: string;
+  startDate?: string;
+  endDate?: string;
   title: string;
   proposedLocation: string;
   progress: number;

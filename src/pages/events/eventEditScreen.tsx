@@ -38,6 +38,8 @@ function EventEditScreen() {
    const totalPages = Math.ceil(totalTasks / rowsPerPage);
 
    const [searchParams] = useSearchParams();
+    const prefillStartDate = searchParams.get("startDate");
+    const prefillEndDate = searchParams.get("endDate");
 
    useEffect(() => {
      const status = searchParams.get("status");
@@ -87,7 +89,12 @@ function EventEditScreen() {
         </div>
 
         <div>
-          {(userType !== "client" && userType !== "team-member") && <AddTaskDialog />}
+          {userType !== "client" && userType !== "team-member" && (
+            <AddTaskDialog
+              prefillStartDate={prefillStartDate}
+              prefillEndDate={prefillEndDate}
+            />
+          )}
         </div>
       </div>
 

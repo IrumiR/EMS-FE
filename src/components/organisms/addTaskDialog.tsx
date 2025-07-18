@@ -34,7 +34,13 @@ import { useGetAssigneeOptions } from "@/api/authApi";
 import { Assignee } from "../types/addEventTypes";
 import { useParams } from "react-router-dom";
 
-export function AddTaskDialog() {
+export function AddTaskDialog({
+  prefillStartDate,
+  prefillEndDate,
+}: {
+  prefillStartDate?: string | null;
+  prefillEndDate?: string | null;
+}) {
   const { eventId } = useParams();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -54,8 +60,8 @@ export function AddTaskDialog() {
   const initialValues = {
     taskName: "",
     description: "",
-    startDate: undefined,
-    endDate: undefined,
+    startDate: prefillStartDate ? new Date(prefillStartDate) : undefined,
+    endDate: prefillEndDate ? new Date(prefillEndDate) : undefined,
     assignees: [],
     inventoryItems: [],
     priority: "",
@@ -96,7 +102,7 @@ export function AddTaskDialog() {
             : undefined,
           subTasks: values.subTasks
             .filter((task) => task.name.trim() !== "")
-          .map((task) => ({ subTaskName: task.name })),
+            .map((task) => ({ subTaskName: task.name })),
           createdBy: userId ?? "",
         };
 
@@ -131,7 +137,7 @@ export function AddTaskDialog() {
 
   const { data: assigneesData, isLoading: assigneesLoading } =
     useGetAssigneeOptions();
-    // useGetEventAssigneeOptions(selectedEventId || eventId || "");
+  // useGetEventAssigneeOptions(selectedEventId || eventId || "");
 
   const assignees =
     assigneesData?.assignees?.map((a) => ({
@@ -147,10 +153,16 @@ export function AddTaskDialog() {
     );
   };
 
+  const getSelectedEvent = () => {
+    const id = selectedEventId || eventId;
+    return eventList.data?.events?.find((event) => event._id === id);
+  };
+
   const handleDialogOpenChange = (open: boolean) => {
     if (!open) {
       formik.resetForm();
       setSelectedAssignees([]);
+      setSelectedEventId("");
     }
     setIsDialogOpen(open);
   };
@@ -178,7 +190,22 @@ export function AddTaskDialog() {
                     <div className="w-full">
                       <Select
                         value={selectedEventId}
-                        onValueChange={(value) => setSelectedEventId(value)}
+                        onValueChange={(value) => {
+                          setSelectedEventId(value);
+                          const selectedEvent = eventList.data?.events?.find(
+                            (event) => event._id === value
+                          );
+                          if (selectedEvent) {
+                            formik.setFieldValue(
+                              "startDate",
+                              new Date(selectedEvent.startDate)
+                            );
+                            formik.setFieldValue(
+                              "endDate",
+                              new Date(selectedEvent.endDate)
+                            );
+                          }
+                        }}
                       >
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select Event" />
@@ -251,7 +278,21 @@ export function AddTaskDialog() {
                       }`}
                       placeholderText="Pick a date"
                       useMinDate={true}
-                      minDate={new Date()}
+                      minDate={
+                        getSelectedEvent()
+                          ? getSelectedEvent()?.startDate
+                            ? new Date(getSelectedEvent()!.startDate)
+                            : new Date()
+                          : new Date()
+                      }
+                      maxDate={
+                        getSelectedEvent()
+                          ? getSelectedEvent()?.endDate
+                            ? new Date(getSelectedEvent()!.endDate)
+                            : new Date()
+                          : new Date()
+                      }
+                      useMaxDate={!!formik.values.startDate}
                     />
                     {formik.touched.startDate && formik.errors.startDate && (
                       <div className="text-red-500 text-sm">
@@ -267,18 +308,30 @@ export function AddTaskDialog() {
                       onChange={(date) => formik.setFieldValue("endDate", date)}
                       dateFormat="MMMM d, yyyy"
                       className={`w-full border rounded-md px-3 py-2 text-sm ${
-                        !formik.values.startDate
-                          ? "bg-gray-100 cursor-not-allowed"
-                          : ""
-                      } ${
                         formik.touched.endDate && formik.errors.endDate
                           ? "border-red-500"
                           : ""
                       }`}
                       placeholderText="Pick a date"
-                      minDate={formik.values.startDate || undefined} // 👈 restrict to after startDate
+                      minDate={
+                        formik.values.startDate ||
+                        (getSelectedEvent()
+                          ? getSelectedEvent()?.startDate
+                            ? new Date(getSelectedEvent()!.startDate)
+                            : new Date()
+                          : new Date())
+                      }
+                      maxDate={
+                        formik.values.endDate ||
+                        (getSelectedEvent()
+                          ? getSelectedEvent()?.endDate
+                            ? new Date(getSelectedEvent()!.endDate)
+                            : new Date()
+                          : new Date())
+                      }
                       disabled={!formik.values.startDate}
                       useMinDate={!!formik.values.startDate}
+                      useMaxDate={!!formik.values.endDate}
                     />
                     {formik.touched.endDate && formik.errors.endDate && (
                       <div className="text-red-500 text-sm">

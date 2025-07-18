@@ -48,7 +48,7 @@ function InventoryScreen() {
     { key: "itemName", label: "Item Name" },
     { key: "category", label: "Category" },
     { key: "condition", label: "Condition" },
-    { key: "totalQuantity", label: "Total Quantity" },
+    { key: "remainingQuantity", label: "Total Quantity" },
     { key: "itemType", label: "Item Type" },
     { key: "reserveType", label: "Reserve Type" },
   ];
@@ -102,9 +102,9 @@ function InventoryScreen() {
         {item.condition}
       </Badge>
     ),
-    // remainingQuantity: item.isSingleUse
-    //   ? item.remainingQuantity
-    //   : item.totalQuantity,
+    remainingQuantity: item.isSingleUse
+      ? item.remainingQuantity
+      : item.totalQuantity,
     itemType: (
       <Badge
         variant={item.isExternal ? "destructive" : "default"}

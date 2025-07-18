@@ -23,6 +23,8 @@ function EventsScreen() {
     category: string;
     status: string;
     date: string;
+    startDate?: string;
+    endDate?: string;
     startTime: string;
     title: string;
     proposedLocation: string;
@@ -86,6 +88,8 @@ function EventsScreen() {
         date: event.startDate
           ? new Date(event.startDate).toLocaleDateString()
           : "",
+        da: event.startDate,
+        en: event.endDate,
         startTime: event.startTime ?? "",
         title: event.eventName || "",
         proposedLocation: event.proposedLocation || "",

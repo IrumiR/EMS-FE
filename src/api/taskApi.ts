@@ -47,6 +47,7 @@ export const useCreateTask = (
     onSuccess(data) {
       onSuccess("Task created successfully");
       queryClient.invalidateQueries(["get_all_by_event_tasks"]);
+      queryClient.invalidateQueries(["get_all_by_user_tasks"]);
        queryClient.invalidateQueries("user_notifications");
     },
     onError(error) {
@@ -111,7 +112,7 @@ export const useGetAllTasksByEventId = (
 ): UseQueryResult<TaskResponse> => {
   return useQuery({
     queryKey: [
-      "get_all_by_user_tasks", // "get_all_by_event_tasks" 
+      "get_all_by_event_tasks", 
       eventId,
       page,
       pageSize,
@@ -252,7 +253,7 @@ export const useUpdateTask = (
     onSuccess: (data) => {
       queryClient.invalidateQueries("tasks");
       queryClient.invalidateQueries(["task", data.task._id]);
-      queryClient.invalidateQueries("get_all_by_event_tasks")
+      queryClient.invalidateQueries("get_all_by_user_tasks")
       queryClient.invalidateQueries("user_notifications");
       if (onSuccess) onSuccess(data);
     },
@@ -334,6 +335,7 @@ export const useApproveTask = (
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries("get_all_by_user_tasks");
+      queryClient.invalidateQueries("get_all_by_event_tasks");
       if (onSuccess) onSuccess(data);
     },
     onError(error) {
@@ -367,6 +369,7 @@ export const useApproveTaskPriority = (
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries("get_all_by_user_tasks");
+      queryClient.invalidateQueries("get_all_by_event_tasks");
       if (onSuccess) onSuccess(data);
     },
     onError(error) {

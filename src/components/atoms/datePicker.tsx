@@ -9,7 +9,9 @@ interface DatePickerComponentProps {
   className?: string;
   placeholderText?: string;
   minDate?: Date;
+  maxDate?: Date;
   useMinDate?: boolean;
+  useMaxDate?: boolean;
   disabled?: boolean
 }
 
@@ -20,7 +22,9 @@ const DatePickerComponent: React.FC<DatePickerComponentProps> = ({
   className,
   placeholderText = "Pick a date",
   minDate = new Date(),
+  maxDate = new Date(),
   useMinDate = false,
+  useMaxDate = false,
   disabled = false,
 }) => {
     return (
@@ -33,6 +37,7 @@ const DatePickerComponent: React.FC<DatePickerComponentProps> = ({
         className={className}
         calendarClassName="custom-calendar"
         minDate={useMinDate ? minDate : undefined}
+        maxDate={useMaxDate ? maxDate : undefined}
         disabled={disabled}
       />
     </div>
