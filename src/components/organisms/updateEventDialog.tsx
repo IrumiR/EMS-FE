@@ -44,7 +44,7 @@ interface UpdateEventDialogProps {
   setSelectedClientId: (id: string) => void;
   selectedAssignees: Array<{ name: string; id: string }>;
   setSelectedAssignees: (
-    assignees: Array<{ name: string; id: string }>
+    assignees: Array<{ name: string; id: string }>,
   ) => void;
   selectedItems: Array<{ name: string; id: string }>;
   setSelectedItems: (items: Array<{ name: string; id: string }>) => void;
@@ -97,9 +97,9 @@ export default function UpdateEventDialog({
     selectedClientId,
     setSelectedClientId,
     selectedAssignees,
-    setSelectedAssignees, 
-    selectedItems, 
-    setSelectedItems, 
+    setSelectedAssignees,
+    selectedItems,
+    setSelectedItems,
   });
 
   const { data: assigneesData, isLoading: assigneesLoading } =
@@ -307,6 +307,8 @@ export default function UpdateEventDialog({
                     onChange={(date: Date | null) =>
                       setStartDate(date ?? undefined)
                     }
+                    useMinDate={true}
+                    minDate={new Date()}
                     dateFormat="MMMM d, yyyy"
                     className="w-full border rounded-md px-3 py-2 text-sm"
                     placeholderText="Pick a date"
@@ -326,6 +328,9 @@ export default function UpdateEventDialog({
                     onChange={(date: Date | null) =>
                       setEndDate(date ?? undefined)
                     }
+                    minDate={startDate || undefined}
+                    disabled={!startDate}
+                    useMinDate={true}
                     dateFormat="MMMM d, yyyy"
                     className="w-full border rounded-md px-3 py-2 text-sm"
                     placeholderText="Pick a date"
