@@ -114,9 +114,12 @@ export function DateLocationStep({
             <PrimeCalendar
               id="end-time"
               value={endTime ?? null}
-              onChange={(e) => setEndTime(e.value ?? undefined)}
+              onChange={(e) => {if (!startTime || (e.value && e.value >= startTime)) {
+                setEndTime(e.value ?? undefined);
+              }}}
               timeOnly
               hourFormat="12"
+              disabled={!startTime}
               className="w-full border-none p-0"
               inputClassName="border-none p-0 h-6 text-sm focus:outline-none"
               panelStyle={{ fontSize: "0.875rem" }}

@@ -380,6 +380,7 @@ export default function UpdateEventDialog({
                     onChange={handleEndTimeChange}
                     timeOnly
                     hourFormat="12"
+                    disabled={!localStartTime}
                     className="w-full border-none p-0"
                     inputClassName="border-none p-0 h-6 text-sm focus:outline-none w-full"
                     panelStyle={{ fontSize: "0.875rem" }}

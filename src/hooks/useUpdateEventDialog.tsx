@@ -255,7 +255,7 @@ export const useUpdateEventDialog = ({
 
   const handleEndTimeChange = (e: any) => {
     const newTime = e.value;
-    if (newTime && !isNaN(newTime.getTime())) {
+    if (newTime && !isNaN(newTime.getTime()) && (!localStartTime || newTime >= localStartTime)) {
       setLocalEndTime(newTime);
       setEndTime(newTime);
     }
