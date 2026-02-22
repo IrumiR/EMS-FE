@@ -54,21 +54,18 @@ const validationSchema = Yup.object({
   taskName: Yup.string()
     .required("Task name is required")
     .min(3, "Task name must be at least 3 characters"),
-  taskDescription: Yup.string()
-    .required("Description is required"),
-  startDate: Yup.date()
-    .required("Start date is required")
-    .nullable(),
+  taskDescription: Yup.string().required("Description is required"),
+  startDate: Yup.date().required("Start date is required").nullable(),
   endDate: Yup.date()
     .required("End date is required")
     .nullable()
-    .min(Yup.ref('startDate'), "End date must be after start date"),
+    .min(Yup.ref("startDate"), "End date must be after start date"),
   priority: Yup.string()
     .required("Priority is required")
-    .oneOf(['high', 'medium', 'low'], "Invalid priority"),
-  eventId: Yup.string().when('isEventRequired', {
+    .oneOf(["high", "medium", "low"], "Invalid priority"),
+  eventId: Yup.string().when("isEventRequired", {
     is: true,
-    then: (schema) => schema.required('Event is required'),
+    then: (schema) => schema.required("Event is required"),
     otherwise: (schema) => schema.notRequired(),
   }),
   assignees: Yup.array()
@@ -76,22 +73,21 @@ const validationSchema = Yup.object({
     .required("Assignees are required"),
 });
 
-
 const extractSubTaskName = (subtask: any) => {
-  if (subtask.subTaskName && typeof subtask.subTaskName === 'string') {
+  if (subtask.subTaskName && typeof subtask.subTaskName === "string") {
     return subtask.subTaskName;
   }
-  
+
   // If subtask data is stored as character indices, reconstruct the string
   const keys = Object.keys(subtask)
-    .filter(key => !isNaN(Number(key)) && key !== 'status' && key !== '_id')
+    .filter((key) => !isNaN(Number(key)) && key !== "status" && key !== "_id")
     .sort((a, b) => parseInt(a) - parseInt(b));
-  
+
   if (keys.length > 0) {
-    return keys.map(key => subtask[key]).join('');
+    return keys.map((key) => subtask[key]).join("");
   }
 
-  if (subtask.name && typeof subtask.name === 'string') {
+  if (subtask.name && typeof subtask.name === "string") {
     return subtask.name;
   }
   return "";
@@ -104,34 +100,40 @@ export function EditTaskDialog({
 }: EditTaskDialogProps) {
   const { eventId } = useParams();
   const eventList = useGetAllEventsDropdown();
-  
-  const { data: taskData, isLoading: taskLoading, refetch: refetchTask } = useGetTaskById(task.id, open);
-  const { data: assigneesData, isLoading: assigneesLoading } = useGetAssigneeOptions();
+
+  const {
+    data: taskData,
+    isLoading: taskLoading,
+    refetch: refetchTask,
+  } = useGetTaskById(task.id, open);
+  const { data: assigneesData, isLoading: assigneesLoading } =
+    useGetAssigneeOptions();
   const updateTaskMutation = useUpdateTask(
     (data: any) => {
       toast.success("Task is updated successfully", {
         duration: 4000,
-        position: 'top-center',
+        position: "top-center",
       });
       onOpenChange(false);
       formik.resetForm();
       setSubTasks([{ name: "" }]);
     },
-    (error: any) => {
-      toast.error("Failed to update task", {
+    (errorMessage: string) => {
+      toast.error(errorMessage || "Failed to update task", {
         duration: 4000,
-        position: 'top-right',
+        position: "top-right",
       });
-      console.error("Failed to update task:", error);
-    }
+      console.error("Failed to update task:", errorMessage);
+    },
   );
 
   const [subTasks, setSubTasks] = useState([{ name: "" }]);
 
-  const assignees = assigneesData?.assignees?.map((a) => ({
-    name: a.userName,
-    id: a.userId,
-  })) || [];
+  const assignees =
+    assigneesData?.assignees?.map((a) => ({
+      name: a.userName,
+      id: a.userId,
+    })) || [];
 
   const assigneeItemTemplate = (option: Assignee) => {
     return (
@@ -150,7 +152,7 @@ export function EditTaskDialog({
       priority: "",
       eventId: eventId || "",
       assignees: [] as any[],
-      isEventRequired: !eventId, 
+      isEventRequired: !eventId,
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -182,20 +184,16 @@ export function EditTaskDialog({
         });
 
         onOpenChange(false);
-        
-        formik.resetForm();
-        setSubTasks([{ name: "" }]);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Failed to update task:", error);
       }
     },
   });
 
-
   const normalizePriority = (priority: string): string => {
     if (!priority) return "";
     const priorityLower = priority.toLowerCase();
-    if (['high', 'medium', 'low'].includes(priorityLower)) {
+    if (["high", "medium", "low"].includes(priorityLower)) {
       return priorityLower;
     }
     return "";
@@ -204,45 +202,56 @@ export function EditTaskDialog({
   useEffect(() => {
     if (taskData && open) {
       const taskDetails = taskData.task || taskData;
- 
+
       let extractedEventId = "";
       if (taskDetails.eventId) {
-        if (typeof taskDetails.eventId === 'object' && taskDetails.eventId._id) {
+        if (
+          typeof taskDetails.eventId === "object" &&
+          taskDetails.eventId._id
+        ) {
           extractedEventId = taskDetails.eventId._id;
-        } else if (typeof taskDetails.eventId === 'string') {
+        } else if (typeof taskDetails.eventId === "string") {
           extractedEventId = taskDetails.eventId;
         }
       }
-      
+
       formik.setValues({
         taskName: taskDetails.taskName || "",
         taskDescription: taskDetails.taskDescription || "",
-        startDate: taskDetails.startDate ? new Date(taskDetails.startDate) : null,
+        startDate: taskDetails.startDate
+          ? new Date(taskDetails.startDate)
+          : null,
         endDate: taskDetails.endDate ? new Date(taskDetails.endDate) : null,
         priority: normalizePriority(taskDetails.priority || ""),
         eventId: extractedEventId || eventId || "",
-        assignees: taskDetails.assignees ? taskDetails.assignees.map((assignee: any) => ({
-          name: assignee.userName || assignee.name,
-          id: assignee._id || assignee.userId || assignee.id,
-        })) : [],
+        assignees: taskDetails.assignees
+          ? taskDetails.assignees.map((assignee: any) => ({
+              name: assignee.userName || assignee.name,
+              id: assignee._id || assignee.userId || assignee.id,
+            }))
+          : [],
         isEventRequired: !eventId,
       });
 
       // Fixed subtasks handling
-      if (taskDetails.subTasks && Array.isArray(taskDetails.subTasks) && taskDetails.subTasks.length > 0) {
+      if (
+        taskDetails.subTasks &&
+        Array.isArray(taskDetails.subTasks) &&
+        taskDetails.subTasks.length > 0
+      ) {
         const normalizedSubTasks = taskDetails.subTasks.map((subtask: any) => {
           const extractedName = extractSubTaskName(subtask);
           return {
             name: extractedName,
-            status: subtask.status || "To Do", 
+            status: subtask.status || "To Do",
           };
         });
 
         // Filter out empty subtasks and ensure we have valid data
-        const validSubTasks = normalizedSubTasks.filter((subtask: any) => 
-          subtask.name && subtask.name.trim() !== ""
+        const validSubTasks = normalizedSubTasks.filter(
+          (subtask: any) => subtask.name && subtask.name.trim() !== "",
         );
-        
+
         setSubTasks(validSubTasks.length > 0 ? validSubTasks : [{ name: "" }]);
       } else {
         setSubTasks([{ name: "" }]);
@@ -298,7 +307,9 @@ export function EditTaskDialog({
                     <div className="w-full">
                       <Select
                         value={formik.values.eventId}
-                        onValueChange={(value) => formik.setFieldValue('eventId', value)}
+                        onValueChange={(value) =>
+                          formik.setFieldValue("eventId", value)
+                        }
                       >
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select Event" />
@@ -318,7 +329,9 @@ export function EditTaskDialog({
                         </SelectContent>
                       </Select>
                       {formik.touched.eventId && formik.errors.eventId && (
-                        <p className="text-sm text-red-500 mt-1">{formik.errors.eventId}</p>
+                        <p className="text-sm text-red-500 mt-1">
+                          {formik.errors.eventId}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -335,7 +348,9 @@ export function EditTaskDialog({
                     onBlur={formik.handleBlur}
                   />
                   {formik.touched.taskName && formik.errors.taskName && (
-                    <p className="text-sm text-red-500">{formik.errors.taskName}</p>
+                    <p className="text-sm text-red-500">
+                      {formik.errors.taskName}
+                    </p>
                   )}
                 </div>
 
@@ -350,9 +365,12 @@ export function EditTaskDialog({
                     onBlur={formik.handleBlur}
                     className="min-h-[80px]"
                   />
-                  {formik.touched.taskDescription && formik.errors.taskDescription && (
-                    <p className="text-sm text-red-500">{formik.errors.taskDescription}</p>
-                  )}
+                  {formik.touched.taskDescription &&
+                    formik.errors.taskDescription && (
+                      <p className="text-sm text-red-500">
+                        {formik.errors.taskDescription}
+                      </p>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -360,13 +378,17 @@ export function EditTaskDialog({
                     <Label htmlFor="startDate">Start Date</Label>
                     <DatePickerComponent
                       selected={formik.values.startDate ?? undefined}
-                      onChange={(date: Date | null) => formik.setFieldValue('startDate', date)}
+                      onChange={(date: Date | null) =>
+                        formik.setFieldValue("startDate", date)
+                      }
                       dateFormat="MMMM d, yyyy"
                       className="w-full border rounded-md px-3 py-2 text-sm"
                       placeholderText="Pick a date"
                     />
                     {formik.touched.startDate && formik.errors.startDate && (
-                      <p className="text-sm text-red-500">{formik.errors.startDate}</p>
+                      <p className="text-sm text-red-500">
+                        {formik.errors.startDate}
+                      </p>
                     )}
                   </div>
 
@@ -374,13 +396,17 @@ export function EditTaskDialog({
                     <Label htmlFor="endDate">End Date</Label>
                     <DatePickerComponent
                       selected={formik.values.endDate ?? undefined}
-                      onChange={(date: Date | null) => formik.setFieldValue('endDate', date)}
+                      onChange={(date: Date | null) =>
+                        formik.setFieldValue("endDate", date)
+                      }
                       dateFormat="MMMM d, yyyy"
                       className="w-full border rounded-md px-3 py-2 text-sm"
                       placeholderText="Pick a date"
                     />
                     {formik.touched.endDate && formik.errors.endDate && (
-                      <p className="text-sm text-red-500">{formik.errors.endDate}</p>
+                      <p className="text-sm text-red-500">
+                        {formik.errors.endDate}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -390,7 +416,7 @@ export function EditTaskDialog({
                   <MultiSelect
                     value={formik.values.assignees}
                     onChange={(e: any) => {
-                      formik.setFieldValue('assignees', e.value);
+                      formik.setFieldValue("assignees", e.value);
                     }}
                     options={assignees}
                     optionLabel="name"
@@ -415,9 +441,11 @@ export function EditTaskDialog({
                 <div className="grid gap-3">
                   <Label htmlFor="priority">Priority</Label>
                   <div className="w-full">
-                    <Select 
-                      value={formik.values.priority} 
-                      onValueChange={(value) => formik.setFieldValue('priority', value)}
+                    <Select
+                      value={formik.values.priority}
+                      onValueChange={(value) =>
+                        formik.setFieldValue("priority", value)
+                      }
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select Priority" />
@@ -429,7 +457,9 @@ export function EditTaskDialog({
                       </SelectContent>
                     </Select>
                     {formik.touched.priority && formik.errors.priority && (
-                      <p className="text-sm text-red-500">{formik.errors.priority}</p>
+                      <p className="text-sm text-red-500">
+                        {formik.errors.priority}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -475,9 +505,9 @@ export function EditTaskDialog({
           </div>
 
           <DialogFooter className="flex justify-between sm:justify-between mt-4">
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               onClick={handleCancel}
               disabled={updateTaskMutation.isLoading}
             >
