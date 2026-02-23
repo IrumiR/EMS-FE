@@ -36,7 +36,7 @@ counts.forEach(({ month, count }) => {
 
     const option = {
       title: {
-        text: "Monthly Event Count - 2025",
+        text: `Monthly Event Count - ${new Date().getFullYear()}`,
         left: "center",
       },
       tooltip: {
