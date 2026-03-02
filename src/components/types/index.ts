@@ -19,6 +19,7 @@ export interface Budget {
   createdBy: {
     _id: string;
     userName: string;
+    role: string;
   };
 
   isApproved: boolean;

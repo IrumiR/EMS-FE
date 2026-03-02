@@ -23,21 +23,27 @@ interface BudgetViewDialogProps {
     clientName: string;
     status: string;
     expenses: Array<{ name: string; value: number }>;
-    inventoryItems: Array<{ itemName: string; remainingQuantity: number; price: number }>;
+    inventoryItems: Array<{
+      itemName: string;
+      remainingQuantity: number;
+      price: number;
+    }>;
     totalAmount: number;
     remarks: string;
     createdBy: string;
   };
 }
 
-export default function BudgetViewDialog({ 
-  open, 
+export default function BudgetViewDialog({
+  open,
   onOpenChange,
-  budget
+  budget,
 }: BudgetViewDialogProps) {
   const [showRemarksField, setShowRemarksField] = useState(false);
   const [remarks, setRemarks] = useState("");
-  const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
+  const [actionType, setActionType] = useState<"approve" | "reject" | null>(
+    null,
+  );
 
   const userType = localStorage.getItem("role");
 
@@ -51,7 +57,7 @@ export default function BudgetViewDialog({
     },
     (message: string) => {
       toast.error(message);
-    }
+    },
   );
 
   // Function to get status from isApproved field
@@ -63,7 +69,10 @@ export default function BudgetViewDialog({
   };
 
   // Function to get remarks based on status
-  const getRemarksFromBudget = (isApproved: boolean | null, remarks: string): string => {
+  const getRemarksFromBudget = (
+    isApproved: boolean | null,
+    remarks: string,
+  ): string => {
     if (isApproved === true) return remarks || "No remarks";
     if (isApproved === false && remarks) return remarks;
     if (isApproved === false && !remarks) return "No rejection reason provided";
@@ -72,7 +81,7 @@ export default function BudgetViewDialog({
 
   const handleReject = () => {
     if (!showRemarksField) {
-      setActionType('reject');
+      setActionType("reject");
       setShowRemarksField(true);
     } else {
       // Validate remarks
@@ -80,18 +89,18 @@ export default function BudgetViewDialog({
         toast.error("Please provide remarks for rejection");
         return;
       }
-      
+
       // Call API to reject budget
       budgetMutation.mutate({
         isApproved: false,
-        remarks: remarks.trim()
+        remarks: remarks.trim(),
       });
     }
   };
 
   const handleApprove = () => {
     if (!showRemarksField) {
-      setActionType('approve');
+      setActionType("approve");
       setShowRemarksField(true);
     } else {
       // Validate remarks
@@ -99,11 +108,11 @@ export default function BudgetViewDialog({
         toast.error("Please provide remarks for approval");
         return;
       }
-      
+
       // Call API to approve budget
       budgetMutation.mutate({
         isApproved: true,
-        remarks: remarks.trim()
+        remarks: remarks.trim(),
       });
     }
   };
@@ -124,34 +133,37 @@ export default function BudgetViewDialog({
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'approved':
-        return 'text-green-600';
-      case 'rejected':
-        return 'text-red-600';
-      case 'pending':
-        return 'text-yellow-600';
+      case "approved":
+        return "text-green-600";
+      case "rejected":
+        return "text-red-600";
+      case "pending":
+        return "text-yellow-600";
       default:
-        return 'text-gray-600';
+        return "text-gray-600";
     }
   };
 
   const currentStatus = getStatusFromBudget(budget?.isApproved ?? null);
-  const currentRemarks = getRemarksFromBudget(budget?.isApproved ?? null, budget?.remarks || "");
+  const currentRemarks = getRemarksFromBudget(
+    budget?.isApproved ?? null,
+    budget?.remarks || "",
+  );
 
   const showActionButtons = budget?.isApproved === null;
 
   const getRemarksFieldStyle = () => {
-    if (actionType === 'approve') {
+    if (actionType === "approve") {
       return {
         containerClass: "p-3 bg-green-50 rounded-lg border border-green-200",
         labelClass: "text-sm font-medium text-green-700",
-        textareaClass: "border-green-300 focus:border-green-500"
+        textareaClass: "border-green-300 focus:border-green-500",
       };
     } else {
       return {
         containerClass: "p-3 bg-red-50 rounded-lg border border-red-200",
         labelClass: "text-sm font-medium text-red-700",
-        textareaClass: "border-red-300 focus:border-red-500"
+        textareaClass: "border-red-300 focus:border-red-500",
       };
     }
   };
@@ -200,7 +212,7 @@ export default function BudgetViewDialog({
               </Label>
               <p
                 className={`text-sm font-medium ${getStatusColor(
-                  currentStatus
+                  currentStatus,
                 )}`}
               >
                 {currentStatus}
@@ -297,7 +309,7 @@ export default function BudgetViewDialog({
                 Created By:
               </Label>
               <p className="text-sm text-gray-900">
-                {budget?.createdBy.userName || "N/A"}
+                {budget?.createdBy.userName || "N/A"} - ({budget?.createdBy.role || "N/A"})
               </p>
             </div>
 
@@ -354,8 +366,8 @@ export default function BudgetViewDialog({
                     {budgetMutation.isLoading && actionType === "reject"
                       ? "Processing..."
                       : showRemarksField && actionType === "reject"
-                      ? "Confirm Reject"
-                      : "Reject"}
+                        ? "Confirm Reject"
+                        : "Reject"}
                   </Button>
                   <Button
                     onClick={handleApprove}
@@ -369,8 +381,8 @@ export default function BudgetViewDialog({
                     {budgetMutation.isLoading && actionType === "approve"
                       ? "Processing..."
                       : showRemarksField && actionType === "approve"
-                      ? "Confirm Approve"
-                      : "Approve"}
+                        ? "Confirm Approve"
+                        : "Approve"}
                   </Button>
                 </>
               )}
