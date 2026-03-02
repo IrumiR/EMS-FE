@@ -37,7 +37,7 @@ const currentYear = new Date().getFullYear();
 const yearRange = Array.from({ length: 20 }, (_, i) => currentYear - 10 + i);
 
 const EventsCalendar = () => {
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 5));
+  const [currentDate, setCurrentDate] = useState(new Date());
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth() + 1;
