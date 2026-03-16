@@ -43,7 +43,7 @@ const validationSchema = Yup.object({
           .test("is-positive", "Amount must be greater than 0", (value) => {
             return parseFloat(value || "0") > 0;
           }),
-      })
+      }),
     )
     .min(1, "At least one expense is required"),
   inventoryItems: Yup.array().of(
@@ -55,7 +55,7 @@ const validationSchema = Yup.object({
       price: Yup.number()
         .positive("Price must be positive")
         .required("Price is required"),
-    })
+    }),
   ),
   totalAmount: Yup.string()
     .required("Total amount is required")
@@ -86,7 +86,6 @@ export const useEditBudget = ({
   open,
   onOpenChange,
 }: UseEditBudgetProps) => {
-  const eventList = useGetAllEventsDropdown();
   const { data: clientsData, isLoading: clientsLoading } =
     useGetClientOptions();
   const { data: inventoryData, isLoading: inventoryLoading } =
@@ -94,9 +93,8 @@ export const useEditBudget = ({
   const { mutate: updateBudget, isLoading: isUpdating } = useUpdateBudget(
     budgetId,
     onSuccess,
-    onError
+    onError,
   );
-
 
   const formik = useFormik({
     initialValues: {
@@ -133,20 +131,17 @@ export const useEditBudget = ({
       };
 
       updateBudget(payload, {
-        onSuccess: (response) => {
+        onSuccess: () => {
           toast.success("Budget updated successfully!");
           onOpenChange(false);
           formik.resetForm();
         },
-        onError: (error: any) => {
-          const errorMessage =
-            error?.response?.data?.message || "Failed to update budget";
-          toast.error(errorMessage);
-        },
+        onError: () => {},
       });
     },
   });
 
+  const eventList = useGetAllEventsDropdown(formik.values.clientId);
 
   useEffect(() => {
     if (budget && open) {
@@ -173,10 +168,9 @@ export const useEditBudget = ({
     }
   }, [budget, open]);
 
-
   const calculateTotal = (
     expenses: Expense[] = formik.values.expenses,
-    inventoryItems: InventoryItem[] = formik.values.inventoryItems
+    inventoryItems: InventoryItem[] = formik.values.inventoryItems,
   ) => {
     const expenseTotal = expenses.reduce((sum, expense) => {
       const val = parseFloat(expense.amount) || 0;
@@ -191,11 +185,10 @@ export const useEditBudget = ({
     return expenseTotal + inventoryTotal;
   };
 
-
   const handleExpenseChange = (
     index: number,
     field: keyof Expense,
-    value: string
+    value: string,
   ) => {
     const updatedExpenses = [...formik.values.expenses];
     updatedExpenses[index] = { ...updatedExpenses[index], [field]: value };
@@ -204,7 +197,7 @@ export const useEditBudget = ({
     if (field === "amount") {
       const total = calculateTotal(
         updatedExpenses,
-        formik.values.inventoryItems
+        formik.values.inventoryItems,
       );
       formik.setFieldValue("totalAmount", total.toString(), false);
     }
@@ -213,7 +206,7 @@ export const useEditBudget = ({
   const handleInventoryChange = (
     index: number,
     field: keyof InventoryItem,
-    value: string | number
+    value: string | number,
   ) => {
     const updatedInventory = [...formik.values.inventoryItems];
     updatedInventory[index] = { ...updatedInventory[index], [field]: value };
@@ -232,7 +225,7 @@ export const useEditBudget = ({
 
   const handleInventoryItemSelect = (index: number, itemId: string) => {
     const selectedItem = inventoryData?.items?.find(
-      (item) => item.itemId === itemId
+      (item) => item.itemId === itemId,
     );
 
     if (selectedItem) {

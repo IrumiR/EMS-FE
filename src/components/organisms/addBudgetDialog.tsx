@@ -17,7 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Plus, Trash2, Minus, Percent } from "lucide-react";
+import { Loader2, Plus, Trash2, Minus } from "lucide-react";
 import { useBudget } from "@/hooks/useBudget";
 
 export function AddBudgetDialog() {
@@ -275,8 +275,8 @@ export function AddBudgetDialog() {
                             "quantity",
                             Math.min(
                               parseInt(e.target.value) || 1,
-                              item.maxQuantity || 1
-                            )
+                              item.maxQuantity || 1,
+                            ),
                           )
                         }
                         className="w-16 text-center border-0 focus-visible:ring-0 h-8"

@@ -70,9 +70,10 @@ export function EditBudgetDialog({
                 <Label htmlFor="client">Client</Label>
                 <Select
                   value={formik.values.clientId}
-                  onValueChange={(value) =>
-                    formik.setFieldValue("clientId", value)
-                  }
+                  onValueChange={(value) =>{
+                    formik.setFieldValue("clientId", value);
+                    formik.setFieldValue("eventId", ""); // Reset event when client changes
+                  }}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select Client" />
@@ -113,6 +114,7 @@ export function EditBudgetDialog({
                   onValueChange={(value) =>
                     formik.setFieldValue("eventId", value)
                   }
+                  disabled={!formik.values.clientId}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select Event" />
