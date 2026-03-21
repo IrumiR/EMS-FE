@@ -46,7 +46,7 @@ export const useCreateEvent = (
       const response = await authFetch.post("/events/create", eventData);
       return response.data;
     },
-    onSuccess(data) {
+    onSuccess() {
       onSuccess("Event created successfully");
       queryClient.invalidateQueries(["get_all_events"]);
     },

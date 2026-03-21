@@ -44,7 +44,7 @@ export const useCreateTask = (
       const response = await authFetch.post("/tasks/create", taskData);
       return response.data;
     },
-    onSuccess(data) {
+    onSuccess() {
       onSuccess("Task created successfully");
       queryClient.invalidateQueries(["get_all_by_event_tasks"]);
       queryClient.invalidateQueries(["get_all_by_user_tasks"]);
