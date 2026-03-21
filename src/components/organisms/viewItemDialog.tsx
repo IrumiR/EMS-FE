@@ -53,14 +53,9 @@ export function ViewItemDialog({
       .replace("LKR", "Rs.");
   };
 
-  // Helper function to determine if item is single use
-  const isSingleUse = (item: any) => {
-    return item.hasOwnProperty("remainingQuantity");
-  };
-
   // Helper function to get the appropriate quantity to display
   const getDisplayQuantity = (item: any) => {
-    return isSingleUse(item) ? item.remainingQuantity : item.totalQuantity;
+    return item.isSingleUse ? item.remainingQuantity : item.totalQuantity;
   };
 
   return (
