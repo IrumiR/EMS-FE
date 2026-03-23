@@ -155,8 +155,6 @@ export const useGetAllTasksByUserId = (
     queryKey: ["get_all_by_user_tasks", page, pageSize, search, status, eventId],
 
     queryFn: async () => {
-      const userType = localStorage.getItem("role");
-      const userId = localStorage.getItem("userId");
 
       const params = new URLSearchParams();
       if (page !== undefined) params.append("page", page.toString());
@@ -164,11 +162,6 @@ export const useGetAllTasksByUserId = (
       if (search) params.append("search", search);
       if (status) params.append("status", status);
       if (eventId) params.append("eventId", eventId);
-
-      // Include userId as a query param if not admin
-      if (userType !== "admin" && userType !== "manager" && userId) {
-        params.append("userId", userId);
-      }
 
       const endpoint = `/tasks/all?${params.toString()}`;
 
