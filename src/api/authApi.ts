@@ -68,7 +68,7 @@ export const useCreateClient = (
       const response = await authFetch.post("/auth/register", clientData);
       return response.data;
     },
-    onSuccess(data) {
+    onSuccess() {
       onSuccess("Client created successfully");
     },
     onError(error) {

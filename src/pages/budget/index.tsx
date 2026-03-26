@@ -16,26 +16,13 @@ function BudgetScreen() {
     "Pending" | "Approved" | "Rejected" | undefined
   >(undefined);
 
-
-
-const userId = localStorage.getItem("userId") || "";
 const role = localStorage.getItem("role") || "";
-
-let queryUserId = "";
-let queryClientId = "";
-
-if(role === "client") {
-  queryClientId = userId;
-} else if (role !== "admin") {
-  queryUserId = userId;
-}
 
 // Fetch budgets using the API hook
 const { data, isLoading, error } = useGetAllBudgets(
   currentPage,
   rowsPerPage,
   searchTerm,
-  queryClientId,
   budgetType
 );
 

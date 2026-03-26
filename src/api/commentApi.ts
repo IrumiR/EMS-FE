@@ -70,7 +70,7 @@ export const createComment = (
       return response.data;
     },
     
-    onSuccess(data) {
+    onSuccess() {
       onSuccess("Comment added successfully");
       queryClient.invalidateQueries(["get_all_comments_by_task_id"]);
       queryClient.invalidateQueries(["user_notifications"]);
@@ -121,7 +121,7 @@ export const addReplyToComment = (
       return response.data;
     },
 
-    onSuccess(data) {
+    onSuccess() {
       onSuccess("Reply added successfully");
       queryClient.invalidateQueries(["get_all_comments_by_task_id"]);
       queryClient.invalidateQueries(["user_notifications"]);
