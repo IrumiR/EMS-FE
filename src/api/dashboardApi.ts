@@ -1,7 +1,4 @@
-import {
-  useQuery,
-  UseQueryResult,
-} from "react-query";
+import { useQuery, UseQueryResult } from "react-query";
 import authFetch from "./authInterceptor";
 
 interface EventStatusCount {
@@ -16,24 +13,14 @@ interface EventStatusCountsResponse {
 
 export const useGetEventCountByStatus =
   (): UseQueryResult<EventStatusCountsResponse> => {
-    const userType = localStorage.getItem("role");
-    const userId = localStorage.getItem("userId");
-
     // Build endpoint conditionally
-    const endpoint =
-      userType === "client"
-        ? `/events/events-count-by-status?clientId=${userId}`
-        : `/events/events-count-by-status`;
+    const endpoint = `/events/events-count-by-status`;
 
     return useQuery({
-      queryKey: [
-        "get_event_status_counts",
-        userType === "client" ? userId : null,
-      ],
+      queryKey: ["get_event_status_counts"],
       queryFn: async () => {
-        const response = await authFetch.get<EventStatusCountsResponse>(
-          endpoint
-        );
+        const response =
+          await authFetch.get<EventStatusCountsResponse>(endpoint);
         return response.data;
       },
       onSuccess: () => {
@@ -55,21 +42,24 @@ interface UserRoleCountsResponse {
   data: UserRoleCount[];
 }
 
-export const useGetUserCountByRole = (): UseQueryResult<UserRoleCountsResponse> => {
-  return useQuery({
-    queryKey: ["get_user_role_counts"],
-    queryFn: async () => {
-      const response = await authFetch.get<UserRoleCountsResponse>("/users/user-count-by-role");
-      return response.data;
-    },
-    onSuccess: () => {
-      console.log("User role counts retrieved successfully");
-    },
-    onError: (error) => {
-      console.error("Error fetching user role counts:", error);
-    },
-  });
-};
+export const useGetUserCountByRole =
+  (): UseQueryResult<UserRoleCountsResponse> => {
+    return useQuery({
+      queryKey: ["get_user_role_counts"],
+      queryFn: async () => {
+        const response = await authFetch.get<UserRoleCountsResponse>(
+          "/users/user-count-by-role",
+        );
+        return response.data;
+      },
+      onSuccess: () => {
+        console.log("User role counts retrieved successfully");
+      },
+      onError: (error) => {
+        console.error("Error fetching user role counts:", error);
+      },
+    });
+  };
 
 interface UpcomingEvent {
   _id: string;
@@ -90,21 +80,23 @@ interface UpcomingEventsResponse {
   events: UpcomingEvent[];
 }
 
-export const useGetUpcomingEvents = (): UseQueryResult<UpcomingEventsResponse> => {
-  return useQuery({
-    queryKey: ["get_upcoming_events"],
-    queryFn: async () => {
-      const response = await authFetch.get<UpcomingEventsResponse>("/events/upcoming");
-      return response.data;
-    },
-    onSuccess: () => {
-      console.log("Upcoming events retrieved successfully");
-    },
-    onError: (error) => {
-      console.error("Error fetching upcoming events:", error);
-    },
-  });
-};
+export const useGetUpcomingEvents =
+  (): UseQueryResult<UpcomingEventsResponse> => {
+    return useQuery({
+      queryKey: ["get_upcoming_events"],
+      queryFn: async () => {
+        const response =
+          await authFetch.get<UpcomingEventsResponse>("/events/upcoming");
+        return response.data;
+      },
+      onSuccess: () => {
+        console.log("Upcoming events retrieved successfully");
+      },
+      onError: (error) => {
+        console.error("Error fetching upcoming events:", error);
+      },
+    });
+  };
 
 interface TaskStatusCount {
   status: string;
@@ -116,9 +108,8 @@ interface TaskStatusCountsResponse {
   data: TaskStatusCount[];
 }
 
-
 export const useGetTaskCountsByStatus = (
-  userId?: string
+  userId?: string,
 ): UseQueryResult<TaskStatusCountsResponse> => {
   return useQuery({
     queryKey: ["get_task_status_counts", userId],
@@ -129,7 +120,7 @@ export const useGetTaskCountsByStatus = (
       }
 
       const response = await authFetch.get<TaskStatusCountsResponse>(
-        `/tasks/counts-by-status?${params.toString()}`
+        `/tasks/counts-by-status?${params.toString()}`,
       );
       return response.data;
     },
@@ -153,21 +144,23 @@ interface InventoryCountResponse {
   data: InventoryCountData;
 }
 
-export const useGetInventoryItemCount = (): UseQueryResult<InventoryCountResponse> => {
-  return useQuery({
-    queryKey: ["get_inventory_item_count"],
-    queryFn: async () => {
-      const response = await authFetch.get<InventoryCountResponse>("/inventory/count");
-      return response.data;
-    },
-    onSuccess: () => {
-      console.log("Inventory item counts retrieved successfully");
-    },
-    onError: (error) => {
-      console.error("Error fetching inventory item counts:", error);
-    },
-  });
-};
+export const useGetInventoryItemCount =
+  (): UseQueryResult<InventoryCountResponse> => {
+    return useQuery({
+      queryKey: ["get_inventory_item_count"],
+      queryFn: async () => {
+        const response =
+          await authFetch.get<InventoryCountResponse>("/inventory/count");
+        return response.data;
+      },
+      onSuccess: () => {
+        console.log("Inventory item counts retrieved successfully");
+      },
+      onError: (error) => {
+        console.error("Error fetching inventory item counts:", error);
+      },
+    });
+  };
 
 interface BudgetStatusCount {
   status: string;
@@ -181,23 +174,13 @@ interface BudgetStatusCountsResponse {
 
 export const useGetBudgetCountsByStatus =
   (): UseQueryResult<BudgetStatusCountsResponse> => {
-    const userType = localStorage.getItem("role");
-    const userId = localStorage.getItem("userId");
-
-    const endpoint =
-      userType === "client"
-        ? `/budget/counts-by-status?clientId=${userId}`
-        : `/budget/counts-by-status`;
+    const endpoint = `/budget/counts-by-status`;
 
     return useQuery({
-      queryKey: [
-        "get_budget_status_counts",
-        userType === "client" ? userId : null,
-      ],
+      queryKey: ["get_budget_status_counts"],
       queryFn: async () => {
-        const response = await authFetch.get<BudgetStatusCountsResponse>(
-          endpoint
-        );
+        const response =
+          await authFetch.get<BudgetStatusCountsResponse>(endpoint);
         return response.data;
       },
       onSuccess: () => {
@@ -220,26 +203,29 @@ interface MonthlyEventCountsResponse {
   data: MonthlyEventCount[];
 }
 
-export const useGetMonthlyEventCounts = (): UseQueryResult<MonthlyEventCountsResponse> => {
-  return useQuery({
-    queryKey: ["get_monthly_event_counts"],
-    queryFn: async () => {
-      const response = await authFetch.get<MonthlyEventCountsResponse>("/events/events-count");
-      return response.data;
-    },
-    onSuccess: () => {
-      console.log("Monthly event counts retrieved successfully");
-    },
-    onError: (error) => {
-      console.error("Error fetching monthly event counts:", error);
-    },
-  });
-};
+export const useGetMonthlyEventCounts =
+  (): UseQueryResult<MonthlyEventCountsResponse> => {
+    return useQuery({
+      queryKey: ["get_monthly_event_counts"],
+      queryFn: async () => {
+        const response = await authFetch.get<MonthlyEventCountsResponse>(
+          "/events/events-count",
+        );
+        return response.data;
+      },
+      onSuccess: () => {
+        console.log("Monthly event counts retrieved successfully");
+      },
+      onError: (error) => {
+        console.error("Error fetching monthly event counts:", error);
+      },
+    });
+  };
 
 interface SubTask {
   _id: string;
   subTaskName: string;
-  status: string; 
+  status: string;
 }
 
 interface UpcomingTask {
@@ -252,7 +238,6 @@ interface UpcomingTask {
   subTasks: SubTask[];
 }
 
-
 interface UpcomingTasksResponse {
   message: string;
   tasks: UpcomingTask[];
@@ -260,17 +245,15 @@ interface UpcomingTasksResponse {
 
 export const useGetUpcomingTasks =
   (): UseQueryResult<UpcomingTasksResponse> => {
-    const clientId = localStorage.getItem("userId") || "";
 
     return useQuery({
-      queryKey: ["get_upcoming_tasks", clientId],
+      queryKey: ["get_upcoming_tasks"],
       queryFn: async () => {
         const response = await authFetch.get<UpcomingTasksResponse>(
-          `/tasks/upcoming-tasks/${clientId}`
+          `/tasks/upcoming-tasks`,
         );
         return response.data;
       },
-      enabled: !!clientId,
       onSuccess: () => {
         console.log("Upcoming tasks retrieved successfully");
       },
@@ -280,29 +263,27 @@ export const useGetUpcomingTasks =
     });
   };
 
+interface TaskStatusCount {
+  status: string;
+  count: number;
+}
 
-  interface TaskStatusCount {
-    status: string;
-    count: number;
-  }
+interface TaskStatusCountResponse {
+  message: string;
+  data: TaskStatusCount[];
+}
 
-  interface TaskStatusCountResponse {
-    message: string;
-    data: TaskStatusCount[];
-  }
-
-  export const useGetTaskStatusCount = (): UseQueryResult<TaskStatusCountResponse> => {
-    const clientId = localStorage.getItem("userId") || "";
+export const useGetTaskStatusCount =
+  (): UseQueryResult<TaskStatusCountResponse> => {
 
     return useQuery({
-      queryKey: ["get_status_counts", clientId],
+      queryKey: ["get_status_counts"],
       queryFn: async () => {
         const response = await authFetch.get<TaskStatusCountResponse>(
-          `/tasks/status-counts/${clientId}`
+          `/tasks/status-counts`,
         );
         return response.data;
       },
-      enabled: !!clientId,
       onSuccess: () => {
         console.log("Upcoming tasks retrieved successfully");
       },
@@ -310,6 +291,4 @@ export const useGetUpcomingTasks =
         console.error("Error fetching upcoming tasks:", error);
       },
     });
-  };  
-
-
+  };
