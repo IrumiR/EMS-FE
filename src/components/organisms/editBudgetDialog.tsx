@@ -16,7 +16,7 @@ import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { Loader2, Trash2, Plus, Minus } from "lucide-react";
+import { Loader2, Trash2, Plus, Minus, Percent } from "lucide-react";
 import { Budget } from "../types";
 import { useEditBudget } from "@/hooks/useEditBudget";
 
@@ -49,8 +49,14 @@ export function EditBudgetDialog({
     handleAddInventoryItem,
     handleDeleteExpense,
     handleDeleteInventoryItem,
+    handleDiscountChange,
     handleCancel,
+    calculateSubtotal,
   } = useEditBudget({ budget, budgetId, open, onOpenChange });
+
+  const subtotal = calculateSubtotal();
+  const discountPercent = parseFloat(formik.values.discountPercentage) || 0;
+  const discountAmount = (subtotal * discountPercent) / 100;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -70,7 +76,7 @@ export function EditBudgetDialog({
                 <Label htmlFor="client">Client</Label>
                 <Select
                   value={formik.values.clientId}
-                  onValueChange={(value) =>{
+                  onValueChange={(value) => {
                     formik.setFieldValue("clientId", value);
                     formik.setFieldValue("eventId", ""); // Reset event when client changes
                   }}
@@ -154,7 +160,7 @@ export function EditBudgetDialog({
                           handleExpenseChange(
                             index,
                             "expenseName",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         className="w-full"
@@ -288,12 +294,12 @@ export function EditBudgetDialog({
                           onChange={(e) => {
                             const newQuantity = Math.min(
                               Math.max(1, parseInt(e.target.value) || 1),
-                              item.maxQuantity || 1
+                              item.maxQuantity || 1,
                             );
                             handleInventoryChange(
                               index,
                               "quantity",
-                              newQuantity
+                              newQuantity,
                             );
                           }}
                           className="w-16 text-center border-0 focus-visible:ring-0 h-8"
@@ -390,6 +396,43 @@ export function EditBudgetDialog({
                     Add Inventory
                   </Button>
                 </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="discount">Discount (%)</Label>
+                <div className="relative">
+                  <Input
+                    id="discount"
+                    placeholder="Enter discount percentage"
+                    type="number"
+                    value={formik.values.discountPercentage}
+                    onChange={(e) => handleDiscountChange(e.target.value)}
+                    className="w-full pr-8"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                  />
+                  <Percent className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                </div>
+                {formik.touched.discountPercentage &&
+                  formik.errors.discountPercentage && (
+                    <span className="text-red-500 text-sm">
+                      {formik.errors.discountPercentage}
+                    </span>
+                  )}
+              </div>
+
+              <div className="grid gap-2 p-4 bg-gray-50 rounded-lg">
+                <div className="flex justify-between items-center text-sm">
+                  <span>Subtotal:</span>
+                  <span>Rs.{subtotal.toFixed(2)}</span>
+                </div>
+                {discountPercent > 0 && (
+                  <div className="flex justify-between items-center text-sm text-green-600">
+                    <span>Discount ({discountPercent}%):</span>
+                    <span>-Rs.{discountAmount.toFixed(2)}</span>
+                  </div>
+                )}
               </div>
 
               {/* Total Amount Field */}

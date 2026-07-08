@@ -17,7 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Plus, Trash2, Minus } from "lucide-react";
+import { Loader2, Plus, Trash2, Minus, Percent } from "lucide-react";
 import { useBudget } from "@/hooks/useBudget";
 
 export function AddBudgetDialog() {
@@ -370,7 +370,7 @@ export function AddBudgetDialog() {
               </div>
             </div>
 
-            {/* <div className="grid gap-2">
+            <div className="grid gap-2">
               <Label htmlFor="discount">Discount (%)</Label>
               <div className="relative">
                 <Input
@@ -392,7 +392,7 @@ export function AddBudgetDialog() {
                     {formik.errors.discountPercentage}
                   </span>
                 )}
-            </div> */}
+            </div>
 
             {/* Total Calculation Summary */}
             <div className="grid gap-2 p-4 bg-gray-50 rounded-lg">

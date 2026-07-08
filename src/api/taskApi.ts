@@ -271,14 +271,22 @@ export interface EventsOption {
 }
 
 export const useGetAllEventsDropdown = (
-  clientId?: string
+  clientId?: string,
+  eventId?: string,
+  filterByStatus?: string,
 ): UseQueryResult<EventsListResponse> => {
   return useQuery({
-    queryKey: ["events_options", clientId],
+    queryKey: ["events_options", clientId, eventId, filterByStatus],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (clientId) {
         params.append("clientId", clientId);
+      }
+      if (eventId) {
+        params.append("selectedEventId", eventId);
+      }
+      if (filterByStatus) {
+        params.append("filterByStatus", filterByStatus);
       }
 
       const endpoint = `/events/dropdown/events${
@@ -303,6 +311,7 @@ export const useGetAllEventsDropdown = (
     },
   });
 };
+
 
 
 export interface TaskStatusApprove {

@@ -57,6 +57,13 @@ const validationSchema = Yup.object({
         .required("Price is required"),
     }),
   ),
+  discountPercentage: Yup.number()
+    .transform((_, originalValue) =>
+      originalValue === "" ? null : Number(originalValue),
+    )
+    .min(0, "Discount cannot be negative")
+    .max(100, "Discount cannot exceed 100%")
+    .nullable(),
   totalAmount: Yup.string()
     .required("Total amount is required")
     .test("is-positive", "Total amount must be greater than 0", (value) => {
@@ -64,8 +71,8 @@ const validationSchema = Yup.object({
     }),
 });
 
-const onSuccess = () => {
-  toast.success("Budget updated successfully!", {
+const onSuccess = (message: string) => {
+  toast.success(message, {
     id: "success-toast",
     position: "top-center",
     duration: 3000,
@@ -102,6 +109,7 @@ export const useEditBudget = ({
       eventId: "",
       expenses: [{ expenseName: "", amount: "" }] as unknown as Expense[],
       inventoryItems: [] as InventoryItem[],
+      discountPercentage: "",
       totalAmount: "",
     },
     validationSchema,
@@ -128,11 +136,13 @@ export const useEditBudget = ({
           ...(item._id ? { _id: item._id } : {}),
         })),
         totalAmount: parseFloat(values.totalAmount),
+        discount: values.discountPercentage
+          ? Number(values.discountPercentage)
+          : 0,
       };
 
       updateBudget(payload, {
         onSuccess: () => {
-          toast.success("Budget updated successfully!");
           onOpenChange(false);
           formik.resetForm();
         },
@@ -141,7 +151,10 @@ export const useEditBudget = ({
     },
   });
 
-  const eventList = useGetAllEventsDropdown(formik.values.clientId);
+  const eventList = useGetAllEventsDropdown(
+    formik.values.clientId,
+    formik.values.eventId,
+  );
 
   useEffect(() => {
     if (budget && open) {
@@ -163,12 +176,22 @@ export const useEditBudget = ({
             maxQuantity: item.remainingQuantity,
             _id: item._id,
           })) || [],
+        discountPercentage: budget.discount?.toString() || "",
         totalAmount: budget.totalAmount.toString(),
       });
     }
   }, [budget, open]);
 
-  const calculateTotal = (
+  useEffect(() => {
+    const total = calculateTotal();
+    formik.setFieldValue("totalAmount", total.toString());
+  }, [
+    formik.values.expenses,
+    formik.values.inventoryItems,
+    formik.values.discountPercentage,
+  ]);
+
+  const calculateSubtotal = (
     expenses: Expense[] = formik.values.expenses,
     inventoryItems: InventoryItem[] = formik.values.inventoryItems,
   ) => {
@@ -183,6 +206,17 @@ export const useEditBudget = ({
     }, 0);
 
     return expenseTotal + inventoryTotal;
+  };
+
+  const calculateTotal = (
+    expenses: Expense[] = formik.values.expenses,
+    inventoryItems: InventoryItem[] = formik.values.inventoryItems,
+  ) => {
+    const subtotal = calculateSubtotal(expenses, inventoryItems);
+    const discountPercent = parseFloat(formik.values.discountPercentage) || 0;
+    const discountAmount = (subtotal * discountPercent) / 100;
+
+    return Math.max(0, subtotal - discountAmount);
   };
 
   const handleExpenseChange = (
@@ -300,6 +334,12 @@ export const useEditBudget = ({
     formik.setFieldValue("totalAmount", total.toString(), false);
   };
 
+  const handleDiscountChange = (value: string) => {
+    formik.setFieldValue("discountPercentage", value, false);
+    const total = calculateTotal();
+    formik.setFieldValue("totalAmount", total.toString(), false);
+  };
+
   const handleCancel = () => {
     formik.resetForm();
     onOpenChange(false);
@@ -328,7 +368,10 @@ export const useEditBudget = ({
     handleAddInventoryItem,
     handleDeleteExpense,
     handleDeleteInventoryItem,
+    handleDiscountChange,
     handleCancel,
+    calculateSubtotal,
+    calculateTotal,
   };
 };
 
