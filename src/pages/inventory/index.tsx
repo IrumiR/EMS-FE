@@ -58,7 +58,7 @@ function InventoryScreen() {
     rowsPerPage,
     searchTerm,
     selectedItemType !== "All" ? selectedItemType.toLowerCase() : undefined,
-    selectedCategory !== "All Categories" ? selectedCategory : undefined
+    selectedCategory !== "All Categories" ? selectedCategory : undefined,
   );
 
   const inventoryItems = data?.inventoryItems || [];
@@ -72,7 +72,9 @@ function InventoryScreen() {
     category: Array.isArray(item.category)
       ? item.category.join(", ")
       : item.category,
-    rawCondition: Array.isArray(item.condition) ? item.condition : [item.condition], // 👈 Fixed
+    rawCondition: Array.isArray(item.condition)
+      ? item.condition
+      : [item.condition], // 👈 Fixed
     condition: Array.isArray(item.condition) ? (
       item.condition.map((cond) => (
         <Badge
@@ -82,10 +84,10 @@ function InventoryScreen() {
             cond === "New"
               ? "bg-purple-100 text-purple-800 hover:bg-purple-200 mr-1"
               : cond === "Used"
-              ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200 mr-1"
-              : cond === "Damaged"
-              ? "bg-red-100 text-red-800 hover:bg-red-200 mr-1"
-              : "bg-gray-100 text-gray-800 hover:bg-gray-200 mr-1"
+                ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200 mr-1"
+                : cond === "Damaged"
+                  ? "bg-red-100 text-red-800 hover:bg-red-200 mr-1"
+                  : "bg-gray-100 text-gray-800 hover:bg-gray-200 mr-1"
           }
         >
           {cond}
@@ -98,8 +100,8 @@ function InventoryScreen() {
           item.condition === "New"
             ? "bg-purple-100 text-purple-800 hover:bg-purple-200"
             : item.condition === "Used"
-            ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+              ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+              : "bg-gray-100 text-gray-800 hover:bg-gray-200"
         }
       >
         {item.condition}
@@ -151,7 +153,7 @@ function InventoryScreen() {
   };
 
   const handleRowsPerPageChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
+    event: React.ChangeEvent<HTMLSelectElement>,
   ) => {
     const newRowsPerPage = Number(event.target.value);
     setRowsPerPage(newRowsPerPage);
@@ -266,60 +268,66 @@ function InventoryScreen() {
           <TableComponent
             columns={columns}
             data={formattedItems}
-            actions={(row) => (
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="p-1 hover:bg-gray-100"
-                  onClick={() => {
-                    setSelectedItem(row._id);
-                    setViewDialogOpen(true);
-                  }}
-                >
-                  <Eye className="h-4 w-4 text-blue-600" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="p-1 hover:bg-gray-100"
-                  onClick={() => {
-                    setSelectedItem(row._id);
-                    setEditDialogOpen(true);
-                  }}
-                >
-                  <FilePenLine className="h-4 w-4 text-green-600" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="p-1 hover:bg-gray-100"
-                  onClick={() => handleReserveClick(row)}
-                  disabled={row.rawCondition?.includes("Damaged") || row.isLeased}
-                >
-                  <CalendarCheck
-                    className={`h-4 w-4 ${
-                      row.rawCondition?.includes("Damaged")
-                        ? "text-gray-400"
-                        : "text-purple-600"
-                    }`}
-                  />
-                </Button>
-                {(userType === "admin") && (
+            actions={(row) => {
+              // const isReserveDisabled =
+              //   row.rawCondition?.includes("Damaged") ||
+              //   Number(row.remainingQuantity) <= 0 ||
+              //   row.isLeased;
+
+              return (
+                <div className="flex items-center space-x-2">
                   <Button
                     variant="ghost"
                     size="sm"
                     className="p-1 hover:bg-gray-100"
                     onClick={() => {
                       setSelectedItem(row._id);
-                      setDeleteItemDialogOpen(true);
+                      setViewDialogOpen(true);
                     }}
                   >
-                    <Trash2 className="h-4 w-4 text-red-600" />
+                    <Eye className="h-4 w-4 text-blue-600" />
                   </Button>
-                )}
-              </div>
-            )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="p-1 hover:bg-gray-100"
+                    onClick={() => {
+                      setSelectedItem(row._id);
+                      setEditDialogOpen(true);
+                    }}
+                  >
+                    <FilePenLine className="h-4 w-4 text-green-600" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="p-1 hover:bg-gray-100"
+                    onClick={() => handleReserveClick(row)}
+                    // disabled={isReserveDisabled}
+                  >
+                    <CalendarCheck
+                    className="h-4 w-4 text-purple-600"
+                      // className={`h-4 w-4 ${
+                      //   isReserveDisabled ? "text-gray-400" : "text-purple-600"
+                      // }`}
+                    />
+                  </Button>
+                  {userType === "admin" && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="p-1 hover:bg-gray-100"
+                      onClick={() => {
+                        setSelectedItem(row._id);
+                        setDeleteItemDialogOpen(true);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 text-red-600" />
+                    </Button>
+                  )}
+                </div>
+              );
+            }}
           />
         )}
       </div>
