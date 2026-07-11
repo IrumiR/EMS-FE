@@ -146,8 +146,9 @@ export const useUpdateBudget = (
       const response = await authFetch.put(`/budget/${budgetId}`, budgetData);
       return response.data;
     },
-    onSuccess() {
+    onSuccess(data) {
       queryClient.invalidateQueries(["get_all_budgets"]);
+      if (onSuccess) onSuccess(data.message);
     },
     onError(error) {
       const message =
