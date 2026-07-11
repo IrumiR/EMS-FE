@@ -284,7 +284,7 @@ export function EditBudgetDialog({
                           size="sm"
                           onClick={() => handleQuantityChange(index, false)}
                           className="h-8 w-8 p-0"
-                          disabled={item.quantity <= 1}
+                          disabled={item.quantity <= 0 || item.quantity <= 0}
                         >
                           <Minus className="h-3 w-3" />
                         </Button>
@@ -312,7 +312,7 @@ export function EditBudgetDialog({
                           size="sm"
                           onClick={() => handleQuantityChange(index, true)}
                           className="h-8 w-8 p-0"
-                          disabled={item.quantity >= (item.maxQuantity || 1)}
+                          disabled={item.quantity <= 0 || item.quantity >= (item.maxQuantity || 1)}
                         >
                           <Plus className="h-3 w-3" />
                         </Button>

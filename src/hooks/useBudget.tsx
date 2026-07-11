@@ -31,7 +31,7 @@ const validationSchema = Yup.object({
         value: Yup.number()
           .positive("Amount must be positive")
           .required("Amount is required"),
-      })
+      }),
     )
     .min(1, "At least one expense is required"),
   inventoryItems: Yup.array().of(
@@ -43,7 +43,7 @@ const validationSchema = Yup.object({
       price: Yup.number()
         .positive("Price must be positive")
         .required("Price is required"),
-    })
+    }),
   ),
   discountPercentage: Yup.number()
     .min(0, "Discount cannot be negative")
@@ -71,7 +71,7 @@ export function useBudget() {
     },
     (message: string) => {
       toast.error(message);
-    }
+    },
   );
 
   const formik = useFormik({
@@ -141,13 +141,13 @@ export function useBudget() {
     const discountPercent = parseFloat(formik.values.discountPercentage) || 0;
     const discountAmount = (subtotal * discountPercent) / 100;
     const finalTotal = subtotal - discountAmount;
-    return Math.max(0, finalTotal); 
+    return Math.max(0, finalTotal);
   };
 
   const handleExpenseChange = (
     index: number,
     field: keyof Expense,
-    value: string
+    value: string,
   ) => {
     const updatedExpenses = [...formik.values.expenses];
     updatedExpenses[index] = { ...updatedExpenses[index], [field]: value };
@@ -157,7 +157,7 @@ export function useBudget() {
   const handleInventoryChange = (
     index: number,
     field: keyof InventoryItem,
-    value: string | number
+    value: string | number,
   ) => {
     const updatedInventory = [...formik.values.inventoryItems];
     updatedInventory[index] = { ...updatedInventory[index], [field]: value };
@@ -174,19 +174,25 @@ export function useBudget() {
 
   const handleInventoryItemSelect = (index: number, itemId: string) => {
     const selectedItem = inventoryData?.items?.find(
-      (item) => item.itemId === itemId
+      (item) => item.itemId === itemId,
     );
 
     if (selectedItem) {
+      // Set quantity to 1 if remainingQuantity is undefined
+      //const selectedQuantity = Math.max(1, selectedItem.remainingQuantity ?? 1);
+      const selectedQuantity =
+        typeof selectedItem.remainingQuantity === "number"
+          ? selectedItem.remainingQuantity
+          : 1;
       const updatedInventory = [...formik.values.inventoryItems];
       updatedInventory[index] = {
         ...updatedInventory[index],
         itemId,
         itemName: selectedItem.itemName,
-        quantity: selectedItem.remainingQuantity,
-        maxQuantity: selectedItem.remainingQuantity,
+        quantity: selectedQuantity,
+        maxQuantity: selectedQuantity,
         unitPrice: selectedItem.price,
-        price: (selectedItem.remainingQuantity * selectedItem.price).toString(),
+        price: (selectedQuantity * selectedItem.price).toString(),
       };
 
       formik.setFieldValue("inventoryItems", updatedInventory);

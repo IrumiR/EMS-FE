@@ -263,15 +263,19 @@ export const useEditBudget = ({
     );
 
     if (selectedItem) {
+      const selectedQuantity =
+        typeof selectedItem.remainingQuantity === "number"
+          ? selectedItem.remainingQuantity
+          : 1;
       const updatedInventory = [...formik.values.inventoryItems];
       updatedInventory[index] = {
         ...updatedInventory[index],
         itemId,
         itemName: selectedItem.itemName,
-        quantity: 1,
-        maxQuantity: selectedItem.remainingQuantity,
+        quantity: selectedQuantity,
+        maxQuantity: selectedQuantity,
         unitPrice: selectedItem.price,
-        price: selectedItem.price.toString(),
+        price: (selectedQuantity * selectedItem.price).toString(),
       };
 
       formik.setFieldValue("inventoryItems", updatedInventory, false);
