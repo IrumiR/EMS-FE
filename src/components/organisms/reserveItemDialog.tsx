@@ -40,11 +40,20 @@ export function ReserveItemDialog({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   
   const eventList = useGetAllEventsDropdown();
+  //for reserving item within the event start date and end date
+  // const eventList = useGetAllEventsDropdown(undefined, undefined, "active");
+
+  // const selectedEvent = eventList.data?.events?.find(
+  //   (event) => event._id === selectedEventId
+  // );
+
+  // const eventMinDate = selectedEvent ? new Date(selectedEvent.startDate) : new Date();
+  // const eventMaxDate = selectedEvent ? new Date(selectedEvent.endDate) : undefined;
   
   const reserveInventoryMutation = useReserveInventoryMutation(
     (data) => {
       // Success callback
-      toast.success("Item reserved successfully!");
+      toast.success(data.message);
       resetForm();
       onOpenChange(false);
       setIsLoading(false);
@@ -73,6 +82,7 @@ export function ReserveItemDialog({
 
   const handleEventChange = (value: string) => {
     setSelectedEventId(value);
+    setSelectedDate(undefined);
   };
 
   const handleDateChange = (date: Date | null) => {
@@ -184,6 +194,9 @@ export function ReserveItemDialog({
               useMinDate={true}
               minDate={new Date()}
               disabled={isLoading}
+              // minDate={eventMinDate}
+              // maxDate={eventMaxDate}
+              // disabled={!setSelectedEventId || isLoading}
             />
           </div>
 
@@ -207,8 +220,8 @@ export function ReserveItemDialog({
 
         <DialogFooter className="flex flex-col sm:flex-row gap-3 sm:gap-3">
           <DialogClose asChild>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full sm:w-auto"
               disabled={isLoading}
             >
