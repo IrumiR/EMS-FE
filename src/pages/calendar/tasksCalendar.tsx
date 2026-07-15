@@ -224,6 +224,17 @@ const TasksCalendar = () => {
                               <p className="text-xs text-gray-600">
                                 <strong>Event:</strong> {task.eventName}
                               </p>
+
+                              {/* To display assignee name in the task card */}
+                              {/* <p className="text-xs text-gray-600">
+                                <strong>Assignees:</strong>{" "}
+                                {Array.isArray(task.assignees)
+                                  ? task.assignees
+                                      .map((a: any) => a?.userName || a?._id || "Unknown")
+                                      .join(", ")
+                                  : "None"}
+                              </p> */}
+                              
                             </div>
                           ))}
                         </div>
@@ -248,8 +259,8 @@ const TasksCalendar = () => {
                            task.priority === "High"
                              ? "text-red-500 bg-red-50"
                              : task.priority === "Medium"
-                             ? "text-orange-500 bg-orange-50"
-                             : "text-green-500 bg-green-50"
+                               ? "text-orange-500 bg-orange-50"
+                               : "text-green-500 bg-green-50"
                          }
                        `}
                         >
@@ -257,8 +268,8 @@ const TasksCalendar = () => {
                             {task.priority === "High"
                               ? "⬆"
                               : task.priority === "Medium"
-                              ? "⬆"
-                              : "⬇"}
+                                ? "⬆"
+                                : "⬇"}
                           </span>
                           {task.priority}
                         </div>
@@ -269,10 +280,10 @@ const TasksCalendar = () => {
                            task.status === "To Do"
                              ? "bg-blue-100 text-blue-800"
                              : task.status === "In Progress"
-                             ? "bg-green-100 text-green-800"
-                             : task.status === "Completed"
-                             ? "bg-purple-100 text-purple-800"
-                             : "bg-red-100 text-red-800"
+                               ? "bg-green-100 text-green-800"
+                               : task.status === "Completed"
+                                 ? "bg-purple-100 text-purple-800"
+                                 : "bg-red-100 text-red-800"
                          }
                        `}
                         >
@@ -282,6 +293,16 @@ const TasksCalendar = () => {
                         <p className="truncate text-muted-foreground">
                           {task.eventName}
                         </p>
+
+                        {/* To display assignee name in the task card */}
+                        {/* <p className="text-xs text-gray-600">
+                          <strong>Assignees:</strong>{" "}
+                          {Array.isArray(task.assignees)
+                            ? task.assignees
+                                .map((a: any) => a?.userName || a?._id || "Unknown")
+                                .join(", ")
+                            : "None"}
+                        </p> */}
                       </CardContent>
                     </Card>
                   ))}

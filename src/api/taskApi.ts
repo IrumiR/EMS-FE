@@ -406,6 +406,10 @@ interface CalendarTask {
   startDate: string;
   endDate: string;
   eventName: string;
+  assignees: {
+    _id: string;
+    userName: string;
+  };
 }
 
 interface MonthlyTasksResponse {
