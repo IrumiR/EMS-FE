@@ -15,8 +15,8 @@ import {
   addMonths,
   subMonths,
 } from "date-fns";
-import { useGetAllTasksByMonth } from "@/api/taskApi"; 
-import {useGetAssigneeOptions} from "@/api/authApi";
+import { useGetAllTasksByMonth } from "@/api/taskApi";
+import { useGetAssigneeOptions } from "@/api/authApi";
 
 const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const monthNames = [
@@ -43,27 +43,23 @@ const TasksCalendar = () => {
   const month = currentDate.getMonth() + 1;
   const [selectedAssigneeId, setSelectedAssigneeId] = useState("");
 
- const userType = localStorage.getItem("role");
+  const userType = localStorage.getItem("role");
   const userId = localStorage.getItem("userId") || "";
-  const role = localStorage.getItem("role");
 
-  let queryUserId = "";
   let queryClientId = "";
+  let queryAssigneeId = "";
 
- if (role === "client") {
-   queryClientId = userId;
- } else if (selectedAssigneeId) {
-   queryUserId = selectedAssigneeId;
- } else if (role !== "admin" && role !== "manager") {
-   queryUserId = userId;
- }
-
+  if (userType === "client") {
+    queryClientId = userId;
+  } else if (selectedAssigneeId) {
+    queryAssigneeId = selectedAssigneeId;
+  }
 
   const { data, isLoading, isError } = useGetAllTasksByMonth(
     year,
     month,
-    queryUserId,
-    queryClientId
+    queryClientId,
+    queryAssigneeId,
   );
   const tasks = data?.tasks || {};
 
@@ -72,7 +68,6 @@ const TasksCalendar = () => {
     isLoading: assigneesLoading,
     isError: assigneesError,
   } = useGetAssigneeOptions();
-
 
   const daysInMonth = eachDayOfInterval({
     start: startOfMonth(currentDate),
@@ -234,7 +229,6 @@ const TasksCalendar = () => {
                                       .join(", ")
                                   : "None"}
                               </p> */}
-                              
                             </div>
                           ))}
                         </div>

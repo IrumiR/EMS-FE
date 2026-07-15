@@ -19,7 +19,7 @@ export interface CreateTaskData {
   }[];
   inventoryItems?: string[];
   eventId: string;
- subTasks?: {
+  subTasks?: {
     subTaskName: string;
   }[];
   comments?: {
@@ -36,7 +36,7 @@ export interface CreateTaskData {
 
 export const useCreateTask = (
   onSuccess: (message: string) => void,
-  onError: (message: string) => void
+  onError: (message: string) => void,
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -48,7 +48,7 @@ export const useCreateTask = (
       onSuccess("Task created successfully");
       queryClient.invalidateQueries(["get_all_by_event_tasks"]);
       queryClient.invalidateQueries(["get_all_by_user_tasks"]);
-       queryClient.invalidateQueries("user_notifications");
+      queryClient.invalidateQueries("user_notifications");
     },
     onError(error) {
       const message =
@@ -108,11 +108,11 @@ export const useGetAllTasksByEventId = (
   page?: number,
   pageSize?: number,
   search?: string,
-  status?: string
+  status?: string,
 ): UseQueryResult<TaskResponse> => {
   return useQuery({
     queryKey: [
-      "get_all_by_event_tasks", 
+      "get_all_by_event_tasks",
       eventId,
       page,
       pageSize,
@@ -128,7 +128,7 @@ export const useGetAllTasksByEventId = (
         if (status) params.append("status", status);
 
         const response = await authFetch.get<TaskResponse>(
-          `/tasks/all-by-event/${eventId}?${params.toString()}`
+          `/tasks/all-by-event/${eventId}?${params.toString()}`,
         );
         return response.data;
       } catch (error) {
@@ -149,13 +149,19 @@ export const useGetAllTasksByUserId = (
   pageSize?: number,
   search?: string,
   status?: string,
-  eventId?: string
+  eventId?: string,
 ): UseQueryResult<TaskResponse> => {
   return useQuery({
-    queryKey: ["get_all_by_user_tasks", page, pageSize, search, status, eventId],
+    queryKey: [
+      "get_all_by_user_tasks",
+      page,
+      pageSize,
+      search,
+      status,
+      eventId,
+    ],
 
     queryFn: async () => {
-
       const params = new URLSearchParams();
       if (page !== undefined) params.append("page", page.toString());
       if (pageSize !== undefined) params.append("limit", pageSize.toString());
@@ -184,7 +190,7 @@ export const useGetAllTasksByUserId = (
 
 export const useGetTaskById = (
   taskId: string | null,
-  enabled: boolean = true
+  enabled: boolean = true,
 ) => {
   return useQuery(
     ["get_task_by_id", taskId],
@@ -195,7 +201,7 @@ export const useGetTaskById = (
     },
     {
       enabled: !!taskId && enabled,
-    }
+    },
   );
 };
 
@@ -228,7 +234,7 @@ export interface TaskData {
 
 export const useUpdateTask = (
   onSuccess: (data: any) => void,
-  onError: (message: string) => void
+  onError: (message: string) => void,
 ) => {
   const queryClient = useQueryClient();
 
@@ -246,7 +252,7 @@ export const useUpdateTask = (
     onSuccess: (data) => {
       queryClient.invalidateQueries("tasks");
       queryClient.invalidateQueries(["task", data.task._id]);
-      queryClient.invalidateQueries("get_all_by_user_tasks")
+      queryClient.invalidateQueries("get_all_by_user_tasks");
       queryClient.invalidateQueries("user_notifications");
       if (onSuccess) onSuccess(data);
     },
@@ -312,15 +318,13 @@ export const useGetAllEventsDropdown = (
   });
 };
 
-
-
 export interface TaskStatusApprove {
   status: string;
-}  
+}
 
 export const useApproveTask = (
   onSuccess: (data: any) => void,
-  onError: (message: string) => void
+  onError: (message: string) => void,
 ) => {
   const queryClient = useQueryClient();
 
@@ -354,7 +358,7 @@ export interface TaskPriorityApprove {
 
 export const useApproveTaskPriority = (
   onSuccess: (data: any) => void,
-  onError: (message: string) => void
+  onError: (message: string) => void,
 ) => {
   const queryClient = useQueryClient();
 
@@ -366,7 +370,10 @@ export const useApproveTaskPriority = (
       taskId: string;
       priority: Partial<TaskPriorityApprove>;
     }) => {
-      const response = await authFetch.put(`/tasks/priority/${taskId}`, priority);
+      const response = await authFetch.put(
+        `/tasks/priority/${taskId}`,
+        priority,
+      );
       return response.data;
     },
     onSuccess: (data) => {
@@ -419,24 +426,23 @@ interface MonthlyTasksResponse {
   };
 }
 
-
 export const useGetAllTasksByMonth = (
   year: number,
   month: number,
-  userId?: string,
-  clientId?: string
+  clientId?: string,
+  assigneeId?: string,
 ): UseQueryResult<MonthlyTasksResponse> => {
   return useQuery({
-    queryKey: ["get_monthly_tasks", year, month, userId, clientId],
+    queryKey: ["get_monthly_tasks", year, month, clientId, assigneeId],
     queryFn: async () => {
       const params = new URLSearchParams();
       params.append("year", year.toString());
       params.append("month", month.toString());
-      if (userId) params.append("userId", userId);
       if (clientId) params.append("clientId", clientId);
+      if (assigneeId) params.append("assignees", assigneeId);
 
       const response = await authFetch.get<MonthlyTasksResponse>(
-        `/tasks/monthly?${params.toString()}`
+        `/tasks/monthly?${params.toString()}`,
       );
 
       return response.data;
@@ -449,4 +455,3 @@ export const useGetAllTasksByMonth = (
     },
   });
 };
-
