@@ -26,7 +26,7 @@ export default function TaskPrioritySelect({ taskId, priority }: PrioritySelectP
       setOpen(false);
     },
     (errMsg) => {
-      toast.error(`Failed to update priority: ${errMsg}`);
+      toast.error(`${errMsg}`);
     }
   );
 
@@ -35,7 +35,6 @@ export default function TaskPrioritySelect({ taskId, priority }: PrioritySelectP
       setOpen(false);
       return;
     }
-    setSelectedPriority(value);
     approveTask({ taskId, priority: { priority: value } });
   };
 
