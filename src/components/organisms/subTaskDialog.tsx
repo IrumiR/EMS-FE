@@ -69,7 +69,7 @@ export function SubTaskDialog({ taskId, taskName }: SubTaskDialogProps) {
   const { data: taskData, isLoading: taskLoading, refetch: refetchTask } = useGetTaskById(taskId, isOpen);
   
   const updateTaskMutation = useUpdateTask(
-    (data: any) => {
+    () => {
       toast.success("Subtasks updated successfully", {
         duration: 4000,
         position: 'top-center',
@@ -78,7 +78,11 @@ export function SubTaskDialog({ taskId, taskName }: SubTaskDialogProps) {
       refetchTask();
     },
     (error: any) => {
-      toast.error("Failed to update subtasks", {
+      const message =
+        typeof error === "string"
+          ? error
+          : error?.response?.data?.message || "Failed to update subtasks";
+      toast.error(message, {
         duration: 4000,
         position: 'top-right',
       });

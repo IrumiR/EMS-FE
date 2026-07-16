@@ -39,18 +39,20 @@ export default function TaskStatusSelect({ taskId, status }: StatusSelectProps) 
   }, [status]);
 
   const { mutate: approveTask, isLoading } = useApproveTask(
-    () => {
+    (data) => {
       toast.success(`Status updated successfully`);
       setOpen(false);
+      if (data?.task) {
+        setSelectedStatus(data.task.status);
+      }
     },
     (errMsg) => {
-      toast.error(`Failed to update status: ${errMsg}`);
-    }
+      toast.error(`${errMsg}`);
+    },
   );
 
   const handleStatusChange = (value: string) => {
     if (value !== selectedStatus) {
-      setSelectedStatus(value);
       approveTask({ taskId, status: { status: value } });
     }
   };
