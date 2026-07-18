@@ -84,6 +84,15 @@ function EventCard({
    navigate(`/events/${id}/edit?${queryParams.toString()}`);
  };
 
+//Check if the event is overdue 
+//  const isEventOverdue = () => {
+//    if (!en || en === "NA") return false;
+//    const endDate = new Date(en);
+//    const currentDate = new Date();
+//    endDate.setHours(0, 0, 0, 0);
+//    currentDate.setHours(0, 0, 0, 0);
+//    return endDate < currentDate;
+//  };
 
   return (
     <Card className="overflow-hidden h-full p-2">
@@ -180,6 +189,16 @@ function EventCard({
               )}
             </div>
           </div>
+
+          {/* Check if the event is overdue */}
+          {/* {isEventOverdue() && status === "In Progress" && (
+            <div className="mb-3">
+              <span className="px-2 py-1 rounded-full text-sm text-red-500 bg-red-50 font-medium">
+                This event is overdue
+              </span>
+            </div>
+          )} */}
+
           {status === "Pending Approval" &&
             (userType === "admin" || userType === "manager") && (
               <ApproveEventDialog
@@ -220,7 +239,7 @@ function EventCard({
             setSelectedClientId={setSelectedClientId}
             selectedAssignees={selectedAssignees}
             setSelectedAssignees={setSelectedAssignees}
-            selectedItems={selectedItems} 
+            selectedItems={selectedItems}
             setSelectedItems={setSelectedItems}
           />
 
