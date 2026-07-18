@@ -25,16 +25,18 @@ export default function StatusSelect({ eventId, status }: StatusSelectProps) {
   }, [status]);
 
   const { mutate: approveEvent, isLoading } = useApproveEvent(
-    () => {
+    (data) => {
       toast.success(`Status updated successfully`);
+      if (data?.event) {
+        setSelectedStatus(data.event.status);
+      }
     },
     (errMsg) => {
-      toast.error(`Failed to update status: ${errMsg}`);
+      toast.error(`${errMsg}`);
     }
   );
 
   const handleChange = (value: string) => {
-    setSelectedStatus(value);
     approveEvent({ eventId, status: { status: value } });
   };
 
