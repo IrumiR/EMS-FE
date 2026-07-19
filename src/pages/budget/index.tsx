@@ -16,25 +16,48 @@ function BudgetScreen() {
     "Pending" | "Approved" | "Rejected" | undefined
   >(undefined);
 
-const role = localStorage.getItem("role") || "";
+  //Remove above search term & budget type use states & apply below
+  // const [selectedStatus, setSelectedStatus] = useState<
+  //   "All" | "Pending" | "Approved" | "Rejected"
+  // >("All");
 
-// Fetch budgets using the API hook
-const { data, isLoading, error } = useGetAllBudgets(
-  currentPage,
-  rowsPerPage,
-  searchTerm,
-  budgetType
-);
+  // const budgetType = selectedStatus === "All" ? undefined : selectedStatus;
 
-const totalBudgets = data?.pagination?.total || 0;
-const totalPages = Math.ceil(totalBudgets / rowsPerPage);
+  const role = localStorage.getItem("role") || "";
 
-const budgets: Budget[] = (data?.budgets || []).map((budget: any) => ({
-  ...budget,
-  eventId: typeof budget.eventId === "string"
-    ? { _id: budget.eventId, eventName: "" }
-    : budget.eventId,
-}));
+  // Fetch budgets using the API hook
+  const { data, isLoading, error } = useGetAllBudgets(
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    //remove search term & apply below undefined
+    // undefined,
+    // undefined,
+    budgetType,
+  );
+
+  const totalBudgets = data?.pagination?.total || 0;
+  const totalPages = Math.ceil(totalBudgets / rowsPerPage);
+
+  const budgets: Budget[] = (data?.budgets || []).map((budget: any) => ({
+    ...budget,
+    eventId:
+      typeof budget.eventId === "string"
+        ? { _id: budget.eventId, eventName: "" }
+        : budget.eventId,
+  }));
+
+  //  const handleStatusChange = (status: string) => {
+  //    setSelectedStatus(status as "All" | "Pending" | "Approved" | "Rejected");
+
+  //    if (status === "All") {
+  //      setSearchParams({});
+  //    } else {
+  //      setSearchParams({ status });
+  //    }
+
+  //    setCurrentPage(1);
+  //  };
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -43,7 +66,7 @@ const budgets: Budget[] = (data?.budgets || []).map((budget: any) => ({
   };
 
   const handleRowsPerPageChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
+    event: React.ChangeEvent<HTMLSelectElement>,
   ) => {
     const newRowsPerPage = Number(event.target.value);
     setRowsPerPage(newRowsPerPage);
@@ -63,6 +86,21 @@ const budgets: Budget[] = (data?.budgets || []).map((budget: any) => ({
     }
   }, [searchParams]);
 
+  //Remove above search params & use effect, then apply below
+  // const [searchParams, setSearchParams] = useSearchParams();
+
+  // useEffect(() => {
+  //   const statusParam = searchParams.get("status");
+  //   if (
+  //     statusParam === "Pending" ||
+  //     statusParam === "Approved" ||
+  //     statusParam === "Rejected"
+  //   ) {
+  //     setSelectedStatus(statusParam);
+  //   } else {
+  //     setSelectedStatus("All");
+  //   }
+  // }, [searchParams]);
 
   if (error) {
     return (
@@ -93,6 +131,7 @@ const budgets: Budget[] = (data?.budgets || []).map((budget: any) => ({
             <DropdownMenuTrigger>
               <Button variant="outline" className="bg-transparent">
                 {budgetType ?? "All Budgets"}
+                {/* {selectedStatus === "All" ? "All Budgets" : selectedStatus} */}
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -109,6 +148,16 @@ const budgets: Budget[] = (data?.budgets || []).map((budget: any) => ({
               <DropdownMenuItem onClick={() => setBudgetType("Rejected")}>
                 Rejected
               </DropdownMenuItem>
+
+              {/* Apply below removing above dropdown items */}
+              {/* {["All", "Pending", "Approved", "Rejected"].map((status) => (
+                <DropdownMenuItem
+                  key={status}
+                  onClick={() => handleStatusChange(status)}
+                >
+                  {status}
+                </DropdownMenuItem>
+              ))} */}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

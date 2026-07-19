@@ -109,7 +109,7 @@ export function EditTaskDialog({
   const { data: assigneesData, isLoading: assigneesLoading } =
     useGetAssigneeOptions();
   const updateTaskMutation = useUpdateTask(
-    (data: any) => {
+    () => {
       toast.success("Task is updated successfully", {
         duration: 4000,
         position: "top-center",
