@@ -149,6 +149,7 @@ export const useGetAllTasksByUserId = (
   pageSize?: number,
   search?: string,
   status?: string,
+  priority?: string,
   eventId?: string,
 ): UseQueryResult<TaskResponse> => {
   return useQuery({
@@ -158,6 +159,7 @@ export const useGetAllTasksByUserId = (
       pageSize,
       search,
       status,
+      priority,
       eventId,
     ],
 
@@ -167,6 +169,7 @@ export const useGetAllTasksByUserId = (
       if (pageSize !== undefined) params.append("limit", pageSize.toString());
       if (search) params.append("search", search);
       if (status) params.append("status", status);
+      if (priority) params.append("priority", priority);
       if (eventId) params.append("eventId", eventId);
 
       const endpoint = `/tasks/all?${params.toString()}`;
@@ -398,6 +401,7 @@ export const useDeleteTask = (onSuccess: () => void, onError: () => void) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries("get_all_by_user_tasks");
+      queryClient.invalidateQueries("get_all_by_event_tasks");
       onSuccess();
     },
     onError: () => {

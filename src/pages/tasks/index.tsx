@@ -17,6 +17,7 @@ import { useSearchParams } from "react-router-dom";
 function TasksScreen() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All Statuses");
+  const [selectedPriority, setSelectedPriority] = useState("All Priorities");
   const [selectedEventName, setSelectedEventName] = useState("All Events");
   const [selectedEventId, setSelectedEventId] = useState<string | undefined>(
     undefined
@@ -42,11 +43,22 @@ function TasksScreen() {
      }
    }, [searchParams]);
 
+   useEffect(() => {
+    const priorityFromUrl = searchParams.get("priority");
+    if (
+      priorityFromUrl &&
+      ["Low", "Medium", "High"].includes(priorityFromUrl)
+    ) {
+      setSelectedPriority(priorityFromUrl);
+    }
+  }, [searchParams]);
+
   const { data, isLoading } = useGetAllTasksByUserId(
     currentPage,
     rowsPerPage,
     searchTerm,
     selectedStatus === "All Statuses" ? undefined : selectedStatus,
+    selectedPriority === "All Priorities" ? undefined : selectedPriority,
     selectedEventId
   );
 
@@ -64,6 +76,11 @@ function TasksScreen() {
     setSearchParams({ status });
     setCurrentPage(1);
   };
+
+  const handlePriorityChange = (priority: string) => {
+    setSelectedPriority(priority);
+    setCurrentPage(1);
+  }
 
   const handleEventChange = (eventId: string | undefined, eventName: string) => {
     setSelectedEventId(eventId); 
@@ -140,6 +157,33 @@ function TasksScreen() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
+       {/* Priority Filter */}
+        {/* <div>
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <Button variant="outline" className="bg-transparent">
+                {selectedPriority}
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {[
+                "All Priorities",
+                "High",
+                "Medium",
+                "Low"
+              ].map((priority) => (
+                <DropdownMenuItem
+                  key={priority}
+                  onClick={() => handlePriorityChange(priority)}
+                >
+                  {priority}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div> */}
 
         <div>
           <DropdownMenu>

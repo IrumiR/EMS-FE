@@ -116,7 +116,7 @@ export default function TaskCard({ task }: { task: Task }) {
           <div className="flex items-center gap-2">
             <div
               className={`w-6 h-6 rounded-full flex items-center justify-center ${getPriorityColor(
-                task.priority
+                task.priority,
               )}`}
             >
               {getPriorityIcon(task.priority)}
@@ -131,7 +131,7 @@ export default function TaskCard({ task }: { task: Task }) {
           </div>
           <span
             className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-              task.status
+              task.status,
             )}`}
           >
             {task.status}
@@ -246,7 +246,7 @@ export default function TaskCard({ task }: { task: Task }) {
               </TooltipContent>
             </Tooltip>
 
-            {userType === "admin" &&
+            {(userType === "admin" || userType === "manager") &&
               (task.status === "Completed" || task.status === "Cancelled") && (
                 <Tooltip>
                   <TooltipTrigger asChild>
