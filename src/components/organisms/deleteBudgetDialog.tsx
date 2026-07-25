@@ -21,12 +21,12 @@ export function DeleteBudgetDialog({
   budgetId,
 }: DeleteBudgetDialogProps) {
   const { mutate: deleteBudget, isLoading } = useDeleteBudget(
-    () => {
-      toast.success("Budget deleted successfully");
+    (data) => {
+      toast.success(data);
       onOpenChange(false);
     },
-    () => {
-      toast.error("Failed to delete budget");
+    (error) => {
+      toast.error(error);
     }
   );
 
