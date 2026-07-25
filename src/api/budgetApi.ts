@@ -28,7 +28,7 @@ export interface CreateBudgetData {
 
 export const useCreateBudget = (
   onSuccess: (message: string) => void,
-  onError: (message: string) => void
+  onError: (message: string) => void,
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -85,7 +85,7 @@ export const useGetAllBudgets = (
   pageSize?: number,
   search?: string,
   clientId?: string,
-  type?: "Pending" | "Approved" | "Rejected"
+  type?: "Pending" | "Approved" | "Rejected",
 ): UseQueryResult<BudgetResponse> => {
   return useQuery({
     queryKey: ["get_all_budgets", page, pageSize, search, clientId, type],
@@ -99,7 +99,7 @@ export const useGetAllBudgets = (
         if (type) params.append("type", type);
 
         const response = await authFetch.get<BudgetResponse>(
-          `/budget/all/?${params.toString()}`
+          `/budget/all/?${params.toString()}`,
         );
         return response.data;
       } catch (error) {
@@ -138,7 +138,7 @@ export const useGetBudgetById = (budgetId: string): UseQueryResult<Budget> => {
 export const useUpdateBudget = (
   budgetId: string,
   onSuccess: (message: string) => void,
-  onError: (message: string) => void
+  onError: (message: string) => void,
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -159,13 +159,12 @@ export const useUpdateBudget = (
 };
 
 export const useDeleteBudget = (
-  budgetId: string,
   onSuccess: (message: string) => void,
-  onError: (message: string) => void
+  onError: (message: string) => void,
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (budgetId: string) => {
       const response = await authFetch.delete(`/budget/${budgetId}`);
       return response.data;
     },
@@ -184,7 +183,7 @@ export const useDeleteBudget = (
 export const useApproveBudget = (
   budgetId: string,
   onSuccess: (message: string) => void,
-  onError: (message: string) => void
+  onError: (message: string) => void,
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -239,7 +238,7 @@ interface BudgetReportResponse {
 }
 
 export const useGetBudgetReport = (
-  dateRange?: "pastDay" | "pastWeek" | "pastMonth"
+  dateRange?: "pastDay" | "pastWeek" | "pastMonth",
 ): UseQueryResult<BudgetReportResponse> => {
   return useQuery({
     queryKey: ["get_budget_report", dateRange],
@@ -248,7 +247,7 @@ export const useGetBudgetReport = (
         "/budget/report",
         {
           params: dateRange ? { dateRange } : {},
-        }
+        },
       );
       return response.data;
     },

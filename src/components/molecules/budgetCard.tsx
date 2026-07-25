@@ -1,11 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit, Download } from "lucide-react";
+import { Edit, Download, Trash2 } from "lucide-react";
 import ViewMore from "./viewMore";
 import { useState } from "react";
 import { EditBudgetDialog } from "../organisms/editBudgetDialog";
 import { Budget } from "../types";
 import { SingleBudgetReport } from "@/pages/budget/singleBudgetReport";
+import { DeleteBudgetDialog } from "../organisms/deleteBudgetDialog";
 
 interface BudgetCardProps {
   budgets?: Budget[];
@@ -14,12 +15,15 @@ interface BudgetCardProps {
 const BudgetCard = ({ budgets = [] }: BudgetCardProps) => {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [selectedBudgetId, setSelectedBudgetId] = useState<string | null>("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedBudgetId, setSelectedBudgetId] = useState<string | null>(null);
 
   const userType = localStorage.getItem("role");
 
   // Function to get status from isApproved field - same logic as view dialog
-  const getStatusFromBudget = (isApproved: boolean | null | undefined): string => {
+  const getStatusFromBudget = (
+    isApproved: boolean | null | undefined,
+  ): string => {
     if (isApproved === null || isApproved === undefined) return "Pending";
     if (isApproved === true) return "Approved";
     if (isApproved === false) return "Rejected";
@@ -40,7 +44,7 @@ const BudgetCard = ({ budgets = [] }: BudgetCardProps) => {
   };
 
   const selectedBudget = budgets.find(
-    (b) => b._id.toString() === selectedBudgetId
+    (b) => b._id.toString() === selectedBudgetId,
   );
 
   const handleViewDialogClose = () => {
@@ -58,12 +62,12 @@ const BudgetCard = ({ budgets = [] }: BudgetCardProps) => {
       console.error("Error generating PDF:", error);
     }
   };
- 
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
       {budgets.map((budget) => {
         const budgetStatus = getStatusFromBudget(budget.isApproved);
-        
+
         return (
           <Card
             key={budget._id}
@@ -74,7 +78,7 @@ const BudgetCard = ({ budgets = [] }: BudgetCardProps) => {
               <div className="flex items-center justify-end mb-3">
                 <span
                   className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                    budgetStatus
+                    budgetStatus,
                   )}`}
                 >
                   {budgetStatus}
@@ -148,6 +152,17 @@ const BudgetCard = ({ budgets = [] }: BudgetCardProps) => {
                   <Edit className="w-4 h-4 text-blue-600" />
                 </button>
               )}
+              {(userType === "admin" || userType === "manager") && (
+                <button
+                  className="p-2 rounded-full hover:bg-blue-100 transition-colors duration-200"
+                  onClick={() => {
+                    setSelectedBudgetId(budget._id.toString());
+                    setIsDeleteDialogOpen(true);
+                  }}
+                >
+                  <Trash2 className="w-4 h-4 text-red-500" />
+                </button>
+              )}
             </div>
           </Card>
         );
@@ -169,6 +184,17 @@ const BudgetCard = ({ budgets = [] }: BudgetCardProps) => {
           budget={selectedBudget}
         />
       )}
+
+      <DeleteBudgetDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={(open) => {
+          setIsDeleteDialogOpen(open);
+          if (!open) {
+            setSelectedBudgetId(null);
+          }
+        }}
+        budgetId={selectedBudgetId}
+      />
     </div>
   );
 };
