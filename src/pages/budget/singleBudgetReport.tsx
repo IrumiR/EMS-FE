@@ -20,8 +20,8 @@ export const SingleBudgetReport = (budget: Budget) => {
     budget.isApproved === null || budget.isApproved === undefined
       ? "Pending"
       : budget.isApproved
-      ? "Approved"
-      : "Rejected";
+        ? "Approved"
+        : "Rejected";
   doc.text(`Status: ${status}`, 14, 65);
 
   doc.line(14, 72, 196, 72);
@@ -113,11 +113,11 @@ export const SingleBudgetReport = (budget: Budget) => {
   // Calculate totals
   const expensesTotal = budget.expenses.reduce(
     (sum, expense) => sum + expense.amount,
-    0
+    0,
   );
   const inventoryTotal = budget.inventoryItems.reduce(
     (sum, item) => sum + item.remainingQuantity * item.price,
-    0
+    0,
   );
   const subtotal = expensesTotal + inventoryTotal;
 
@@ -126,7 +126,7 @@ export const SingleBudgetReport = (budget: Budget) => {
     doc.text(
       `Expenses Total: Rs. ${expensesTotal.toLocaleString()}`,
       140,
-      currentY
+      currentY,
     );
     currentY += 10;
   }
@@ -135,7 +135,7 @@ export const SingleBudgetReport = (budget: Budget) => {
     doc.text(
       `Inventory Total: Rs. ${inventoryTotal.toLocaleString()}`,
       140,
-      currentY
+      currentY,
     );
     currentY += 10;
   }
@@ -143,17 +143,31 @@ export const SingleBudgetReport = (budget: Budget) => {
   doc.text(`Subtotal: Rs. ${subtotal.toLocaleString()}`, 140, currentY);
   currentY += 10;
 
-  doc.text(`Discount: Rs. ${budget.discount.toLocaleString()}`, 140, currentY);
+  const discountPercent = budget.discount || 0;
+  const discountAmount = Math.max(
+    0,
+    Math.round((subtotal * discountPercent) / 100),
+  );
+  const finalTotal =
+    typeof budget.finalAmount === "number"
+      ? budget.finalAmount
+      : Math.max(0, subtotal - discountAmount);
+
+  doc.text(`Discount: ${discountPercent.toLocaleString()}%`, 140, currentY);
+  currentY += 10;
+  doc.text(
+    `Discount Amount: Rs. ${discountAmount.toLocaleString()}`,
+    140,
+    currentY,
+  );
   currentY += 15;
 
-  // Calculate final total
-  const finalTotal = subtotal - budget.discount;
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.text(`Total Amount: Rs. ${finalTotal.toLocaleString()}`, 140, currentY);
+  doc.text(`Final Amount: Rs. ${finalTotal.toLocaleString()}`, 140, currentY);
   currentY += 20;
 
-  // Add remarks if available
+  // Add remarks and footer metadata
   if (budget.remarks && budget.remarks.trim()) {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
@@ -164,22 +178,31 @@ export const SingleBudgetReport = (budget: Budget) => {
     const maxWidth = 170;
     const lines = doc.splitTextToSize(remarks, maxWidth);
     doc.text(lines, 14, currentY);
+    currentY += lines.length * 7 + 10;
   }
 
-  const pageHeight = doc.internal.pageSize.height;
+  const pageHeight = doc.internal.pageSize.height as number;
+  let footerY = currentY + 10;
+
+  if (footerY > pageHeight - 30) {
+    doc.addPage();
+    footerY = 25;
+  }
+
   doc.setFontSize(10);
   doc.setTextColor(128, 128, 128);
   doc.text(
-    `Generated on ${new Date().toLocaleDateString()}`,
+    `Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`,
     14,
-    pageHeight - 20
+    footerY,
   );
-  doc.text(`Budget ID: ${budget._id}`, 14, pageHeight - 10);
+  doc.text(`Budget ID: ${budget._id}`, 14, footerY + 8);
 
   // Save the PDF
+  const generatedDate = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
   const fileName = `budget-${budget.eventId.eventName.replace(
     /[^a-zA-Z0-9]/g,
-    "-"
-  )}-${new Date().getTime()}.pdf`;
+    "-",
+  )}-${generatedDate}.pdf`;
   doc.save(fileName);
 };

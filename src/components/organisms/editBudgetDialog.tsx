@@ -312,7 +312,10 @@ export function EditBudgetDialog({
                           size="sm"
                           onClick={() => handleQuantityChange(index, true)}
                           className="h-8 w-8 p-0"
-                          disabled={item.quantity <= 0 || item.quantity >= (item.maxQuantity || 1)}
+                          disabled={
+                            item.quantity <= 0 ||
+                            item.quantity >= (item.maxQuantity || 1)
+                          }
                         >
                           <Plus className="h-3 w-3" />
                         </Button>
@@ -450,6 +453,23 @@ export function EditBudgetDialog({
                 {formik.touched.totalAmount && formik.errors.totalAmount && (
                   <span className="text-red-500 text-sm">
                     {formik.errors.totalAmount}
+                  </span>
+                )}
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="finalAmount">Final Amount</Label>
+                <Input
+                  id="finalAmount"
+                  placeholder="Final Amount"
+                  type="number"
+                  value={formik.values.finalAmount}
+                  className="w-full"
+                  readOnly
+                />
+                {formik.touched.finalAmount && formik.errors.finalAmount && (
+                  <span className="text-red-500 text-sm">
+                    {formik.errors.finalAmount}
                   </span>
                 )}
               </div>

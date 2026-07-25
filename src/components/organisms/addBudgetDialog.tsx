@@ -48,6 +48,7 @@ export function AddBudgetDialog() {
   const subtotal = calculateSubtotal();
   const discountPercent = parseFloat(formik.values.discountPercentage) || 0;
   const discountAmount = (subtotal * discountPercent) / 100;
+  const finalAmount = Math.max(0, subtotal - discountAmount);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -427,6 +428,18 @@ export function AddBudgetDialog() {
                   {formik.errors.totalAmount}
                 </span>
               )}
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="finalAmount">Final Amount</Label>
+              <Input
+                id="finalAmount"
+                placeholder="Final Amount"
+                type="number"
+                value={finalAmount}
+                className="w-full"
+                readOnly
+              />
             </div>
           </div>
         </ScrollArea>

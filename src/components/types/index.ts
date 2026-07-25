@@ -37,5 +37,6 @@ export interface Budget {
   }>;
   totalAmount: number;
   discount: number;
+  finalAmount: number;
   remarks: string;
 }

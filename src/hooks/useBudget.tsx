@@ -50,8 +50,11 @@ const validationSchema = Yup.object({
     .max(100, "Discount cannot exceed 100%")
     .nullable(),
   totalAmount: Yup.number()
-    .positive("Total amount must be positive")
+    .min(0, "Total amount cannot be negative")
     .required("Total amount is required"),
+  finalAmount: Yup.number()
+    .min(0, "Final amount cannot be negative")
+    .required("Final amount is required"),
 });
 
 export function useBudget() {
@@ -82,6 +85,7 @@ export function useBudget() {
       inventoryItems: [] as InventoryItem[],
       discountPercentage: "",
       totalAmount: 0,
+      finalAmount: 0,
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -104,6 +108,7 @@ export function useBudget() {
         discount: values.discountPercentage
           ? Number(values.discountPercentage)
           : undefined,
+        finalAmount: Number(values.finalAmount),
         createdBy: userId || "",
       };
 
@@ -113,9 +118,18 @@ export function useBudget() {
 
   const eventList = useGetAllEventsDropdown(formik.values.selectedClientId);
 
+  const calculateFinalAmount = (subtotal: number, discountPercent: number) => {
+    const discountAmount = (subtotal * discountPercent) / 100;
+    return Math.max(0, subtotal - discountAmount);
+  };
+
   useEffect(() => {
-    const total = calculateTotal();
-    formik.setFieldValue("totalAmount", total);
+    const subtotal = calculateSubtotal();
+    const discountPercent = parseFloat(formik.values.discountPercentage) || 0;
+    const finalTotal = calculateFinalAmount(subtotal, discountPercent);
+
+    formik.setFieldValue("totalAmount", subtotal);
+    formik.setFieldValue("finalAmount", finalTotal);
   }, [
     formik.values.expenses,
     formik.values.inventoryItems,
@@ -139,9 +153,7 @@ export function useBudget() {
   const calculateTotal = () => {
     const subtotal = calculateSubtotal();
     const discountPercent = parseFloat(formik.values.discountPercentage) || 0;
-    const discountAmount = (subtotal * discountPercent) / 100;
-    const finalTotal = subtotal - discountAmount;
-    return Math.max(0, finalTotal);
+    return calculateFinalAmount(subtotal, discountPercent);
   };
 
   const handleExpenseChange = (

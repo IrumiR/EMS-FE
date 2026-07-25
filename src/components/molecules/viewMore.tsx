@@ -29,6 +29,8 @@ interface BudgetViewDialogProps {
       price: number;
     }>;
     totalAmount: number;
+    discount: number;
+    finalAmount: number;
     remarks: string;
     createdBy: string;
   };
@@ -151,6 +153,18 @@ export default function BudgetViewDialog({
   );
 
   const showActionButtons = budget?.isApproved === null;
+
+  const calculateFinalAmount = (totalAmount?: number, discount?: number) => {
+    if (typeof totalAmount !== "number") return 0;
+    const discountPercent = discount || 0;
+    const discountAmount = (totalAmount * discountPercent) / 100;
+    return Math.max(0, totalAmount - discountAmount);
+  };
+
+  const displayFinalAmount =
+    typeof budget?.finalAmount === "number"
+      ? budget.finalAmount
+      : calculateFinalAmount(budget?.totalAmount, budget?.discount);
 
   const getRemarksFieldStyle = () => {
     if (actionType === "approve") {
@@ -286,14 +300,24 @@ export default function BudgetViewDialog({
               </p>
             </div>
 
-            {/* <div className="flex flex-col space-y-1">
+            <div className="flex flex-col space-y-1">
               <Label className="text-sm font-medium text-gray-700">
                 Discount:
               </Label>
               <p className="text-lg font-semibold text-gray-900">
-               {budget?.discount?.toLocaleString() || "0"} %
+                {budget?.discount?.toLocaleString() || "0"} %
               </p>
-            </div> */}
+            </div>
+
+            {/* Final Amount */}
+            <div className="flex flex-col space-y-1">
+              <Label className="text-sm font-medium text-gray-700">
+                Final Amount:
+              </Label>
+              <p className="text-lg font-semibold text-gray-900">
+                Rs. {displayFinalAmount?.toLocaleString() || "0"}
+              </p>
+            </div>
 
             {/* Remarks */}
             <div className="flex flex-col space-y-1">
@@ -309,7 +333,8 @@ export default function BudgetViewDialog({
                 Created By:
               </Label>
               <p className="text-sm text-gray-900">
-                {budget?.createdBy.userName || "N/A"} - ({budget?.createdBy.role || "N/A"})
+                {budget?.createdBy.userName || "N/A"} - (
+                {budget?.createdBy.role || "N/A"})
               </p>
             </div>
 

@@ -22,6 +22,7 @@ export interface CreateBudgetData {
   }[];
   totalAmount: number;
   discount?: number;
+  finalAmount: number;
   remarks?: string;
   createdBy: string;
 }
@@ -60,6 +61,7 @@ export interface Budget {
   }[];
   totalAmount: number;
   discount?: number;
+  finalAmount: number;
   remarks?: string;
   createdBy: string;
   createdAt: string;
@@ -216,6 +218,9 @@ export const useApproveBudget = (
 interface BudgetReport {
   _id: string;
   totalAmount: number;
+  discount?: number;
+  finalAmount: number;
+  remarks?: string;
   createdAt: string;
   isApproved: boolean;
   eventId: {

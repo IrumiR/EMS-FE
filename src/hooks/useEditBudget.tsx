@@ -67,8 +67,17 @@ const validationSchema = Yup.object({
   totalAmount: Yup.string()
     .required("Total amount is required")
     .test("is-positive", "Total amount must be greater than 0", (value) => {
-      return parseFloat(value || "0") > 0;
+      return parseFloat(value || "0") >= 0;
     }),
+  finalAmount: Yup.string()
+    .required("Final amount is required")
+    .test(
+      "is-positive",
+      "Final amount must be greater than or equal to 0",
+      (value) => {
+        return parseFloat(value || "0") >= 0;
+      },
+    ),
 });
 
 const onSuccess = (message: string) => {
@@ -111,6 +120,7 @@ export const useEditBudget = ({
       inventoryItems: [] as InventoryItem[],
       discountPercentage: "",
       totalAmount: "",
+      finalAmount: "",
     },
     validationSchema,
     onSubmit: (values) => {
@@ -139,6 +149,7 @@ export const useEditBudget = ({
         discount: values.discountPercentage
           ? Number(values.discountPercentage)
           : 0,
+        finalAmount: parseFloat(values.finalAmount),
       };
 
       updateBudget(payload, {
@@ -178,13 +189,23 @@ export const useEditBudget = ({
           })) || [],
         discountPercentage: budget.discount?.toString() || "",
         totalAmount: budget.totalAmount.toString(),
+        finalAmount: budget.finalAmount?.toString() || "",
       });
     }
   }, [budget, open]);
 
+  const calculateFinalAmount = (subtotal: number, discountPercent: number) => {
+    const discountAmount = (subtotal * discountPercent) / 100;
+    return Math.max(0, subtotal - discountAmount);
+  };
+
   useEffect(() => {
-    const total = calculateTotal();
-    formik.setFieldValue("totalAmount", total.toString());
+    const subtotal = calculateSubtotal();
+    const discountPercent = parseFloat(formik.values.discountPercentage) || 0;
+    const finalTotal = calculateFinalAmount(subtotal, discountPercent);
+
+    formik.setFieldValue("totalAmount", subtotal.toString(), false);
+    formik.setFieldValue("finalAmount", finalTotal.toString(), false);
   }, [
     formik.values.expenses,
     formik.values.inventoryItems,
@@ -214,9 +235,8 @@ export const useEditBudget = ({
   ) => {
     const subtotal = calculateSubtotal(expenses, inventoryItems);
     const discountPercent = parseFloat(formik.values.discountPercentage) || 0;
-    const discountAmount = (subtotal * discountPercent) / 100;
 
-    return Math.max(0, subtotal - discountAmount);
+    return calculateFinalAmount(subtotal, discountPercent);
   };
 
   const handleExpenseChange = (
@@ -229,11 +249,16 @@ export const useEditBudget = ({
     formik.setFieldValue("expenses", updatedExpenses, false);
 
     if (field === "amount") {
-      const total = calculateTotal(
+      const subtotal = calculateSubtotal(
         updatedExpenses,
         formik.values.inventoryItems,
       );
-      formik.setFieldValue("totalAmount", total.toString(), false);
+      const finalTotal = calculateFinalAmount(
+        subtotal,
+        parseFloat(formik.values.discountPercentage) || 0,
+      );
+      formik.setFieldValue("totalAmount", subtotal.toString(), false);
+      formik.setFieldValue("finalAmount", finalTotal.toString(), false);
     }
   };
 
@@ -253,8 +278,16 @@ export const useEditBudget = ({
 
     formik.setFieldValue("inventoryItems", updatedInventory, false);
 
-    const total = calculateTotal(formik.values.expenses, updatedInventory);
-    formik.setFieldValue("totalAmount", total.toString(), false);
+    const subtotal = calculateSubtotal(
+      formik.values.expenses,
+      updatedInventory,
+    );
+    const finalTotal = calculateFinalAmount(
+      subtotal,
+      parseFloat(formik.values.discountPercentage) || 0,
+    );
+    formik.setFieldValue("totalAmount", subtotal.toString(), false);
+    formik.setFieldValue("finalAmount", finalTotal.toString(), false);
   };
 
   const handleInventoryItemSelect = (index: number, itemId: string) => {
@@ -280,8 +313,16 @@ export const useEditBudget = ({
 
       formik.setFieldValue("inventoryItems", updatedInventory, false);
 
-      const total = calculateTotal(formik.values.expenses, updatedInventory);
-      formik.setFieldValue("totalAmount", total.toString(), false);
+      const subtotal = calculateSubtotal(
+        formik.values.expenses,
+        updatedInventory,
+      );
+      const finalTotal = calculateFinalAmount(
+        subtotal,
+        parseFloat(formik.values.discountPercentage) || 0,
+      );
+      formik.setFieldValue("totalAmount", subtotal.toString(), false);
+      formik.setFieldValue("finalAmount", finalTotal.toString(), false);
     }
   };
 
@@ -324,8 +365,16 @@ export const useEditBudget = ({
 
     formik.setFieldValue("expenses", finalExpenses, false);
 
-    const total = calculateTotal(finalExpenses, formik.values.inventoryItems);
-    formik.setFieldValue("totalAmount", total.toString(), false);
+    const subtotal = calculateSubtotal(
+      finalExpenses,
+      formik.values.inventoryItems,
+    );
+    const finalTotal = calculateFinalAmount(
+      subtotal,
+      parseFloat(formik.values.discountPercentage) || 0,
+    );
+    formik.setFieldValue("totalAmount", subtotal.toString(), false);
+    formik.setFieldValue("finalAmount", finalTotal.toString(), false);
   };
 
   const handleDeleteInventoryItem = (index: number) => {
@@ -334,14 +383,24 @@ export const useEditBudget = ({
 
     formik.setFieldValue("inventoryItems", updatedInventory, false);
 
-    const total = calculateTotal(formik.values.expenses, updatedInventory);
-    formik.setFieldValue("totalAmount", total.toString(), false);
+    const subtotal = calculateSubtotal(
+      formik.values.expenses,
+      updatedInventory,
+    );
+    const finalTotal = calculateFinalAmount(
+      subtotal,
+      parseFloat(formik.values.discountPercentage) || 0,
+    );
+    formik.setFieldValue("totalAmount", subtotal.toString(), false);
+    formik.setFieldValue("finalAmount", finalTotal.toString(), false);
   };
 
   const handleDiscountChange = (value: string) => {
     formik.setFieldValue("discountPercentage", value, false);
-    const total = calculateTotal();
-    formik.setFieldValue("totalAmount", total.toString(), false);
+    const subtotal = calculateSubtotal();
+    const finalTotal = calculateFinalAmount(subtotal, parseFloat(value) || 0);
+    formik.setFieldValue("totalAmount", subtotal.toString(), false);
+    formik.setFieldValue("finalAmount", finalTotal.toString(), false);
   };
 
   const handleCancel = () => {
