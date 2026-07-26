@@ -63,10 +63,22 @@ const BudgetCard = ({ budgets = [] }: BudgetCardProps) => {
     }
   };
 
+  // Function to get display final amount
+  // const getDisplayAmount = (budget: Budget) => {
+  //   if (typeof budget.finalAmount === "number" && !Number.isNaN(budget.finalAmount)) {
+  //     return budget.finalAmount;
+  //   }
+
+  //   const discountPercent = Number(budget.discount) || 0;
+  //   const discountAmount = (budget.totalAmount * discountPercent) / 100;
+  //   return Math.max(0, budget.totalAmount - discountAmount);
+  // };
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
       {budgets.map((budget) => {
         const budgetStatus = getStatusFromBudget(budget.isApproved);
+        // const displayAmount = getDisplayAmount(budget);
 
         return (
           <Card
@@ -94,8 +106,9 @@ const BudgetCard = ({ budgets = [] }: BudgetCardProps) => {
               <div className="mb-4">
                 <p className="text-lg font-bold text-gray-900">
                   Rs. {budget.totalAmount.toLocaleString()}
+                  {/* Rs. {displayAmount.toLocaleString()} */}
                   <span className="text-sm font-normal text-gray-900 ml-2">
-                    Total Budget
+                    Total Amount
                   </span>
                 </p>
               </div>
