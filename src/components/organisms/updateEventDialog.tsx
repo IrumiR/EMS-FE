@@ -82,6 +82,7 @@ export default function UpdateEventDialog({
     clientsLoading,
     isUpdating,
     data,
+    dateError,
   } = useUpdateEventDialog({
     eventId,
     open,
@@ -309,10 +310,17 @@ export default function UpdateEventDialog({
                     }
                     useMinDate={true}
                     minDate={new Date()}
+                    useMaxDate={!!endDate}
+                    maxDate={endDate}
                     dateFormat="MMMM d, yyyy"
-                    className="w-full border rounded-md px-3 py-2 text-sm"
+                    className={`w-full border rounded-md px-3 py-2 text-sm ${
+                      dateError ? "border-red-500" : ""
+                    }`}
                     placeholderText="Pick a date"
                   />
+                  {dateError && (
+                    <p className="text-red-500 text-xs mt-1">{dateError}</p>
+                  )}
                 </div>
               </div>
               <div className="w-full">
@@ -330,7 +338,7 @@ export default function UpdateEventDialog({
                     }
                     minDate={startDate || undefined}
                     disabled={!startDate}
-                    useMinDate={true}
+                    useMinDate={!!startDate}
                     dateFormat="MMMM d, yyyy"
                     className="w-full border rounded-md px-3 py-2 text-sm"
                     placeholderText="Pick a date"
@@ -503,7 +511,7 @@ export default function UpdateEventDialog({
           <Button
             type="button"
             onClick={() => formik.handleSubmit()}
-            disabled={isUpdating}
+            disabled={isUpdating || !!dateError}
             className="bg-green-600 hover:bg-green-700 text-white"
           >
             {isUpdating ? "Updating..." : "Update Event"}

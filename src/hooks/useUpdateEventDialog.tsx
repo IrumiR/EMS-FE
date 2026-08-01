@@ -23,7 +23,7 @@ interface UseUpdateEventDialogProps {
   setSelectedClientId: (id: string) => void;
   selectedAssignees: Array<{ name: string; id: string }>;
   setSelectedAssignees: (
-    assignees: Array<{ name: string; id: string }>
+    assignees: Array<{ name: string; id: string }>,
   ) => void;
   selectedItems: Array<{ name: string; id: string }>;
   setSelectedItems: (items: Array<{ name: string; id: string }>) => void;
@@ -67,6 +67,11 @@ export const useUpdateEventDialog = ({
     client: Yup.string().required("Client is required"),
   });
 
+  const dateError =
+    startDate && endDate && startDate.getTime() > endDate.getTime()
+      ? "start date must be a date prior to end date"
+      : "";
+
   const onSuccess = () => {
     setIsDataLoaded(false);
     setLocalStartTime(null);
@@ -90,7 +95,7 @@ export const useUpdateEventDialog = ({
 
   const { mutate: updateEvent, isLoading: isUpdating } = useUpdateEvent(
     onSuccess,
-    onError
+    onError,
   );
 
   const formik = useFormik({
@@ -104,6 +109,15 @@ export const useUpdateEventDialog = ({
     },
     validationSchema,
     onSubmit: (values) => {
+      if (dateError) {
+        toast.error("start date must be a date prior to end date", {
+          id: "date-range-toast",
+          position: "top-center",
+          duration: 4000,
+        });
+        return;
+      }
+
       const formattedStartDate = startDate
         ? format(startDate, "yyyy-MM-dd")
         : "";
@@ -255,7 +269,11 @@ export const useUpdateEventDialog = ({
 
   const handleEndTimeChange = (e: any) => {
     const newTime = e.value;
-    if (newTime && !isNaN(newTime.getTime()) && (!localStartTime || newTime >= localStartTime)) {
+    if (
+      newTime &&
+      !isNaN(newTime.getTime()) &&
+      (!localStartTime || newTime >= localStartTime)
+    ) {
       setLocalEndTime(newTime);
       setEndTime(newTime);
     }
@@ -294,6 +312,7 @@ export const useUpdateEventDialog = ({
     isUpdating,
     data,
     isDataLoaded,
+    dateError,
     assigneesData,
     assigneesLoading,
     inventoryData,
