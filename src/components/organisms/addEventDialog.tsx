@@ -24,8 +24,7 @@ import toast from "react-hot-toast";
 import { format } from "date-fns";
 
 export function AddEventDialog() {
-
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Step navigation state
   const [activeStep, setActiveStep] = useState<StepType>("details");
@@ -39,7 +38,7 @@ export function AddEventDialog() {
   // Date and location step state
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
- const [startTime, setStartTime] = useState<Date | undefined>(undefined);
+  const [startTime, setStartTime] = useState<Date | undefined>(undefined);
   const [endTime, setEndTime] = useState<Date | undefined>(undefined);
   const [location, setLocation] = useState("");
   const [selectedClientId, setSelectedClientId] = useState("");
@@ -60,10 +59,16 @@ export function AddEventDialog() {
     );
   };
 
+  const dateError =
+    startDate && endDate && startDate.getTime() > endDate.getTime()
+      ? "start date must be a date prior to end date"
+      : "";
+
   const isDateStepValid = () => {
     return (
       startDate !== undefined &&
       endDate !== undefined &&
+      !dateError &&
       startTime !== undefined &&
       endTime !== undefined &&
       location.trim() !== "" &&
@@ -78,13 +83,13 @@ export function AddEventDialog() {
   const resetForm = () => {
     // Reset step
     setActiveStep("details");
-    
+
     // Reset event details
     setEventName("");
     setSelectedEventType("");
     setCustomEventType("");
     setDescription("");
-    
+
     // Reset date and location
     setStartDate(undefined);
     setEndDate(undefined);
@@ -92,7 +97,7 @@ export function AddEventDialog() {
     setEndTime(undefined);
     setLocation("");
     setSelectedClientId("");
-    
+
     // Reset tasks and assignees
     setTaskInput("");
     setTasks([]);
@@ -100,25 +105,23 @@ export function AddEventDialog() {
     setSelectedItems([]);
   };
 
-
-
   const createEvent = useCreateEvent(
     (message) => {
       console.log(message);
-       toast.success("Event created successfully");
+      toast.success("Event created successfully");
       resetForm();
       setIsDialogOpen(false);
     },
     (message) => {
       console.error(message);
-       toast.error("Failed to create event");
-    }
+      toast.error("Failed to create event");
+    },
   );
 
   const handleSubmit = () => {
-      console.log("Selected Inventory Items Before Submit:", selectedItems);
-      const formattedStartTime = startTime ? format(startTime, "HH:mm:ss") : "";
-      const formattedEndTime = endTime ? format(endTime, "HH:mm:ss") : "";
+    console.log("Selected Inventory Items Before Submit:", selectedItems);
+    const formattedStartTime = startTime ? format(startTime, "HH:mm:ss") : "";
+    const formattedEndTime = endTime ? format(endTime, "HH:mm:ss") : "";
     const payload: CreateEventData = {
       eventName,
       eventType: [
@@ -144,7 +147,7 @@ export function AddEventDialog() {
       inventoryItems: selectedItems.map((item) => item.id),
       createdBy: userId || "",
     };
-     console.log("Payload being sent:", payload);
+    console.log("Payload being sent:", payload);
 
     createEvent.mutate(payload);
   };
@@ -165,7 +168,7 @@ export function AddEventDialog() {
     }
   };
 
-   const handleCancel = () => {
+  const handleCancel = () => {
     resetForm();
     setIsDialogOpen(false);
   };
@@ -247,6 +250,7 @@ export function AddEventDialog() {
                   onNext={handleNextStep}
                   onPrevious={handlePreviousStep}
                   isValid={isDateStepValid()}
+                  dateError={dateError}
                 />
               )}
 
@@ -258,14 +262,14 @@ export function AddEventDialog() {
                   tasks={tasks.map((t) => ({
                     id: t.taskName,
                     name: t.taskName,
-                  }))} 
+                  }))}
                   setTasks={(newTasks) => {
                     setTasks(
                       newTasks.map((t) => ({
-                        taskName: t.name, 
+                        taskName: t.name,
                         assigneeId: "defaultId",
                         commentId: "defaultComment",
-                      }))
+                      })),
                     );
                   }}
                   selectedAssignees={selectedAssignees}

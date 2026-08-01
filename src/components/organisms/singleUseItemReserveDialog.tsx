@@ -39,12 +39,23 @@ export function SingleUseItemReserveDialog({
   const [quantity, setQuantity] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const eventList = useGetAllEventsDropdown();
+   const eventList = useGetAllEventsDropdown(undefined, undefined, "active");
+
+   const selectedEvent = eventList.data?.events?.find(
+     (event) => event._id === selectedEventId,
+   );
+
+   const eventMinDate = selectedEvent
+     ? new Date(selectedEvent.startDate)
+     : new Date();
+   const eventMaxDate = selectedEvent
+     ? new Date(selectedEvent.endDate)
+     : undefined;
 
   const reserveSingleUseInventoryMutation =
     useReserveSingleUseInventoryMutation(
       (data) => {
-        toast.success("Item reserved successfully!");
+        toast.success(data.message);
         resetForm();
         onOpenChange(false);
         setIsLoading(false);
@@ -177,8 +188,9 @@ export function SingleUseItemReserveDialog({
               className="w-full border rounded-md px-3 py-2 text-sm"
               placeholderText="Pick a date"
               useMinDate={true}
-              minDate={new Date()}
-              disabled={isLoading}
+              minDate={eventMinDate}
+              maxDate={eventMaxDate}
+              disabled={!setSelectedEventId || isLoading}
             />
           </div>
 

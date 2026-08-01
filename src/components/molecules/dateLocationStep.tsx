@@ -18,7 +18,7 @@ interface DateLocationStepProps extends StepProps {
   setStartDate: (date: Date | undefined) => void;
   endDate: Date | undefined;
   setEndDate: (date: Date | undefined) => void;
- startTime: Date | undefined;
+  startTime: Date | undefined;
   setStartTime: (time: Date | undefined) => void;
   endTime: Date | undefined;
   setEndTime: (time: Date | undefined) => void;
@@ -27,6 +27,7 @@ interface DateLocationStepProps extends StepProps {
   selectedClientId: string;
   setSelectedClientId: (id: string) => void;
   isValid?: boolean;
+  dateError?: string;
 }
 
 export function DateLocationStep({
@@ -42,8 +43,10 @@ export function DateLocationStep({
   setLocation,
   selectedClientId,
   setSelectedClientId,
+  dateError,
 }: DateLocationStepProps) {
-  const { data: clientsData, isLoading: clientsLoading } = useGetClientOptions();
+  const { data: clientsData, isLoading: clientsLoading } =
+    useGetClientOptions();
 
   return (
     <div className="space-y-4">
@@ -59,11 +62,16 @@ export function DateLocationStep({
             selected={startDate}
             onChange={(date: Date | null) => setStartDate(date ?? undefined)}
             dateFormat="MMMM d, yyyy"
-            className="custom-datepicker-wrapper border rounded-md px-3 py-2 text-sm"
+            className={`custom-datepicker-wrapper border rounded-md px-3 py-2 text-sm ${
+              dateError ? "border-red-500" : ""
+            }`}
             placeholderText="Pick a date"
-            useMinDate={true} // 👈 will restrict past dates
+            useMinDate={true}
             minDate={new Date()}
           />
+          {dateError && (
+            <p className="mt-1 text-sm text-red-500">{dateError}</p>
+          )}
         </div>
         <div>
           <Label htmlFor="end-date" className="text-sm font-medium block mb-1">
@@ -114,9 +122,11 @@ export function DateLocationStep({
             <PrimeCalendar
               id="end-time"
               value={endTime ?? null}
-              onChange={(e) => {if (!startTime || (e.value && e.value >= startTime)) {
-                setEndTime(e.value ?? undefined);
-              }}}
+              onChange={(e) => {
+                if (!startTime || (e.value && e.value >= startTime)) {
+                  setEndTime(e.value ?? undefined);
+                }
+              }}
               timeOnly
               hourFormat="12"
               disabled={!startTime}

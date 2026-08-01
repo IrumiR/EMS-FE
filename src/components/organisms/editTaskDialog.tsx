@@ -55,11 +55,30 @@ const validationSchema = Yup.object({
     .required("Task name is required")
     .min(3, "Task name must be at least 3 characters"),
   taskDescription: Yup.string().required("Description is required"),
-  startDate: Yup.date().required("Start date is required").nullable(),
+  startDate: Yup.date()
+    .required("Start date is required")
+    .nullable()
+    .test(
+      "start-before-end",
+      "start date must be a date prior to end date",
+      function (value) {
+        const { endDate } = this.parent;
+        if (!value || !endDate) return true;
+        return new Date(value) < new Date(endDate);
+      },
+    ),
   endDate: Yup.date()
     .required("End date is required")
     .nullable()
-    .min(Yup.ref("startDate"), "End date must be after start date"),
+    .test(
+      "end-after-start",
+      "End date must be after start date",
+      function (value) {
+        const { startDate } = this.parent;
+        if (!value || !startDate) return true;
+        return new Date(value) > new Date(startDate);
+      },
+    ),
   priority: Yup.string()
     .required("Priority is required")
     .oneOf(["high", "medium", "low"], "Invalid priority"),
@@ -265,6 +284,16 @@ export function EditTaskDialog({
     }
   }, [open, task.id, refetchTask]);
 
+  const handleStartDateChange = (date: Date | null) => {
+    formik.setFieldValue("startDate", date);
+    formik.setFieldTouched("startDate", true, false);
+  };
+
+  const handleEndDateChange = (date: Date | null) => {
+    formik.setFieldValue("endDate", date);
+    formik.setFieldTouched("endDate", true, false);
+  };
+
   const handleAddSubTask = () => {
     setSubTasks([...subTasks, { name: "" }]);
   };
@@ -378,9 +407,9 @@ export function EditTaskDialog({
                     <Label htmlFor="startDate">Start Date</Label>
                     <DatePickerComponent
                       selected={formik.values.startDate ?? undefined}
-                      onChange={(date: Date | null) =>
-                        formik.setFieldValue("startDate", date)
-                      }
+                      onChange={handleStartDateChange}
+                      useMinDate={true}
+                      minDate={new Date()}
                       dateFormat="MMMM d, yyyy"
                       className="w-full border rounded-md px-3 py-2 text-sm"
                       placeholderText="Pick a date"
@@ -396,9 +425,10 @@ export function EditTaskDialog({
                     <Label htmlFor="endDate">End Date</Label>
                     <DatePickerComponent
                       selected={formik.values.endDate ?? undefined}
-                      onChange={(date: Date | null) =>
-                        formik.setFieldValue("endDate", date)
-                      }
+                      onChange={handleEndDateChange}
+                      disabled={!formik.values.startDate}
+                      minDate={formik.values.startDate ?? new Date()}
+                      useMinDate={true}
                       dateFormat="MMMM d, yyyy"
                       className="w-full border rounded-md px-3 py-2 text-sm"
                       placeholderText="Pick a date"

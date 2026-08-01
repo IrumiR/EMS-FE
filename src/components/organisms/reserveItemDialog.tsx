@@ -39,16 +39,16 @@ export function ReserveItemDialog({
   const [quantity, setQuantity] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   
-  const eventList = useGetAllEventsDropdown();
+  // const eventList = useGetAllEventsDropdown();
   //for reserving item within the event start date and end date
-  // const eventList = useGetAllEventsDropdown(undefined, undefined, "active");
+  const eventList = useGetAllEventsDropdown(undefined, undefined, "active");
 
-  // const selectedEvent = eventList.data?.events?.find(
-  //   (event) => event._id === selectedEventId
-  // );
+  const selectedEvent = eventList.data?.events?.find(
+    (event) => event._id === selectedEventId
+  );
 
-  // const eventMinDate = selectedEvent ? new Date(selectedEvent.startDate) : new Date();
-  // const eventMaxDate = selectedEvent ? new Date(selectedEvent.endDate) : undefined;
+  const eventMinDate = selectedEvent ? new Date(selectedEvent.startDate) : new Date();
+  const eventMaxDate = selectedEvent ? new Date(selectedEvent.endDate) : undefined;
   
   const reserveInventoryMutation = useReserveInventoryMutation(
     (data) => {
@@ -192,11 +192,11 @@ export function ReserveItemDialog({
               className="w-full border rounded-md px-3 py-2 text-sm"
               placeholderText="Pick a date"
               useMinDate={true}
-              minDate={new Date()}
-              disabled={isLoading}
-              // minDate={eventMinDate}
-              // maxDate={eventMaxDate}
-              // disabled={!setSelectedEventId || isLoading}
+              // minDate={new Date()}
+              // disabled={isLoading}
+              minDate={eventMinDate}
+              maxDate={eventMaxDate}
+              disabled={!setSelectedEventId || isLoading}
             />
           </div>
 
