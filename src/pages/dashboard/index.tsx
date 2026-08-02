@@ -13,6 +13,7 @@ import TaskStatusCount from "./taskStatusCountCard";
 
 function DashboardScreen() {
   const userType = localStorage.getItem("role");
+  const defaultTab = userType === "team-member" ? "tasks" : "events";
 
   return (
     <div className="p-6 w-full  mx-auto">
@@ -24,16 +25,16 @@ function DashboardScreen() {
       </div>
 
       <Tabs
-        defaultValue="events"
+        defaultValue={defaultTab}
         className="w-full bg-white border shadow transition-shadow px-4 py-4 rounded-lg"
       >
         <TabsList
           className={`grid w-full mb-6 ${
             userType === "client"
               ? "grid-cols-3"
-              :  userType === "manager"
-              ? "grid-cols-5"
-              : "grid-cols-4"
+              : userType === "manager"
+                ? "grid-cols-5"
+                : "grid-cols-4"
           }`}
         >
           {userType !== "admin" && (
