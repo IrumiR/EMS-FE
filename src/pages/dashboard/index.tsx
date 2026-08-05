@@ -32,14 +32,16 @@ function DashboardScreen() {
           className={`grid w-full mb-6 ${
             userType === "client"
               ? "grid-cols-3"
-              : userType === "manager"
+              : userType === "manager" || userType === "admin"
                 ? "grid-cols-5"
                 : "grid-cols-4"
           }`}
         >
-          {userType !== "admin" && (
+          {/* {userType !== "admin" && (
             <TabsTrigger value="tasks">Tasks</TabsTrigger>
-          )}
+          )} */}
+            
+          <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="events">Events</TabsTrigger>
           {userType !== "client" && (
             <TabsTrigger value="users">Users</TabsTrigger>
@@ -53,12 +55,10 @@ function DashboardScreen() {
         </TabsList>
 
         {/* Tasks Tab */}
-        {userType !== "admin" && (
           <TabsContent value="tasks" className="space-y-4">
             <TaskStats />
           </TabsContent>
-        )}
-
+        
         {/* Events Tab */}
         <TabsContent value="events" className="space-y-4">
           <EventStats />

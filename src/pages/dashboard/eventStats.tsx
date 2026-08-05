@@ -1,5 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, CheckCircle, Pause } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  CheckCircle,
+  Pause,
+} from "lucide-react";
 import { LucideIcon } from "lucide-react";
 import { useGetEventCountByStatus } from "@/api/dashboardApi";
 import { useNavigate } from "react-router-dom";
@@ -94,6 +99,13 @@ function EventStats() {
           description="Failed to load data"
           color="red"
         />
+        {/* <StatCard
+          title="Approved Events"
+          value="Error"
+          icon={LaptopMinimalCheck}
+          description="Failed to load data"
+          color="red"
+        /> */}
         <StatCard
           title="In Progress Events"
           value="Error"
@@ -126,6 +138,7 @@ function EventStats() {
   const activeEvents = getCountByStatus("In Progress");
   const pendingEvents = getCountByStatus("Pending Approval");
   const completedEvents = getCountByStatus("Completed");
+  // const approvedEvents = getCountByStatus("Approved");
 
  const totalEvents = eventCounts.reduce((sum, item) => sum + item.count, 0);
 
@@ -167,7 +180,23 @@ function EventStats() {
         />
       </div>
 
-      <div onClick={() => handleCardClick("Completed")} className="cursor-pointer">
+      {/* <div
+        onClick={() => handleCardClick("Approved")}
+        className="cursor-pointer"
+      >
+        <StatCard
+          title="Approved Events"
+          value={approvedEvents}
+          icon={LaptopMinimalCheck}
+          description="Approved events"
+          color="purple"
+        />
+      </div> */}
+
+      <div
+        onClick={() => handleCardClick("Completed")}
+        className="cursor-pointer"
+      >
         <StatCard
           title="Completed Events"
           value={completedEvents}

@@ -80,6 +80,11 @@ const Sidebar = ({ role }: SidebarProps) => {
         label: "INVENTORY",
         icon: <HiOutlineArchive size={20} />,
       },
+      // {
+      //   to: "/reservations",
+      //   label: "RESERVATIONS",
+      //   icon: <HiOutlineClipboardCheck size={20} />,
+      // },
       {
         to: "/budget",
         label: "BUDGET",

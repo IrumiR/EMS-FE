@@ -92,6 +92,16 @@ const AppRoutes = () => {
                     </ProtectedRoute>
                   }
                 />
+                {/* <Route
+                  path="reservations"
+                  element={
+                    <ProtectedRoute allowedRoles={["admin", "manager", "team-member"]}>
+                      <MainLayout role={role}>
+                        <ReservationScreen />
+                      </MainLayout>
+                    </ProtectedRoute>
+                  }
+                /> */}
                 <Route
                   path="team"
                   element={

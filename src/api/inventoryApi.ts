@@ -26,7 +26,7 @@ interface InventoryItemData {
 
 export const useCreateInventoryMutation = (
   onSuccess?: (data: any) => void,
-  onError?: (message: string) => void
+  onError?: (message: string) => void,
 ) => {
   const queryClient = useQueryClient();
 
@@ -55,7 +55,6 @@ export const useCreateInventoryMutation = (
   });
 };
 
-
 //getById
 export const useInventoryItem = (itemId: string | null) => {
   return useQuery(
@@ -67,13 +66,13 @@ export const useInventoryItem = (itemId: string | null) => {
     },
     {
       enabled: !!itemId,
-    }
+    },
   );
 };
 
 export const useUpdateInventoryMutation = (
   onSuccess?: (data: any) => void,
-  onError?: (message: string) => void
+  onError?: (message: string) => void,
 ) => {
   const queryClient = useQueryClient();
 
@@ -102,10 +101,9 @@ export const useUpdateInventoryMutation = (
   });
 };
 
-
 export const useDeleteInventoryMutation = (
   onSuccess?: () => void,
-  onError?: (message: string) => void
+  onError?: (message: string) => void,
 ) => {
   const queryClient = useQueryClient();
 
@@ -168,7 +166,7 @@ export const useGetAllInventory = (
   pageSize?: number,
   search?: string,
   itemType?: string,
-  category?: string
+  category?: string,
 ): UseQueryResult<InventoryResponse> => {
   return useQuery({
     queryKey: ["get_all_inventory", page, pageSize, search, itemType, category],
@@ -178,7 +176,7 @@ export const useGetAllInventory = (
           `/inventory/all?limit=${pageSize ?? 10}&page=${page ?? 1}` +
             (search ? `&search=${encodeURIComponent(search)}` : "") +
             (itemType ? `&itemType=${itemType}` : "") +
-            (category ? `&category=${category}` : "")
+            (category ? `&category=${category}` : ""),
         );
         return response.data;
       } catch (error) {
@@ -213,7 +211,7 @@ export const useGetInventoryOptions =
       queryFn: async () => {
         try {
           const response = await authFetch.get<InventoryOptionResponse>(
-            "/inventory/all-dropdown"
+            "/inventory/all-dropdown",
           );
           return {
             message: response.data.message,
@@ -246,7 +244,7 @@ export interface ReserveSingleUseInventoryResponse {
 
 export const useReserveSingleUseInventoryMutation = (
   onSuccess?: (data: ReserveSingleUseInventoryResponse) => void,
-  onError?: (message: string) => void
+  onError?: (message: string) => void,
 ) => {
   const queryClient = useQueryClient();
 
@@ -254,7 +252,7 @@ export const useReserveSingleUseInventoryMutation = (
     mutationFn: async (reservationData: ReserveSingleUseInventory) => {
       const response = await authFetch.post(
         "/inventory/reserve-single-use",
-        reservationData
+        reservationData,
       );
       return response.data;
     },
@@ -271,7 +269,6 @@ export const useReserveSingleUseInventoryMutation = (
   });
 };
 
-
 export interface ReserveInventory {
   itemId: string;
   eventId: string;
@@ -286,7 +283,7 @@ export interface ReserveInventoryResponse {
 
 export const useReserveInventoryMutation = (
   onSuccess?: (data: ReserveInventoryResponse) => void,
-  onError?: (message: string) => void
+  onError?: (message: string) => void,
 ) => {
   const queryClient = useQueryClient();
 
@@ -294,7 +291,7 @@ export const useReserveInventoryMutation = (
     mutationFn: async (reservationData: ReserveInventory) => {
       const response = await authFetch.post(
         "/inventory/reserve",
-        reservationData
+        reservationData,
       );
       return response.data;
     },
@@ -332,9 +329,8 @@ export const useGetInventoryReport =
     return useQuery({
       queryKey: ["get_inventory_report"],
       queryFn: async () => {
-        const response = await authFetch.get<InventoryReportResponse>(
-          "/inventory/report"
-        );
+        const response =
+          await authFetch.get<InventoryReportResponse>("/inventory/report");
         return response.data;
       },
       onSuccess: () => {
@@ -346,45 +342,131 @@ export const useGetInventoryReport =
     });
   };
 
+export interface ReservationReport {
+  itemId: string;
+  itemName: string;
+  date: string;
+  reservedQuantity: number;
+  event: {
+    _id: string;
+    name: string;
+  } | null;
+  isExternal: boolean;
+  isSingleUse: boolean;
+  createdAt: string;
+}
 
-  export interface ReservationReport {
-    itemId: string;
-    itemName: string;
-    date: string;
-    reservedQuantity: number;
-    event: {
-      _id: string;
-      name: string;
-    } | null;
-    isExternal: boolean;
-    isSingleUse: boolean;
-    createdAt: string;
-  }
+interface ReservationReportResponse {
+  message: string;
+  reservations: ReservationReport[];
+}
 
-  interface ReservationReportResponse {
-    message: string;
-    reservations: ReservationReport[];
-  }
+export interface ReservationListItem {
+  itemId: string;
+  itemName: string;
+  date: string;
+  reservedQuantity: number;
+  event: {
+    _id: string;
+    name: string;
+  } | null;
+  reserveType: "single-use" | "rental";
+  itemType: "external" | "internal";
+  createdAt: string;
+}
 
-  export const useGetReservationReport = (
-    dateRange?: "pastDay" | "pastWeek" | "pastMonth"
-  ): UseQueryResult<ReservationReportResponse> => {
-    return useQuery({
-      queryKey: ["get_reservation_report", dateRange],
-      queryFn: async () => {
-        const response = await authFetch.get<ReservationReportResponse>(
-          "/inventory/reservations", 
-          {
-            params: dateRange ? { dateRange } : {},
-          }
-        );
-        return response.data;
-      },
-      onSuccess: () => {
-        console.log("Reservation report data fetched successfully");
-      },
-      onError: (error) => {
-        console.error("Error fetching reservation report data:", error);
-      },
-    });
-  };
+export interface ReservationListPagination {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface ReservationListResponse {
+  message: string;
+  reservations: ReservationListItem[];
+  pagination: ReservationListPagination;
+}
+
+export interface ReservationListParams {
+  page?: number;
+  limit?: number;
+  event?: string;
+  eventId?: string;
+  reserveType?: "all" | "single-use" | "rental";
+  itemType?: "all" | "external" | "internal";
+  dateRange?: "pastDay" | "pastWeek" | "pastMonth";
+}
+
+export const useGetReservationReport = (
+  dateRange?: "pastDay" | "pastWeek" | "pastMonth",
+): UseQueryResult<ReservationReportResponse> => {
+  return useQuery({
+    queryKey: ["get_reservation_report", dateRange],
+    queryFn: async () => {
+      const response = await authFetch.get<ReservationReportResponse>(
+        "/inventory/reservations",
+        {
+          params: dateRange ? { dateRange } : {},
+        },
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      console.log("Reservation report data fetched successfully");
+    },
+    onError: (error) => {
+      console.error("Error fetching reservation report data:", error);
+    },
+  });
+};
+
+export const useGetReservationList = (
+  params: ReservationListParams = {},
+): UseQueryResult<ReservationListResponse> => {
+  const {
+    page = 1,
+    limit = 10,
+    event,
+    eventId,
+    reserveType = "all",
+    itemType = "all",
+    dateRange,
+  } = params;
+
+  return useQuery({
+    queryKey: [
+      "get_reservation_list",
+      page,
+      limit,
+      event,
+      eventId,
+      reserveType,
+      itemType,
+      dateRange,
+    ],
+    queryFn: async () => {
+      const response = await authFetch.get<ReservationListResponse>(
+        "/inventory/reservations/list",
+        {
+          params: {
+            page,
+            limit,
+            event,
+            eventId,
+            reserveType,
+            itemType,
+            dateRange,
+          },
+        },
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      console.log("Reservation list data fetched successfully");
+    },
+    onError: (error) => {
+      console.error("Error fetching reservation list data:", error);
+    },
+  });
+};
