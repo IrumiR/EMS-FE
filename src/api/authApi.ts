@@ -359,12 +359,9 @@ export const useDeactivateUser = (
       });
       return response.data;
     },
-    onSuccess: (data, variables) => {
-      const message = variables.isActive
-        ? "User activated successfully"
-        : "User deactivated successfully";
+    onSuccess: (data) => {
       queryClient.invalidateQueries("get_all_users");
-      onSuccess?.(message);
+      if (onSuccess) onSuccess(data.message);
     },
     onError: (error) => {
       const message =

@@ -23,8 +23,8 @@ export function DeactivateUserDialog({
   const [open, setOpen] = useState(false);
 
   const { mutate: updateUserStatus, isLoading } = useDeactivateUser(
-    (message) => {
-      toast.success(message);
+    (data) => {
+      toast.success(data);
       setOpen(false);
     },
     (message) => {
