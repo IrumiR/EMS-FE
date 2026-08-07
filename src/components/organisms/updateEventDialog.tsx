@@ -409,8 +409,9 @@ export default function UpdateEventDialog({
               <Select
                 value={selectedClientId}
                 onValueChange={setSelectedClientId}
+                disabled
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full" disabled>
                   <SelectValue placeholder="Select client" />
                 </SelectTrigger>
                 <SelectContent>

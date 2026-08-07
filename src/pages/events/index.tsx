@@ -15,7 +15,6 @@ import { useGetAllEvents } from "@/api/eventApi";
 import { eventTypeImages } from "@/components/molecules/eventDetailsStep";
 import { useSearchParams } from "react-router-dom";
 
-
 function EventsScreen() {
   interface Event {
     id: string;
@@ -46,18 +45,12 @@ function EventsScreen() {
     }
   }, [searchParams]);
 
-
   const hasActiveFilters = statusFilter !== "" || eventTypeFilter !== "";
 
- 
   const fetchCurrentPage = hasActiveFilters ? 1 : currentPage;
-  const fetchRowsPerPage = hasActiveFilters ? 100 : rowsPerPage; 
+  const fetchRowsPerPage = hasActiveFilters ? 100 : rowsPerPage;
 
-  const data = useGetAllEvents(
-    fetchCurrentPage,
-    fetchRowsPerPage,
-    searchTerm
-  );
+  const data = useGetAllEvents(fetchCurrentPage, fetchRowsPerPage, searchTerm);
 
   const eventsData = data?.data?.events || [];
   const pagination = data?.data?.pagination;
@@ -101,23 +94,21 @@ function EventsScreen() {
     }
   }, [eventsData, data?.isLoading]);
 
-
   const paginationTotal = pagination?.total || 0;
   const paginationTotalPages = pagination?.totalPages || 1;
-
 
   const { filteredEvents, totalFilteredEvents, totalPages } = useMemo(() => {
     let filtered = [...events];
 
     if (statusFilter) {
       filtered = filtered.filter((event) =>
-        event.status.toLowerCase().includes(statusFilter.toLowerCase())
+        event.status.toLowerCase().includes(statusFilter.toLowerCase()),
       );
     }
 
     if (eventTypeFilter) {
       filtered = filtered.filter((event) =>
-        event.category.toLowerCase().includes(eventTypeFilter.toLowerCase())
+        event.category.toLowerCase().includes(eventTypeFilter.toLowerCase()),
       );
     }
 
@@ -137,7 +128,6 @@ function EventsScreen() {
       };
     }
 
-  
     return {
       filteredEvents: filtered,
       totalFilteredEvents: paginationTotal,
@@ -161,16 +151,16 @@ function EventsScreen() {
   };
 
   const handleRowsPerPageChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
+    event: React.ChangeEvent<HTMLSelectElement>,
   ) => {
     const newRowsPerPage = Number(event.target.value);
     setRowsPerPage(newRowsPerPage);
-    setCurrentPage(1); 
+    setCurrentPage(1);
   };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
-    setCurrentPage(1); 
+    setCurrentPage(1);
   };
 
   const handleStatusFilterChange = (status: string) => {
@@ -182,10 +172,10 @@ function EventsScreen() {
       setSearchParams({});
     }
   };
-  
+
   const handleEventTypeFilterChange = (eventType: string) => {
     setEventTypeFilter(eventType);
-    setCurrentPage(1); 
+    setCurrentPage(1);
   };
 
   const statusOptions = [
@@ -298,17 +288,17 @@ function EventsScreen() {
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1 || data?.isLoading}
+                disabled={currentPage === 1}
                 className="px-3 py-1 bg-gray-200 text-gray-700 rounded disabled:opacity-50"
               >
                 Previous
               </button>
               <span className="text-sm text-gray-700">
-                Page {currentPage} of {totalPages}
+                Page {currentPage} of {totalPages || 1}
               </span>
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages || data?.isLoading}
+                disabled={currentPage === totalPages || totalPages === 0}
                 className="px-3 py-1 bg-gray-200 text-gray-700 rounded disabled:opacity-50"
               >
                 Next
@@ -323,7 +313,7 @@ function EventsScreen() {
               <select
                 value={rowsPerPage}
                 onChange={handleRowsPerPageChange}
-                disabled={data?.isLoading}
+                // disabled={data?.isLoading}
                 className="px-2 py-1 border border-gray-300 rounded disabled:opacity-50"
               >
                 {[5, 10, 15, 20].map((option) => (

@@ -21,12 +21,12 @@ export function DeleteEventDialog({
   eventId,
 }: DeleteEventDialogProps) {
   const { mutate: deleteEvent, isLoading } = useDeleteEvent(
-    () => {
-      toast.success("Event deleted successfully");
+    (data) => {
+      toast.success(data);
       onOpenChange(false);
     },
-    () => {
-      toast.error("Failed to delete event");
+    (error) => {
+      toast.error(error);
     }
   );
 

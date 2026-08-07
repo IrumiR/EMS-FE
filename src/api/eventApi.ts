@@ -343,19 +343,21 @@ export const useGetEventReport = (
   });
 };
 
-export const useDeleteEvent = (onSuccess: () => void, onError: () => void) => {
+export const useDeleteEvent = (onSuccess: (message: string) => void, onError: (message: string) => void) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (eventId: string) => {
       const response = await authFetch.delete(`/events/${eventId}`);
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries("get_all_events");
-      if (onSuccess) onSuccess();
+      if (onSuccess) onSuccess(data.message);
     },
-    onError: () => {
-      if (onError) onError();
+    onError: (error) => {
+      const message =
+        (error as any)?.response?.data?.message || "Event deletion failed";
+      if (onError) onError(message);
     },
   });
 };
